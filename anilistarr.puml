@@ -1,0 +1,142 @@
+@startuml components
+
+package entities {
+  struct Media {
+    AnilistID uint64
+    TvdbID uint64
+    Type string
+  }
+
+  struct SonarrCustomEntry {
+    TvdbID uint64
+  }
+
+  struct SonarrCustomList <<alias>> {
+    []SonarrCustomEntry
+  }
+}
+
+package usecases {
+  interface Mapper {
+    +MapIDs([]string) []string
+    +MapID(string) string
+    +Refresh()
+  }
+
+  interface Tracker {
+    +GetUserID(name string) string
+    +GetMediaList(userId string) []Media
+  }
+
+  class MediaLinker {
+    +GenerateCustomList(name string) SonarrCustomList
+    +GetUserID(name string) string
+  }
+}
+
+package adapters {
+  package mapper <<Frame>> {
+    interface MetadataSource {
+      Fetch()
+    }
+
+    interface Metadata {
+      GetAnilistID() string
+      GetTvdbID() string
+    }
+
+    interface Store {
+      PutMedia(Context, Media)
+    }
+
+    interface AnilistStore {
+      MappingByAnilistID(Context, string) Media
+    }
+
+    class JSONFile
+    class JSONURL
+    class AnilistMapper
+  }
+
+  package cache <<Frame>> {
+    interface Cache {
+      GetString(ctx, key) string
+      SetString(ctx, key, value)
+    }
+
+    class CachedTracker
+  }
+}
+
+package drivers {
+  package providers <<Frame>> {
+    struct FribbsEntry
+    entity FribbsSource
+    entity LocalJSON
+  }
+
+  package stores <<Frame>> {
+    class Sql
+  }
+
+  package caches <<Frame>> {
+    class Redis
+    class Bolt
+  }
+
+  package trackers <<Frame>> {
+    class Anilist
+  }
+}
+
+package cmd {
+  package api {
+    class RestAPI <<net.http>>
+    entity "main" as apiMain
+
+    RestAPI o-- apiMain
+  }
+
+  package cli {
+    entity "main" as cliMain
+  }
+}
+
+'' visual hack to force both outer-level packages on the same rank
+drivers -[hidden] cmd
+
+'' entities
+SonarrCustomEntry --* SonarrCustomList
+'' use-cases
+Media <-- MediaLinker
+SonarrCustomList <-- MediaLinker
+MediaLinker o--> Mapper
+MediaLinker o--> Tracker
+'' adapters/mapper
+Mapper <|-[dashed]- AnilistMapper
+AnilistMapper o--> Metadata
+AnilistMapper o--> MetadataSource
+AnilistMapper o--> AnilistStore
+Store <|-[dashed]- AnilistStore
+MetadataSource <|-[dashed]- JSONFile
+MetadataSource <|-[dashed]- JSONURL
+'' adapters/cache
+Tracker <|-[dashed]- CachedTracker
+CachedTracker o--> Cache
+CachedTracker o--> Tracker
+'' drivers/providers
+FribbsEntry -* FribbsSource
+JSONURL <|-- FribbsSource
+JSONFile <|-- LocalJSON
+Metadata <|-[dashed]- FribbsEntry
+'' drivers/stores
+AnilistStore <|-[dashed]- Sql
+'' drivers/caches
+Cache <|-[dashed]- Bolt
+Cache <|-[dashed]- Redis
+'' drivers/trackers
+Tracker <|-[dashed]- Anilist
+'' cmd
+MediaLinker <--o RestAPI
+
+@enduml
