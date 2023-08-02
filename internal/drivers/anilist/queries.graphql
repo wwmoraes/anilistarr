@@ -1,0 +1,19 @@
+query GetUserByName($name:String!){
+  User(name: $name) {
+    id
+  }
+}
+
+query GetWatching($userId: Int!, $page: Int!, $perPage:Int!) {
+  Page(page:$page, perPage: $perPage) {
+    mediaList(userId: $userId, type: ANIME, status: CURRENT) {
+      media {
+        id
+        idMal
+        title {
+          romaji
+        }
+      }
+    }
+  }
+}

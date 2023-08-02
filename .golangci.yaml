@@ -1,0 +1,19 @@
+run:
+  modules-download-mode: readonly
+  issues-exit-code: 0
+  timeout: 2m
+output:
+  format: colored-line-number
+linters-settings:
+  enable:
+  - stylecheck
+  - unconvert
+  - gosec
+  - errorlint
+  - maligned
+  - interfacer
+  - unparam
+  - whitespace
+  - wrapcheck
+  - prealloc
+  - nolintlint
