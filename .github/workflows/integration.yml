@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: setup golang
       uses: actions/setup-go@v3
       with:
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: setup golang
       uses: actions/setup-go@v3
       with:
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: setup golang
       uses: actions/setup-go@v3
       with:
@@ -195,7 +195,7 @@ jobs:
     needs: [lint, test]
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: download lint report
@@ -218,7 +218,7 @@ jobs:
       && startsWith(github.ref, 'refs/tags/')
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: setup golang
@@ -266,7 +266,7 @@ jobs:
       GRYPE_DB_CACHE_TEMP_PATH: .cache/grype/db/
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: generate container meta
       id: meta
       uses: docker/metadata-action@v4
@@ -350,7 +350,7 @@ jobs:
     if: github.event_name == 'release'
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: generate container meta
       id: meta
       uses: docker/metadata-action@v4
