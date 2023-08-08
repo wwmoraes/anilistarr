@@ -51,7 +51,7 @@ jobs:
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
     - name: cache modules
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOMODCACHE}
         key: ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
@@ -61,7 +61,7 @@ jobs:
     - name: download dependencies
       run: go mod download
     - name: cache vendor
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: vendor
         key: ${{ runner.os }}-vendor-${{ hashFiles('go.mod', 'go.sum') }}
@@ -71,7 +71,7 @@ jobs:
     - name: vendor dependencies
       run: go mod vendor
     - name: cache build
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOCACHE}
         key: ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
@@ -92,7 +92,7 @@ jobs:
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
     - name: cache modules
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOMODCACHE}
         key: ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
@@ -102,7 +102,7 @@ jobs:
     - name: download dependencies
       run: go mod download
     - name: cache vendor
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: vendor
         key: ${{ runner.os }}-vendor-${{ hashFiles('go.mod', 'go.sum') }}
@@ -112,7 +112,7 @@ jobs:
     - name: vendor dependencies
       run: go mod vendor
     - name: cache lint
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${HOME}/.cache/golangci-lint
         key: ${{ runner.os }}-lint-${{ hashFiles('.golangci.yaml') }}
@@ -143,7 +143,7 @@ jobs:
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
     - name: cache modules
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOMODCACHE}
         key: ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
@@ -153,7 +153,7 @@ jobs:
     - name: download dependencies
       run: go mod download
     - name: cache vendor
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: vendor
         key: ${{ runner.os }}-vendor-${{ hashFiles('go.mod', 'go.sum') }}
@@ -163,7 +163,7 @@ jobs:
     - name: vendor dependencies
       run: go mod vendor
     - name: cache test
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOCACHE}
         key: ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
@@ -228,7 +228,7 @@ jobs:
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
     - name: cache modules
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOMODCACHE}
         key: ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
@@ -236,7 +236,7 @@ jobs:
           ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
           ${{ runner.os }}-modules-
     - name: cache vendor
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: vendor
         key: ${{ runner.os }}-vendor-${{ hashFiles('go.mod', 'go.sum') }}
@@ -244,7 +244,7 @@ jobs:
           ${{ runner.os }}-vendor-${{ hashFiles('go.mod', 'go.sum') }}
           ${{ runner.os }}-vendor-
     - name: cache build
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${GOCACHE}
         key: ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
@@ -293,7 +293,7 @@ jobs:
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v2
     - name: cache buildx
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${{ runner.temp }}/.buildx-cache
         # yamllint disable-line rule:line-length
@@ -332,7 +332,7 @@ jobs:
         image: ${{ github.repository }}:test
         configFile: structure-test.yaml
     - name: cache grype
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${{ runner.temp }}/${{ env.GRYPE_DB_CACHE_TEMP_PATH }}
         key: ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
@@ -377,7 +377,7 @@ jobs:
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v2
     - name: cache buildx
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3.0.11
       with:
         path: ${{ runner.temp }}/.buildx-cache
         # yamllint disable-line rule:line-length
