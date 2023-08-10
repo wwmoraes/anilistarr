@@ -1,0 +1,179 @@
+name: Security
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - .github/workflows/codeql.yml
+    - .golangci.yaml
+    - Dockerfile
+    - .dockerignore
+    - go.mod
+    - go.sum
+    - '**.go'
+  pull_request:
+    branches:
+    - master
+    paths:
+    - .github/workflows/codeql.yml
+    - .golangci.yaml
+    - Dockerfile
+    - .dockerignore
+    - go.mod
+    - go.sum
+    - '**.go'
+  schedule:
+  - cron: '0 9 * * 1'
+
+env:
+  GOLANG_VERSION: "1.20"
+  GOLANG_FLAGS: -race -mod=readonly
+  GRYPE_DB_CACHE_TEMP_PATH: .cache/grype/db/
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: calculate version
+      uses: paulhatch/semantic-version@v5.0.3
+      id: version
+      with:
+        branch: ${{ github.ref_name }}
+        bump_each_commit: false
+        change_path: >-
+          cmd/handler
+          internal
+          go.mod
+          go.sum
+        major_pattern: /^BREAKING CHANGE:|^[^()!:]+(?:\([^()!:]+\))?!:/
+        minor_pattern: /^feat(?:\([^()!:]+\))?:/
+        search_commit_body: true
+        user_format_type: csv
+        version_format: ${major}.${minor}.${patch}-rc.${increment}
+    - name: generate container meta
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        context: workflow
+        images: ${{ github.repository }}
+        flavor: |
+          latest=true
+        # yamllint disable rule:line-length
+        labels: |
+          org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/master/README.md
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.url=https://hub.docker.com/r/${{ github.repository }}
+          org.opencontainers.image.version=${{ steps.version.outputs.version }}
+        # yamllint enable rule:line-length
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=raw,value=${{ env.BRANCH }}
+          type=semver,pattern={{version}}
+        github-token: ${{ github.token }}
+    outputs:
+      major: ${{ steps.version.outputs.major }}
+      minor: ${{ steps.version.outputs.minor }}
+      patch: ${{ steps.version.outputs.patch }}
+      increment: ${{ steps.version.outputs.increment }}
+      version_type: ${{ steps.version.outputs.version_type }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.version_tag }}
+      revision: ${{ steps.version.outputs.current_commit }}
+      authors:  ${{ steps.version.outputs.authors }}
+      container-labels: ${{ steps.meta.outputs.labels }}
+      container-tags: ${{ steps.meta.outputs.tags }}
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: setup
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GOLANG_VERSION }}
+    - name: initialize
+      uses: github/codeql-action/init@v2
+      with:
+        languages: go
+    - name: build
+      uses: wwmoraes/actions/golang/build@master
+    - name: analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:go"
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: metadata
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: set up docker buildx
+      uses: docker/setup-buildx-action@v2
+    - name: build cache
+      uses: pat-s/always-upload-cache@v2.1.5
+      with:
+        path: ${{ runner.temp }}/.buildx-cache
+        # yamllint disable-line rule:line-length
+        key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile', '.dockerignore') }}
+        # yamllint disable rule:line-length
+        restore-keys: |
+          ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile', '.dockerignore') }}
+          ${{ runner.os }}-buildx-
+        # yamllint enable rule:line-length
+    - name: build
+      uses: docker/build-push-action@v3
+      env:
+        DOCKER_BUILDKIT: 0
+        BUILDKIT_INLINE_CACHE: 1
+      with:
+        push: false
+        load: true
+        labels: ${{ needs.metadata.outputs.container-labels }}
+        cache-to: |
+          type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
+        cache-from: |
+          type=local,src=${{ runner.temp }}/.buildx-cache
+          ${{ needs.metadata.outputs.container-tags }}
+          ${{ github.repository }}:scan
+        tags: ${{ github.repository }}:scan
+        build-args: |
+          GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+          VERSION=${{ needs.metadata.outputs.version }}
+    # fix to prevent ever-growing caches
+    # https://github.com/docker/build-push-action/issues/252
+    # https://github.com/moby/buildkit/issues/1896
+    - name: move build cache
+      run: |
+        rm -rf ${{ runner.temp }}/.buildx-cache
+        mv ${{ runner.temp }}/.buildx-cache-new ${{ runner.temp }}/.buildx-cache
+    - name: cache grype
+      uses: pat-s/always-upload-cache@v2.1.5
+      with:
+        path: ${{ runner.temp }}/${{ env.GRYPE_DB_CACHE_TEMP_PATH }}
+        key: ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
+          ${{ runner.os }}-grype-
+    - name: scan
+      uses: anchore/scan-action@v3
+      id: scan
+      with:
+        image: ${{ github.repository }}:scan
+        fail-build: true
+        severity-cutoff: critical
+    - name: report
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif }}
