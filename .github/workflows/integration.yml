@@ -3,6 +3,8 @@ name: Integration
 # yamllint disable-line rule:truthy
 on:
   push:
+    branches:
+    - master
     tags-ignore:
     - "*"
     paths:
@@ -226,6 +228,7 @@ jobs:
         fetch-depth: 0
     - name: cache sonar scanner
       uses: pat-s/always-upload-cache@v2.1.5
+      if: false
       with:
         path: ${{ runner.temp }}/sonar-scanner/cache
         # yamllint disable-line rule:line-length
@@ -247,8 +250,14 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: coverage-report
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     - name: run sonar scanner
       uses: wwmoraes/actions/sonar-scanner@master
+      if: false
       with:
         token: ${{ secrets.SONAR_TOKEN }}
         work-dir: ${{ env.WORK_DIR }}
