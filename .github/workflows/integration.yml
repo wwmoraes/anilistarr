@@ -1,14 +1,10 @@
-name: CI
+name: Integration
 
 # yamllint disable-line rule:truthy
 on:
-  release:
-    types: [published]
   push:
-    branches:
-    - master
-    tags:
-    - '*'
+    tags-ignore:
+    - "*"
     paths:
     - .github/workflows/integration.yml
     - .golangci.yaml
@@ -38,7 +34,8 @@ env:
   GOLANG_FLAGS: -race -mod=readonly
   WORK_DIR: /usr/src
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   metadata:
@@ -206,11 +203,6 @@ jobs:
     - name: test
       uses: wwmoraes/actions/golang/test@master
       id: test
-    - name: security scan
-      uses: anchore/scan-action@v3
-      with:
-        path: .
-        fail-build: true
     - name: upload coverage report
       uses: actions/upload-artifact@v2
       if: always()
@@ -261,52 +253,7 @@ jobs:
         token: ${{ secrets.SONAR_TOKEN }}
         work-dir: ${{ env.WORK_DIR }}
         home: ${{ runner.temp }}/sonar-scanner
-  release-binary:
-    runs-on: ubuntu-latest
-    needs: [metadata, build, lint, test]
-    permissions:
-      contents: write
-    if: >-
-      github.event_name == 'push'
-      && startsWith(github.ref, 'refs/tags/')
-    steps:
-    - name: checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: setup golang
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GOLANG_VERSION }}
-    - name: set golang environment variables
-      uses: wwmoraes/actions/golang/env@master
-    - name: cache modules
-      uses: pat-s/always-upload-cache@v2.1.5
-      with:
-        path: ${GOMODCACHE}
-        key: ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
-          ${{ runner.os }}-modules-
-    - name: cache build
-      uses: pat-s/always-upload-cache@v2.1.5
-      with:
-        path: ${GOCACHE}
-        key: ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
-          ${{ runner.os }}-build-
-    - name: generate
-      run: go generate ./...
-      env:
-        VERSION: ${{ needs.metadata.outputs.version }}
-    - name: run goreleaser
-      uses: goreleaser/goreleaser-action@v4
-      with:
-        args: release --clean --skip-validate
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  docker:
+  container:
     runs-on: ubuntu-latest
     needs: metadata
     env:
@@ -361,80 +308,3 @@ jobs:
       with:
         image: ${{ github.repository }}:test
         configFile: container-structure-test.yaml
-    - name: cache grype
-      uses: pat-s/always-upload-cache@v2.1.5
-      with:
-        path: ${{ runner.temp }}/${{ env.GRYPE_DB_CACHE_TEMP_PATH }}
-        key: ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
-          ${{ runner.os }}-grype-
-    - name: grype scan
-      uses: anchore/scan-action@v3
-      with:
-        image: ${{ github.repository }}:test
-        fail-build: true
-  publish-image:
-    runs-on: ubuntu-latest
-    needs: [metadata, docker, lint, test]
-    if: >-
-      github.event_name == 'push'
-      && startsWith(github.ref, 'refs/tags/')
-    steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: set up QEMU
-      uses: docker/setup-qemu-action@v2
-    - name: set up docker buildx
-      uses: docker/setup-buildx-action@v2
-    - name: cache buildx
-      uses: pat-s/always-upload-cache@v2.1.5
-      with:
-        path: ${{ runner.temp }}/.buildx-cache
-        # yamllint disable-line rule:line-length
-        key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile', '.dockerignore') }}
-        # yamllint disable rule:line-length
-        restore-keys: |
-          ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile', '.dockerignore') }}
-          ${{ runner.os }}-buildx-
-        # yamllint enable rule:line-length
-    # fix to prevent ever-growing caches
-    # https://github.com/docker/build-push-action/issues/252
-    # https://github.com/moby/buildkit/issues/1896
-    - name: login to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: push multi-arch image
-      uses: docker/build-push-action@v3
-      env:
-        DOCKER_BUILDKIT: 1
-        BUILDKIT_INLINE_CACHE: 1
-      with:
-        push: true
-        platforms: linux/amd64,linux/arm/v7,linux/arm64
-        labels: ${{ needs.metadata.outputs.container-labels }}
-        cache-to: |
-          type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
-        cache-from: |
-          type=local,src=${{ runner.temp }}/.buildx-cache
-          ${{ needs.metadata.outputs.container-tags }}
-          ${{ github.repository }}:master
-          ${{ github.repository }}:latest
-        build-args: |
-          GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-          VERSION=${{ needs.metadata.outputs.version }}
-        tags: ${{ needs.metadata.outputs.container-tags }}
-    # fix to prevent ever-growing caches
-    # https://github.com/docker/build-push-action/issues/252
-    # https://github.com/moby/buildkit/issues/1896
-    - name: Move cache
-      run: |
-        rm -rf ${{ runner.temp }}/.buildx-cache
-        mv ${{ runner.temp }}/.buildx-cache-new ${{ runner.temp }}/.buildx-cache
-    - name: update DockerHub description
-      uses: meeDamian/sync-readme@v1.0.6
-      with:
-        pass: ${{ secrets.DOCKER_PASSWORD }}
-        description: true
