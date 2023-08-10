@@ -3,6 +3,7 @@
 > anilist custom list provider for sonarr/radarr
 
 ![Status](https://img.shields.io/badge/status-active-success.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/wwmoraes/anilistarr.svg)](https://pkg.go.dev/github.com/wwmoraes/anilistarr)
 [![GitHub Issues](https://img.shields.io/github/issues/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/pulls)
 
