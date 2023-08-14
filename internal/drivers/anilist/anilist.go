@@ -49,9 +49,9 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 }
 
 func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]string, error) {
-	log := telemetry.LoggerFromContext(ctx)
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
+	log := telemetry.LoggerFromContext(ctx)
 
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {

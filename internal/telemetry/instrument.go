@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
 	"github.com/MrAlias/otlpr"
 	"github.com/go-logr/logr"
+	"github.com/pyroscope-io/client/pyroscope"
 	otelruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -59,6 +61,8 @@ func init() {
 	globalTracer = newTracer()
 	globalMeter = newMeter()
 	globalLogger = logr.New(NewStdLogSink())
+
+	initMetrics(globalMeter)
 }
 
 func getOTLPConnGRPC(ctx context.Context, otlpEndpoint string) (*grpc.ClientConn, error) {
@@ -99,11 +103,9 @@ func InstrumentTracing(ctx context.Context, otlpEndpoint string) (func(context.C
 
 	bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
 	traceProvider := sdktrace.NewTracerProvider(
-
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithResource(otlpResource),
 		sdktrace.WithSpanProcessor(bsp),
-		// flow.WithSpanProcessor(bsp),
 	)
 
 	otel.SetTracerProvider(traceProvider)
@@ -147,7 +149,15 @@ func InstrumentLogging(ctx context.Context, otlpEndpoint string) error {
 		return err
 	}
 
-	logger := otlpr.WithResource(otlpr.New(conn), otlpResource)
+	logger := otlpr.NewWithOptions(conn, otlpr.Options{
+		LogCaller:     otlpr.All,
+		LogCallerFunc: true,
+		Batcher: otlpr.Batcher{
+			Messages: 10,
+			Timeout:  10 * time.Second,
+		},
+	})
+	logger = otlpr.WithResource(logger, otlpResource)
 	otlpSink := logger.GetSink()
 
 	globalLogger = logger.WithSink(TeeSink(globalLogger.GetSink(), otlpSink))
@@ -155,6 +165,28 @@ func InstrumentLogging(ctx context.Context, otlpEndpoint string) error {
 	otel.SetLogger(globalLogger)
 
 	return nil
+}
+
+func InstrumentProfiling(ctx context.Context) (func() error, error) {
+	runtime.SetMutexProfileFraction(5)
+	runtime.SetBlockProfileRate(5)
+
+	// TODO or https://pkg.go.dev/net/http/pprof
+	profiler, err := pyroscope.Start(pyroscope.Config{
+		ApplicationName: NAME,
+		ServerAddress:   "",
+		AuthToken:       "",
+		Logger:          pyroscope.StandardLogger,
+		ProfileTypes: []pyroscope.ProfileType{
+			pyroscope.ProfileCPU,
+			pyroscope.ProfileAllocObjects,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return profiler.Stop, nil
 }
 
 func InstrumentAll(ctx context.Context, otlpEndpoint string) (func(context.Context), error) {

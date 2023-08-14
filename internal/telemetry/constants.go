@@ -6,6 +6,6 @@ const (
 	ENVIRONMENT = "development"
 	MODULE      = "github.com/wwmoraes/anilistarr"
 	VERSION     = "0.1.0-rc.1"
-	NAME        = "handler"
-	NAMESPACE   = "media"
+	NAME        = "anilistarr"
+	NAMESPACE   = "api"
 )

@@ -15,9 +15,9 @@ type MediaBridge struct {
 }
 
 func (linker *MediaBridge) GenerateCustomList(ctx context.Context, name string) (entities.SonarrCustomList, error) {
-	log := telemetry.LoggerFromContext(ctx).WithValues("username", name)
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
+	log := telemetry.LoggerFromContext(ctx).WithValues("username", name)
 
 	log.Info("retrieving user ID")
 	userId, err := linker.GetUserID(ctx, name)

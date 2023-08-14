@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/riandyrn/otelchi"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
@@ -21,6 +22,10 @@ const ListenerAddressKey ServerContext = "listener-address"
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+
+	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
+	assert(err)
+	defer shutdown(context.Background())
 
 	log := telemetry.DefaultLogger()
 	log.Info("staring up", "name", telemetry.NAME, "version", telemetry.VERSION)
@@ -45,13 +50,10 @@ func main() {
 	api, err := NewRestAPI(mapper)
 	assert(err)
 
-	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTLP_ENDPOINT"))
-	assert(err)
-	defer shutdown(context.Background())
-
 	ctx = telemetry.ContextWithLogger(ctx)
 
 	r := chi.NewRouter()
+	r.Use(otelchi.Middleware(telemetry.NAME, otelchi.WithChiRoutes(r)))
 	r.Use(telemetry.NewHandlerMiddleware)
 	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), 1000)))
 	r.Get("/list", api.GetList)
