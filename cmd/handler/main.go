@@ -12,12 +12,9 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
+	_ "go.uber.org/automaxprocs"
 	"golang.org/x/time/rate"
 )
-
-type ServerContext string
-
-const ListenerAddressKey ServerContext = "listener-address"
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
