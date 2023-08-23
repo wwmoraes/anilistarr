@@ -82,11 +82,3 @@ func MappingByAnilistIDBulk(ctx context.Context, db DB, anilistIDs []sql.NullStr
 
 	return results, nil
 }
-
-func nullableString(v sql.NullString) string {
-	if !v.Valid {
-		return "NULL"
-	}
-
-	return v.String
-}
