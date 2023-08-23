@@ -28,6 +28,7 @@ func NewBolt(path string, options *BoltOptions) (adapters.Cache, error) {
 		if err != nil {
 			return fmt.Errorf("failed to create/get bucket: %w", err)
 		}
+
 		return nil
 	})
 	if err != nil {

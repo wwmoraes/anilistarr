@@ -203,8 +203,14 @@ jobs:
           ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-test-
     - name: test
-      uses: wwmoraes/actions/golang/test@master
+      uses: wwmoraes/actions/golang/integration@master
       id: test
+      with:
+        run-flags: -race -mod=readonly
+        packages: ./cmd/internal/integration/...
+        coverage-packages: |-
+          github.com/${{ github.repository }}/internal/usecases
+          github.com/${{ github.repository }}/internal/adapters
     - name: upload coverage report
       uses: actions/upload-artifact@v3
       if: always()
