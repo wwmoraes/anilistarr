@@ -1,27 +1,11 @@
 # to-dos
 
-## security
+- [ ] add OWASP ZAP scan to CI <https://github.com/marketplace?type=actions&query=publisher%3Azaproxy+>
+- PoC ObjectBox as store <https://github.com/objectbox/objectbox-go>
+- add support for anime-lists <https://github.com/Anime-Lists/anime-lists>
+- PoC zerolog <https://github.com/go-logr/zerologr>
 
-- [ ] OWASP ZAP scan <https://github.com/marketplace?type=actions&query=publisher%3Azaproxy+>
-
-## code
-
-### Telemetry
-
-- <https://github.com/riandyrn/otelchi>
-- <https://github.com/MrAlias/flow>
-
-### store
-
-- <https://github.com/objectbox/objectbox-go>
-
-### providers
-
-- <https://github.com/Anime-Lists/anime-lists>
-
-## environment
-
-### production
+## production
 
 - <https://fly.io/docs/postgres/>
 - <https://fly.io/docs/app-guides/custom-domains-with-fly/>

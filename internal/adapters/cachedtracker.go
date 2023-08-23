@@ -54,6 +54,7 @@ func (wrapper *cachedTracker) GetMediaListIDs(ctx context.Context, userId string
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
+	// TODO use cache to avoid DB DDoS/increased costs
 	ids, err := wrapper.tracker.GetMediaListIDs(ctx, userId)
 
 	return ids, span.Assert(err)
