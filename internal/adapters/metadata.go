@@ -6,8 +6,8 @@ import (
 )
 
 type Metadata interface {
-	GetAnilistID() string
-	GetTvdbID() string
+	GetSourceID() string
+	GetTargetID() string
 }
 
 func unmarshalJSON[F Metadata](data []byte) ([]Metadata, error) {

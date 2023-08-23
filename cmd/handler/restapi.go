@@ -94,11 +94,11 @@ func (face *restAPI) GetMap(w http.ResponseWriter, r *http.Request) {
 
 	records := make(map[string]string, len(entries))
 	for _, entry := range entries {
-		if entry.AnilistID == "" || entry.TvdbID == "" {
+		if entry.SourceID == "" || entry.TargetID == "" {
 			continue
 		}
 
-		records[entry.AnilistID] = entry.TvdbID
+		records[entry.SourceID] = entry.TargetID
 	}
 
 	newData, err := json.MarshalIndent(records, "", "  ")

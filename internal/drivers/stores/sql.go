@@ -44,25 +44,19 @@ func (s *Sql) PutMediaBulk(ctx context.Context, medias []*entities.Media) error 
 	records := make(models.MappingList, len(medias))
 	for index, media := range medias {
 		records[index] = &models.Mapping{
-			TvdbID: media.TvdbID,
-			AnilistID: sql.NullString{
-				String: media.AnilistID,
-				Valid:  len(media.AnilistID) > 0,
-			},
+			TargetID: media.TargetID,
+			SourceID: media.SourceID,
 		}
 	}
 
 	return span.Assert(records.Upsert(ctx, s.db))
 }
 
-func (s *Sql) MappingByAnilistID(ctx context.Context, anilistId string) (*entities.Media, error) {
+func (s *Sql) GetMedia(ctx context.Context, id entities.SourceID) (*entities.Media, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	record, err := models.MappingByAnilistID(ctx, s.db, sql.NullString{
-		String: anilistId,
-		Valid:  len(anilistId) > 0,
-	})
+	record, err := models.MappingBySourceID(ctx, s.db, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, span.Assert(nil)
 	} else if err != nil {
@@ -72,19 +66,19 @@ func (s *Sql) MappingByAnilistID(ctx context.Context, anilistId string) (*entiti
 	return record.ToMedia(), span.Assert(nil)
 }
 
-func (s *Sql) MappingByAnilistIDBulk(ctx context.Context, anilistIds []string) ([]*entities.Media, error) {
+func (s *Sql) GetMediaBulk(ctx context.Context, ids []entities.SourceID) ([]*entities.Media, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	ids := make([]sql.NullString, len(anilistIds))
-	for index, id := range anilistIds {
-		ids[index] = sql.NullString{
+	sqlIds := make([]sql.NullString, len(ids))
+	for index, id := range ids {
+		sqlIds[index] = sql.NullString{
 			String: id,
 			Valid:  len(id) > 0,
 		}
 	}
 
-	records, err := models.MappingByAnilistIDBulk(ctx, s.db, ids)
+	records, err := models.MappingByAnilistIDBulk(ctx, s.db, sqlIds)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, span.Assert(nil)
 	} else if err != nil {

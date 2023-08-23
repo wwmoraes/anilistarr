@@ -42,7 +42,7 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 
 	res, err := GetUserByName(ctx, tracker.Client, name)
 	if err != nil {
-		return "", span.Assert(fmt.Errorf("failed to get user by name: %w", err))
+		return "", span.Assert(fmt.Errorf(usecases.FailedGetUserErrorTemplate, err))
 	}
 
 	return strconv.Itoa(res.User.Id), span.Assert(nil)
@@ -55,7 +55,7 @@ func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]s
 
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
-		return nil, span.Assert(fmt.Errorf("failed to convert user ID to integer: %w", err))
+		return nil, span.Assert(fmt.Errorf(usecases.ConvertUserIDErrorTemplate, err))
 	}
 
 	page := 1
@@ -77,7 +77,7 @@ func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]s
 		err = extSpan.Assert(err)
 		extSpan.End()
 		if err != nil {
-			return nil, span.Assert(fmt.Errorf("failed to fetch media list: %w", err))
+			return nil, span.Assert(fmt.Errorf(usecases.FailedMediaErrorTemplate, err))
 		}
 
 		if len(res.Page.MediaList) == 0 {

@@ -92,7 +92,7 @@ func scheduledRefresh(ctx context.Context, linker *usecases.MediaBridge, interva
 
 	for {
 		log.Info("refreshing linker metadata")
-		err := linker.Refresh(ctx)
+		err := linker.Refresh(ctx, http.DefaultClient)
 		assert(err)
 		log.Info("linker metadata refreshed")
 

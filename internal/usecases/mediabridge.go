@@ -2,11 +2,16 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/wwmoraes/anilistarr/internal/entities"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
+)
+
+var (
+	NoTrackerError = errors.New("no tracker set up")
 )
 
 type MediaBridge struct {
@@ -60,6 +65,10 @@ func (linker *MediaBridge) GetUserID(ctx context.Context, name string) (string, 
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
+	if linker.Tracker == nil {
+		return "", NoTrackerError
+	}
+
 	res, err := linker.Tracker.GetUserID(ctx, name)
 	return res, span.Assert(err)
 }
@@ -69,15 +78,15 @@ func (linker *MediaBridge) Close() error {
 	errR := linker.Mapper.Close()
 
 	if errT != nil || errR != nil {
-		return fmt.Errorf("failed to close mapper dependencies: %v", []error{errT, errR})
+		return fmt.Errorf("failed to close dependencies: %v", []error{errT, errR})
 	}
 
 	return nil
 }
 
-func (linker *MediaBridge) Refresh(ctx context.Context) error {
+func (linker *MediaBridge) Refresh(ctx context.Context, client Getter) error {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	return span.Assert(linker.Mapper.Refresh(ctx))
+	return span.Assert(linker.Mapper.Refresh(ctx, client))
 }

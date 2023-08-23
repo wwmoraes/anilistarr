@@ -7,11 +7,16 @@ import (
 	"net/http"
 
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-type JSONSourceURL[F Metadata] string
+type JSONProvider[F Metadata] string
 
-func (source JSONSourceURL[F]) Fetch(ctx context.Context, client Getter) ([]Metadata, error) {
+func (source JSONProvider[F]) String() string {
+	return string(source)
+}
+
+func (source JSONProvider[F]) Fetch(ctx context.Context, client usecases.Getter) ([]Metadata, error) {
 	_, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
@@ -24,6 +29,10 @@ func (source JSONSourceURL[F]) Fetch(ctx context.Context, client Getter) ([]Meta
 		return nil, span.Assert(fmt.Errorf("failed to fetch remote JSON: %w", err))
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("provider data not found")
+	}
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {

@@ -16,7 +16,7 @@ func (m MappingList) Upsert(ctx context.Context, db DB) error {
 			return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 		}
 
-		rows[index] = fmt.Sprintf("(%s, %s)", entry.TvdbID, nullableString(entry.AnilistID))
+		rows[index] = fmt.Sprintf("(%s, %s)", entry.TargetID, entry.SourceID)
 	}
 
 	const baseSqlstr = `INSERT INTO mapping (` +
@@ -72,7 +72,7 @@ func MappingByAnilistIDBulk(ctx context.Context, db DB, anilistIDs []sql.NullStr
 			_exists: true,
 		}
 
-		err = rows.Scan(&m.TvdbID, &m.AnilistID)
+		err = rows.Scan(&m.TargetID, &m.SourceID)
 		if err != nil {
 			return nil, logerror(err)
 		}

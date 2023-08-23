@@ -6,46 +6,47 @@ import (
 
 	"github.com/wwmoraes/anilistarr/internal/entities"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-type AnilistMapper struct {
-	Source MetadataSource[Metadata]
-	Store  AnilistStore
+type Mapper struct {
+	Provider Provider[Metadata]
+	Store    Store
 }
 
-func (mapper *AnilistMapper) Close() error {
+func (mapper *Mapper) Close() error {
 	return mapper.Store.Close()
 }
 
-func (mapper *AnilistMapper) MapID(ctx context.Context, anilistId string) (string, error) {
+func (mapper *Mapper) MapID(ctx context.Context, id entities.SourceID) (entities.TargetID, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	media, err := mapper.Store.MappingByAnilistID(ctx, anilistId)
+	media, err := mapper.Store.GetMedia(ctx, id)
 
 	if err != nil {
-		return "", span.Assert(fmt.Errorf("failed to map ID %s: %w", anilistId, err))
+		return "", span.Assert(fmt.Errorf("failed to map ID %s: %w", id, err))
 	}
 
 	if media == nil {
 		return "", span.Assert(nil)
 	}
 
-	return media.TvdbID, span.Assert(nil)
+	return media.TargetID, span.Assert(nil)
 }
 
-func (mapper *AnilistMapper) MapIDs(ctx context.Context, anilistIds []string) ([]string, error) {
+func (mapper *Mapper) MapIDs(ctx context.Context, ids []entities.SourceID) ([]entities.TargetID, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	records, err := mapper.Store.MappingByAnilistIDBulk(ctx, anilistIds)
+	records, err := mapper.Store.GetMediaBulk(ctx, ids)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to map IDs: %w", err))
 	}
 
-	ids := make([]string, len(records))
+	targetIds := make([]string, len(records))
 	for index, record := range records {
-		ids[index] = record.TvdbID
+		targetIds[index] = record.TargetID
 	}
 
 	// for _, sourceId := range anilistIds {
@@ -57,27 +58,27 @@ func (mapper *AnilistMapper) MapIDs(ctx context.Context, anilistIds []string) ([
 	// 	ids = append(ids, targetId)
 	// }
 
-	return ids, span.Assert(nil)
+	return targetIds, span.Assert(nil)
 }
 
-func (mapper *AnilistMapper) Refresh(ctx context.Context) error {
+func (mapper *Mapper) Refresh(ctx context.Context, client usecases.Getter) error {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	data, err := mapper.Source.Fetch(ctx, nil)
+	data, err := mapper.Provider.Fetch(ctx, client)
 	if err != nil {
 		return span.Assert(fmt.Errorf("failed to refresh anilist mapper: %w", err))
 	}
 
 	medias := make([]*entities.Media, 0, len(data))
 	for _, entry := range data {
-		if entry.GetTvdbID() == "0" || entry.GetAnilistID() == "0" {
+		if entry.GetTargetID() == "0" || entry.GetSourceID() == "0" {
 			continue
 		}
 
 		medias = append(medias, &entities.Media{
-			AnilistID: entry.GetAnilistID(),
-			TvdbID:    entry.GetTvdbID(),
+			SourceID: entry.GetSourceID(),
+			TargetID: entry.GetTargetID(),
 		})
 	}
 

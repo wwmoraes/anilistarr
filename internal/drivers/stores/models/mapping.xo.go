@@ -4,13 +4,12 @@ package models
 
 import (
 	"context"
-	"database/sql"
 )
 
 // Mapping represents a row from 'mapping'.
 type Mapping struct {
-	TvdbID    string         `json:"tvdb_id"`    // tvdb_id
-	AnilistID sql.NullString `json:"anilist_id"` // anilist_id
+	TargetID string `json:"target_id"` // target_id
+	SourceID string `json:"source_id"` // source_id
 	// xo fields
 	_exists, _deleted bool
 }
@@ -36,13 +35,13 @@ func (m *Mapping) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (manual)
 	const sqlstr = `INSERT INTO mapping (` +
-		`tvdb_id, anilist_id` +
+		`target_id, source_id` +
 		`) VALUES (` +
 		`$1, $2` +
 		`)`
 	// run
-	logf(sqlstr, m.TvdbID, m.AnilistID)
-	if _, err := db.ExecContext(ctx, sqlstr, m.TvdbID, m.AnilistID); err != nil {
+	logf(sqlstr, m.TargetID, m.SourceID)
+	if _, err := db.ExecContext(ctx, sqlstr, m.TargetID, m.SourceID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -60,11 +59,11 @@ func (m *Mapping) Update(ctx context.Context, db DB) error {
 	}
 	// update with primary key
 	const sqlstr = `UPDATE mapping SET ` +
-		`anilist_id = $1 ` +
-		`WHERE tvdb_id = $2`
+		`source_id = $1 ` +
+		`WHERE target_id = $2`
 	// run
-	logf(sqlstr, m.AnilistID, m.TvdbID)
-	if _, err := db.ExecContext(ctx, sqlstr, m.AnilistID, m.TvdbID); err != nil {
+	logf(sqlstr, m.SourceID, m.TargetID)
+	if _, err := db.ExecContext(ctx, sqlstr, m.SourceID, m.TargetID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -86,16 +85,16 @@ func (m *Mapping) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO mapping (` +
-		`tvdb_id, anilist_id` +
+		`target_id, source_id` +
 		`) VALUES (` +
 		`$1, $2` +
 		`)` +
-		` ON CONFLICT (tvdb_id) DO ` +
+		` ON CONFLICT (target_id) DO ` +
 		`UPDATE SET ` +
-		`anilist_id = EXCLUDED.anilist_id `
+		`source_id = EXCLUDED.source_id `
 	// run
-	logf(sqlstr, m.TvdbID, m.AnilistID)
-	if _, err := db.ExecContext(ctx, sqlstr, m.TvdbID, m.AnilistID); err != nil {
+	logf(sqlstr, m.TargetID, m.SourceID)
+	if _, err := db.ExecContext(ctx, sqlstr, m.TargetID, m.SourceID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -113,10 +112,10 @@ func (m *Mapping) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	const sqlstr = `DELETE FROM mapping ` +
-		`WHERE tvdb_id = $1`
+		`WHERE target_id = $1`
 	// run
-	logf(sqlstr, m.TvdbID)
-	if _, err := db.ExecContext(ctx, sqlstr, m.TvdbID); err != nil {
+	logf(sqlstr, m.TargetID)
+	if _, err := db.ExecContext(ctx, sqlstr, m.TargetID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -124,41 +123,41 @@ func (m *Mapping) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// MappingByTvdbID retrieves a row from 'mapping' as a Mapping.
+// MappingByTargetID retrieves a row from 'mapping' as a Mapping.
 //
 // Generated from index 'sqlite_autoindex_mapping_1'.
-func MappingByTvdbID(ctx context.Context, db DB, tvdbID string) (*Mapping, error) {
+func MappingByTargetID(ctx context.Context, db DB, targetID string) (*Mapping, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`tvdb_id, anilist_id ` +
+		`target_id, source_id ` +
 		`FROM mapping ` +
-		`WHERE tvdb_id = $1`
+		`WHERE target_id = $1`
 	// run
-	logf(sqlstr, tvdbID)
+	logf(sqlstr, targetID)
 	m := Mapping{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, tvdbID).Scan(&m.TvdbID, &m.AnilistID); err != nil {
+	if err := db.QueryRowContext(ctx, sqlstr, targetID).Scan(&m.TargetID, &m.SourceID); err != nil {
 		return nil, logerror(err)
 	}
 	return &m, nil
 }
 
-// MappingByAnilistID retrieves a row from 'mapping' as a Mapping.
+// MappingBySourceID retrieves a row from 'mapping' as a Mapping.
 //
 // Generated from index 'sqlite_autoindex_mapping_2'.
-func MappingByAnilistID(ctx context.Context, db DB, anilistID sql.NullString) (*Mapping, error) {
+func MappingBySourceID(ctx context.Context, db DB, sourceID string) (*Mapping, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`tvdb_id, anilist_id ` +
+		`target_id, source_id ` +
 		`FROM mapping ` +
-		`WHERE anilist_id = $1`
+		`WHERE source_id = $1`
 	// run
-	logf(sqlstr, anilistID)
+	logf(sqlstr, sourceID)
 	m := Mapping{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, anilistID).Scan(&m.TvdbID, &m.AnilistID); err != nil {
+	if err := db.QueryRowContext(ctx, sqlstr, sourceID).Scan(&m.TargetID, &m.SourceID); err != nil {
 		return nil, logerror(err)
 	}
 	return &m, nil

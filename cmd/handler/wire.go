@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/drivers/anilist"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/drivers/providers"
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
+	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -33,9 +33,9 @@ func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions)
 
 	return &usecases.MediaBridge{
 		Tracker: tracker,
-		Mapper: &adapters.AnilistMapper{
-			Source: providers.FribbsSource,
-			Store:  store,
+		Mapper: &adapters.Mapper{
+			Provider: providers.AnilistFribbsProvider,
+			Store:    store,
 		},
 	}, nil
 }

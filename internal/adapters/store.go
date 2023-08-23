@@ -10,13 +10,8 @@ import (
 type Store interface {
 	io.Closer
 
+	GetMedia(ctx context.Context, id string) (*entities.Media, error)
+	GetMediaBulk(ctx context.Context, ids []string) ([]*entities.Media, error)
 	PutMedia(ctx context.Context, media *entities.Media) error
 	PutMediaBulk(ctx context.Context, medias []*entities.Media) error
-}
-
-type AnilistStore interface {
-	Store
-
-	MappingByAnilistID(ctx context.Context, anilistId string) (*entities.Media, error)
-	MappingByAnilistIDBulk(ctx context.Context, anilistIds []string) ([]*entities.Media, error)
 }
