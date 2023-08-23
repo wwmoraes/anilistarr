@@ -1,8 +1,9 @@
 CREATE TABLE mapping (
-    tvdb_id    TEXT UNIQUE
-                    PRIMARY KEY
-                    NOT NULL,
-    anilist_id TEXT UNIQUE
+  target_id TEXT UNIQUE
+            PRIMARY KEY
+            NOT NULL,
+  source_id TEXT UNIQUE
+            NOT NULL
 )
 WITHOUT ROWID,
 STRICT;
