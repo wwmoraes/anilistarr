@@ -2,12 +2,13 @@
 
 > anilist custom list provider for sonarr/radarr
 
-![Status](https://img.shields.io/badge/status-active-success.svg)
 [![Go Reference](https://pkg.go.dev/badge/github.com/wwmoraes/anilistarr.svg)](https://pkg.go.dev/github.com/wwmoraes/anilistarr)
 [![GitHub Issues](https://img.shields.io/github/issues/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/pulls)
 
+[![Integration](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/wwmoraes/anilistarr/master.svg)](https://results.pre-commit.ci/latest/github/wwmoraes/anilistarr/master)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=coverage)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
