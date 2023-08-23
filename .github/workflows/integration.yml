@@ -8,28 +8,30 @@ on:
     tags-ignore:
     - "*"
     paths:
+    - .dockerignore
     - .github/workflows/integration.yml
     - .golangci.yaml
     - .goreleaser.yaml
+    - '**.go'
     - container-structure-test.yaml
     - Dockerfile
-    - .dockerignore
     - go.mod
     - go.sum
-    - '**.go'
+    - sonar-project.properties
   pull_request:
     branches:
     - master
     paths:
+    - .dockerignore
     - .github/workflows/integration.yml
     - .golangci.yaml
     - .goreleaser.yaml
+    - '**.go'
     - container-structure-test.yaml
     - Dockerfile
-    - .dockerignore
     - go.mod
     - go.sum
-    - '**.go'
+    - sonar-project.properties
 
 env:
   GOLANG_VERSION: "1.20"
