@@ -137,7 +137,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     env:
-      HADOLINT_REPORT_FILE: hadolint-report.json
+      CONTAINER_LINT_REPORT_FILE: hadolint-report.json
     steps:
     - name: checkout
       uses: actions/checkout@v3
@@ -171,25 +171,24 @@ jobs:
       with:
         work-dir: ${{ env.WORK_DIR }}
         version: v1.46-alpine
-    - name: lint container source
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        dockerfile: Dockerfile
-        format: sonarqube
-        output-file: ${{ env.HADOLINT_REPORT_FILE }}
     - name: upload code lint report
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: source-lint-report
-        path: ${{ steps.lint.outputs.report-file }}3
+        path: ${{ steps.lint.outputs.report-file }}
+    - name: lint container source
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+        format: sonarqube
+        output-file: ${{ env.CONTAINER_LINT_REPORT_FILE }}
     - name: upload container lint report
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: container-lint-report
-        path: ${{ env.HADOLINT_REPORT_FILE }}3
-
+        path: ${{ env.CONTAINER_LINT_REPORT_FILE }}
   test:
     runs-on: ubuntu-latest
     steps:
