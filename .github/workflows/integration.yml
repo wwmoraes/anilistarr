@@ -136,6 +136,8 @@ jobs:
       uses: wwmoraes/actions/golang/build@master
   lint:
     runs-on: ubuntu-latest
+    env:
+      HADOLINT_REPORT_FILE: hadolint-report.json
     steps:
     - name: checkout
       uses: actions/checkout@v3
@@ -163,18 +165,31 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-lint-${{ hashFiles('.golangci.yaml') }}
           ${{ runner.os }}-lint-
-    - name: lint
+    - name: lint code source
       uses: wwmoraes/actions/golang/lint@master
       id: lint
       with:
         work-dir: ${{ env.WORK_DIR }}
         version: v1.46-alpine
-    - name: upload lint report
+    - name: lint container source
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+        format: sonarqube
+        output-file: ${{ env.HADOLINT_REPORT_FILE }}
+    - name: upload code lint report
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: lint-report
-        path: ${{ steps.lint.outputs.report-file }}
+        name: source-lint-report
+        path: ${{ steps.lint.outputs.report-file }}3
+    - name: upload container lint report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: container-lint-report
+        path: ${{ env.HADOLINT_REPORT_FILE }}3
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -246,10 +261,14 @@ jobs:
           ${{ runner.os }}-sonar-scanner-cache-${{ hashFiles('**/sonar-project.properties') }}
           ${{ runner.os }}-sonar-scanner-cache-
         # yamllint enable rule:line-length
-    - name: download lint report
+    - name: download source lint report
       uses: actions/download-artifact@v3
       with:
-        name: lint-report
+        name: source-lint-report
+    - name: download container lint report
+      uses: actions/download-artifact@v3
+      with:
+        name: container-lint-report
     - name: download test report
       uses: actions/download-artifact@v3
       with:
