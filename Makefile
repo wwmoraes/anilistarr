@@ -3,7 +3,10 @@
 DOCKER ?= docker
 GO ?= go
 GORELEASER ?= goreleaser
+GOCOVERDIR ?= coverage/integration
 export
+
+SEPARATOR = $(shell printf "%0.s=" {1..80})
 
 PKG = github.com/wwmoraes/anilistarr
 CMD_SOURCE_FILES := $(shell find cmd -type f -name '*.go')
@@ -29,11 +32,42 @@ test:
 	@${GO} test -race -v ./...
 
 .PHONY: coverage
-coverage: coverage.out
-	@${GO} tool cover -func=$<
+coverage: GOCOVERDIR=coverage/integration
+coverage: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
+coverage: coverage/coverage.txt
+coverage:
+	$(info ${SEPARATOR})
+	$(info coverage report)
+	$(info ${SEPARATOR})
+	@${GO} tool cover -func="$<"
 
-%.out: $(SOURCE_FILES)
-	@${GO} test -race -cover -coverprofile=$@ -v ./...
+PHONY: coverage-html
+coverage-html: coverage/coverage.html
+
+${GOCOVERDIR}: ${SOURCE_FILES}
+${GOCOVERDIR}:
+	$(info ${SEPARATOR})
+	$(info running integration test)
+	$(info ${SEPARATOR})
+	@mkdir -p "$@"
+	@${GO} run -cover -race -mod=readonly ./cmd/internal/integration/...
+	@echo "${SEPARATOR}"
+	@echo "raw report"
+	@echo "${SEPARATOR}"
+	@${GO} tool covdata percent -i="$@" | column -t
+
+%/coverage.txt: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
+%/coverage.txt: ${GOCOVERDIR}
+	$(info ${SEPARATOR})
+	$(info generating gcov data)
+	$(info ${SEPARATOR})
+	@${GO} tool covdata textfmt -i="$<" -o="$@" -pkg="${PKGS}"
+
+%/coverage.html: %/coverage.txt
+	$(info ${SEPARATOR})
+	$(info generating html report)
+	$(info ${SEPARATOR})
+	@${GO} tool cover -html=$< -o $@
 
 IMAGE ?= wwmoraes/anilistarr
 # needs go install github.com/Khan/genqlient@latest
@@ -69,21 +103,3 @@ redis-proxy:
 
 get-user:
 	@curl -v "http://127.0.0.1:8080/user?name=wwmoraes"
-
-run-coverage: GOCOVERDIR=coverage
-run-coverage: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
-run-coverage:
-	@mkdir -p ${GOCOVERDIR}
-	@echo "================================================================================"
-	@echo "running application"
-	@echo "================================================================================"
-	${GO} run -cover -race -mod=readonly ./cmd/internal/integration/...
-	@echo "================================================================================"
-	@echo "raw coverage"
-	@echo "================================================================================"
-	${GO} tool covdata percent -i="${GOCOVERDIR}" | column -t
-	@echo "================================================================================"
-	@echo "coverage report"
-	@echo "================================================================================"
-	${GO} tool covdata textfmt -i="${GOCOVERDIR}" -o="${GOCOVERDIR}/gcov" -pkg="${PKGS}"
-	${GO} tool cover -func="${GOCOVERDIR}/gcov"
