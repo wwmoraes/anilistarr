@@ -7,10 +7,10 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/entities"
 )
 
-func SonarrCustomListFromIDs(tb testing.TB, ids ...string) entities.SonarrCustomList {
+func SonarrCustomListFromIDs(tb testing.TB, ids ...string) entities.CustomList {
 	tb.Helper()
 
-	customList := make(entities.SonarrCustomList, len(ids))
+	customList := make(entities.CustomList, len(ids))
 
 	for index, id := range ids {
 		tvdbId, err := strconv.ParseUint(id, 10, 0)
@@ -18,7 +18,7 @@ func SonarrCustomListFromIDs(tb testing.TB, ids ...string) entities.SonarrCustom
 			tb.Fatal(err)
 		}
 
-		customList[index] = entities.SonarrCustomEntry{
+		customList[index] = entities.CustomEntry{
 			TvdbID: tvdbId,
 		}
 	}

@@ -23,10 +23,10 @@ type RestAPI interface {
 }
 
 type restAPI struct {
-	mapper *usecases.MediaBridge
+	mapper *usecases.MediaLister
 }
 
-func NewRestAPI(mapper *usecases.MediaBridge) (RestAPI, error) {
+func NewRestAPI(mapper *usecases.MediaLister) (RestAPI, error) {
 	return &restAPI{
 		mapper: mapper,
 	}, nil
@@ -43,7 +43,7 @@ func (face *restAPI) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	customList, err := face.mapper.GenerateCustomList(r.Context(), username)
+	customList, err := face.mapper.Generate(r.Context(), username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		span.RecordError(err)

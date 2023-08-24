@@ -40,7 +40,7 @@ func (m MappingList) Upsert(ctx context.Context, db DB) error {
 	return nil
 }
 
-func MappingByAnilistIDBulk(ctx context.Context, db DB, anilistIDs []sql.NullString) ([]*Mapping, error) {
+func MappingBySourceIDBulk(ctx context.Context, db DB, anilistIDs []sql.NullString) ([]*Mapping, error) {
 	ids := make([]string, 0, len(anilistIDs))
 	for _, id := range anilistIDs {
 		if !id.Valid {

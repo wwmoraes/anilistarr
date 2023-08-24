@@ -34,7 +34,7 @@ func main() {
 	tracker, err := adapters.NewCachedTracker(tracker, &test.Cache{})
 	assert(err)
 
-	bridge := &usecases.MediaBridge{
+	bridge := &usecases.MediaLister{
 		Tracker: tracker,
 		Mapper: &adapters.Mapper{
 			Provider: test.Provider,
@@ -62,7 +62,7 @@ func main() {
 
 	log.Info("GetUserID", "username", coverageUsername, "userID", userId)
 
-	customList, err := bridge.GenerateCustomList(ctx, coverageUsername)
+	customList, err := bridge.Generate(ctx, coverageUsername)
 	assert(err)
 
 	log.Info("GenerateCustomList", "username", coverageUsername, "list", customList)

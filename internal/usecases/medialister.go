@@ -14,34 +14,34 @@ var (
 	NoTrackerError = errors.New("no tracker set up")
 )
 
-type MediaBridge struct {
+type MediaLister struct {
 	Tracker Tracker
 	Mapper  Mapper
 }
 
-func (linker *MediaBridge) GenerateCustomList(ctx context.Context, name string) (entities.SonarrCustomList, error) {
+func (lister *MediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 	log := telemetry.LoggerFromContext(ctx).WithValues("username", name)
 
 	log.Info("retrieving user ID")
-	userId, err := linker.GetUserID(ctx, name)
+	userId, err := lister.GetUserID(ctx, name)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get user ID: %w", err))
 	}
 
 	log.Info("retrieving media list IDs", "userID", userId)
-	sourceIds, err := linker.Tracker.GetMediaListIDs(ctx, userId)
+	sourceIds, err := lister.Tracker.GetMediaListIDs(ctx, userId)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get media list IDs: %w", err))
 	}
 
-	targetIds, err := linker.Mapper.MapIDs(ctx, sourceIds)
+	targetIds, err := lister.Mapper.MapIDs(ctx, sourceIds)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get mapped IDs: %w", err))
 	}
 
-	customList := make(entities.SonarrCustomList, 0, len(targetIds))
+	customList := make(entities.CustomList, 0, len(targetIds))
 	for index, entry := range targetIds {
 		if entry == "" {
 			log.Info("no TVDB ID registered for source ID", "sourceID", sourceIds[index])
@@ -53,7 +53,7 @@ func (linker *MediaBridge) GenerateCustomList(ctx context.Context, name string) 
 			return nil, span.Assert(fmt.Errorf("failed to parse TVDB ID: %w", err))
 		}
 
-		customList = append(customList, entities.SonarrCustomEntry{
+		customList = append(customList, entities.CustomEntry{
 			TvdbID: tvdbID,
 		})
 	}
@@ -61,21 +61,21 @@ func (linker *MediaBridge) GenerateCustomList(ctx context.Context, name string) 
 	return customList, span.Assert(nil)
 }
 
-func (linker *MediaBridge) GetUserID(ctx context.Context, name string) (string, error) {
+func (lister *MediaLister) GetUserID(ctx context.Context, name string) (string, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	if linker.Tracker == nil {
+	if lister.Tracker == nil {
 		return "", NoTrackerError
 	}
 
-	res, err := linker.Tracker.GetUserID(ctx, name)
+	res, err := lister.Tracker.GetUserID(ctx, name)
 	return res, span.Assert(err)
 }
 
-func (linker *MediaBridge) Close() error {
-	errT := linker.Tracker.Close()
-	errR := linker.Mapper.Close()
+func (lister *MediaLister) Close() error {
+	errT := lister.Tracker.Close()
+	errR := lister.Mapper.Close()
 
 	if errT != nil || errR != nil {
 		return fmt.Errorf("failed to close dependencies: %v", []error{errT, errR})
@@ -84,9 +84,9 @@ func (linker *MediaBridge) Close() error {
 	return nil
 }
 
-func (linker *MediaBridge) Refresh(ctx context.Context, client Getter) error {
+func (lister *MediaLister) Refresh(ctx context.Context, client Getter) error {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	return span.Assert(linker.Mapper.Refresh(ctx, client))
+	return span.Assert(lister.Mapper.Refresh(ctx, client))
 }

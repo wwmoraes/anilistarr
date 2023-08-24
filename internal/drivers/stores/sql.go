@@ -78,7 +78,7 @@ func (s *Sql) GetMediaBulk(ctx context.Context, ids []entities.SourceID) ([]*ent
 		}
 	}
 
-	records, err := models.MappingByAnilistIDBulk(ctx, s.db, sqlIds)
+	records, err := models.MappingBySourceIDBulk(ctx, s.db, sqlIds)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, span.Assert(nil)
 	} else if err != nil {

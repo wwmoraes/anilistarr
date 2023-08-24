@@ -44,7 +44,7 @@ var (
 )
 
 func TestMediaBridge(t *testing.T) {
-	bridge := usecases.MediaBridge{
+	bridge := usecases.MediaLister{
 		Tracker: testTracker,
 		Mapper: &adapters.Mapper{
 			Provider: test.Provider,
@@ -60,7 +60,7 @@ func TestMediaBridge(t *testing.T) {
 		t.Error("unexpected error on Refresh:", err)
 	}
 
-	customList, err := bridge.GenerateCustomList(ctx, testUsername)
+	customList, err := bridge.Generate(ctx, testUsername)
 	if err != nil {
 		t.Error("unexpected error on GetUserID:", err)
 	}

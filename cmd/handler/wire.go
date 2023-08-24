@@ -11,7 +11,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions) (*usecases.MediaBridge, error) {
+func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions) (*usecases.MediaLister, error) {
 	tracker := anilist.New(anilistEndpoint, 50)
 	if cacheOptions != nil {
 		// cache, err := caches.NewRedis(cacheOptions)
@@ -31,7 +31,7 @@ func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions)
 		return nil, fmt.Errorf("sql store initialization failed: %w", err)
 	}
 
-	return &usecases.MediaBridge{
+	return &usecases.MediaLister{
 		Tracker: tracker,
 		Mapper: &adapters.Mapper{
 			Provider: providers.AnilistFribbsProvider,

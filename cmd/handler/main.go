@@ -84,7 +84,7 @@ func assert(err error) {
 	os.Exit(1)
 }
 
-func scheduledRefresh(ctx context.Context, linker *usecases.MediaBridge, interval time.Duration) {
+func scheduledRefresh(ctx context.Context, linker *usecases.MediaLister, interval time.Duration) {
 	log := telemetry.LoggerFromContext(ctx)
 
 	for {
