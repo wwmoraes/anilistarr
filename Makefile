@@ -85,10 +85,3 @@ run-coverage:
 	@echo "================================================================================"
 	${GO} tool covdata textfmt -i="${GOCOVERDIR}" -o="${GOCOVERDIR}/gcov" -pkg="${PKGS}"
 	${GO} tool cover -func="${GOCOVERDIR}/gcov"
-
-run-integration: GITHUB_OUTPUT=tmp/github_output
-run-integration: GOLANG_RUN_FLAGS=-race -mod=readonly
-run-integration: GOLANG_PACKAGES=./cmd/internal/integration/...
-run-integration: GOLANG_COVERAGE_PACKAGES=${PKG}/internal/usecases,${PKG}/internal/adapters
-run-integration:
-	@../actions/golang/integration/action.bash
