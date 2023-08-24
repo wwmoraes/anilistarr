@@ -2,22 +2,21 @@
 
 package entities {
   struct Media {
-    AnilistID uint64
-    TvdbID uint64
-    Type string
+    SourceID string
+    TargetID string
   }
 
-  struct SonarrCustomEntry {
+  struct CustomEntry {
     TvdbID uint64
   }
 
-  struct SonarrCustomList <<alias>> {
-    []SonarrCustomEntry
+  struct CustomList <<alias>> {
+    []CustomEntry
   }
 }
 
 package usecases {
-  interface Mapper {
+  interface "Mapper" as IMapper {
     +MapIDs([]string) []string
     +MapID(string) string
     +Refresh()
@@ -28,34 +27,33 @@ package usecases {
     +GetMediaList(userId string) []Media
   }
 
-  class MediaLinker {
-    +GenerateCustomList(name string) SonarrCustomList
+  class MediaLister {
+    +Generate(name string) CustomList
     +GetUserID(name string) string
   }
 }
 
 package adapters {
   package mapper <<Frame>> {
-    interface MetadataSource {
+    interface Provider {
       Fetch()
     }
 
     interface Metadata {
-      GetAnilistID() string
-      GetTvdbID() string
+      GetSourceID() string
+      GetTargetID() string
     }
 
     interface Store {
-      PutMedia(Context, Media)
+      GetMedia(Context, string) (Media, error)
+      GetMediaBulk(Context, []string) ([]Media, error)
+      PutMedia(Context, media Media) error
+      PutMediaBulk(Context, medias []Media) error
     }
 
-    interface AnilistStore {
-      MappingByAnilistID(Context, string) Media
-    }
-
-    class JSONFile
-    class JSONURL
-    class AnilistMapper
+    class JSONLocalProvider
+    class JSONProvider
+    class Mapper
   }
 
   package cache <<Frame>> {
@@ -70,9 +68,8 @@ package adapters {
 
 package drivers {
   package providers <<Frame>> {
-    struct FribbsEntry
-    entity FribbsSource
-    entity LocalJSON
+    struct AnilistFribbsMetadata
+    entity AnilistFribbsProvider
   }
 
   package stores <<Frame>> {
@@ -106,37 +103,35 @@ package cmd {
 drivers -[hidden] cmd
 
 '' entities
-SonarrCustomEntry --* SonarrCustomList
+CustomEntry --* CustomList
 '' use-cases
-Media <-- MediaLinker
-SonarrCustomList <-- MediaLinker
-MediaLinker o--> Mapper
-MediaLinker o--> Tracker
+Media <-- MediaLister
+CustomList <-- MediaLister
+MediaLister o--> IMapper
+MediaLister o--> Tracker
 '' adapters/mapper
-Mapper <|-[dashed]- AnilistMapper
-AnilistMapper o--> Metadata
-AnilistMapper o--> MetadataSource
-AnilistMapper o--> AnilistStore
-Store <|-[dashed]- AnilistStore
-MetadataSource <|-[dashed]- JSONFile
-MetadataSource <|-[dashed]- JSONURL
+IMapper <|-[dashed]- Mapper
+Provider -> Metadata
+Mapper o--> Provider
+Mapper o--> Store
+Provider <|-[dashed]- JSONLocalProvider
+Provider <|-[dashed]- JSONProvider
 '' adapters/cache
 Tracker <|-[dashed]- CachedTracker
 CachedTracker o--> Cache
 CachedTracker o--> Tracker
 '' drivers/providers
-FribbsEntry -* FribbsSource
-JSONURL <|-- FribbsSource
-JSONFile <|-- LocalJSON
-Metadata <|-[dashed]- FribbsEntry
+AnilistFribbsMetadata -* AnilistFribbsProvider
+JSONProvider <|-- AnilistFribbsProvider
+Metadata <|-[dashed]- AnilistFribbsMetadata
 '' drivers/stores
-AnilistStore <|-[dashed]- Sql
+Store <|-[dashed]- Sql
 '' drivers/caches
 Cache <|-[dashed]- Bolt
 Cache <|-[dashed]- Redis
 '' drivers/trackers
 Tracker <|-[dashed]- Anilist
 '' cmd
-MediaLinker <--o RestAPI
+MediaLister <--o RestAPI
 
 @enduml
