@@ -40,6 +40,8 @@ IMAGE ?= wwmoraes/anilistarr
 anilist:
 	@cd internal/drivers/anilist && genqlient
 
+## https://github.com/moby/moby/issues/46129
+image: OTEL_EXPORTER_OTLP_ENDPOINT=
 image: CREATED=$(shell date -u +"%Y-%m-%dT%TZ")
 image: REVISION=$(shell git log -n 1 --format="%H")
 image: VERSION=$(patsubst v%,%,$(shell git describe --tags 2> /dev/null || echo "0.1.0-rc.0"))
