@@ -15,10 +15,15 @@
 *.yaml
 *.yml
 bin
+CODEOWNERS
+coverage
+coverage.out
+dist
 Dockerfile
 internal/**/*.graphql
 internal/**/genqlient.yaml
 LICENSE
 Makefile
+sonar-project.properties
 src
 tmp
