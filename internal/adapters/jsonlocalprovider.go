@@ -8,6 +8,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
+// JSONLocalProvider is a filesystem-based metadata provider
 type JSONLocalProvider[F Metadata] struct {
 	Fs   fs.FS
 	Name string

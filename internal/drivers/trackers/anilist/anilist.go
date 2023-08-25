@@ -20,11 +20,14 @@ const (
 	requests int = 90
 )
 
+// Tracker abstracts an Anilist GraphQL client and provides the common requests
+// needed by MediaLister
 type Tracker struct {
 	Client   graphql.Client
 	PageSize int
 }
 
+// New creates an Anilist Tracker and its GraphQL client
 func New(anilistEndpoint string, pageSize int) usecases.Tracker {
 	return &Tracker{
 		Client:   NewGraphQLClient(anilistEndpoint),

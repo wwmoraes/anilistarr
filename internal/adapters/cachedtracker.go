@@ -16,6 +16,7 @@ const (
 	mediaListSeparator string = "|"
 )
 
+// CachedTracker wraps a Tracker with a passthrough cache
 type CachedTracker struct {
 	Cache   Cache
 	Tracker usecases.Tracker

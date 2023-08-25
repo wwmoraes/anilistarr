@@ -10,6 +10,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
+// JSONLocalProvider is a HTTP-based metadata provider
 type JSONProvider[F Metadata] string
 
 func (source JSONProvider[F]) String() string {

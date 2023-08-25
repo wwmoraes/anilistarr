@@ -9,6 +9,8 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
+// Mapper handles the mapping of media data. It also handles the retrieval of
+// data from a provider and its persistent storage
 type Mapper struct {
 	Provider Provider[Metadata]
 	Store    Store

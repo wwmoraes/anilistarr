@@ -14,11 +14,15 @@ var (
 	NoTrackerError = errors.New("no tracker set up")
 )
 
+// MediaLister handles both a tracker to fetch user data and a mapper that can
+// transform the media IDs from the tracker to another service
 type MediaLister struct {
 	Tracker Tracker
 	Mapper  Mapper
 }
 
+// Generate fetches the user media list from the Tracker and transform the IDs
+// found to the target service through the Mapper
 func (lister *MediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
@@ -61,6 +65,7 @@ func (lister *MediaLister) Generate(ctx context.Context, name string) (entities.
 	return customList, span.Assert(nil)
 }
 
+// GetUserID searches the Tracker for the user ID by their name/handle
 func (lister *MediaLister) GetUserID(ctx context.Context, name string) (string, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
@@ -73,6 +78,7 @@ func (lister *MediaLister) GetUserID(ctx context.Context, name string) (string, 
 	return res, span.Assert(err)
 }
 
+// Close closes both the Tracker and Mapper
 func (lister *MediaLister) Close() error {
 	errT := lister.Tracker.Close()
 	errR := lister.Mapper.Close()
@@ -84,6 +90,7 @@ func (lister *MediaLister) Close() error {
 	return nil
 }
 
+// Refresh requests the Mapper to update its mapping definitions
 func (lister *MediaLister) Refresh(ctx context.Context, client Getter) error {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()

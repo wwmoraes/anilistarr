@@ -13,6 +13,8 @@ const (
 	FailedMediaErrorTemplate   = "failed to fetch media list: %w"
 )
 
+// Tracker provides access to user metadata such as ID and media list from an
+// upstream media tracking service
 type Tracker interface {
 	io.Closer
 

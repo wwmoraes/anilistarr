@@ -7,6 +7,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/entities"
 )
 
+// Mapper transforms IDs between two services based on the data from a provider
 type Mapper interface {
 	io.Closer
 

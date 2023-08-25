@@ -7,6 +7,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/entities"
 )
 
+// Store handles the persistent storage and retrieval of media mapping data
 type Store interface {
 	io.Closer
 

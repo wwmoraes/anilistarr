@@ -17,6 +17,12 @@ type ratedClient struct {
 	rater  *rate.Limiter
 }
 
+// NewRatedClient creates a GraphQL-compatible HTTP client with rate-limiting
+// restrictions. Its useful to avoid blacklisting and a high rate of errors.
+//
+// Note: rate limiting is a blocking action. Requests that exceed the limit will
+// block and wait for the given interval to proceed. This may cause metric
+// distortions.
 func NewRatedClient(interval time.Duration, requests int, base *http.Client) graphql.Doer {
 	if base == nil {
 		base = http.DefaultClient
@@ -28,7 +34,8 @@ func NewRatedClient(interval time.Duration, requests int, base *http.Client) gra
 	}
 }
 
-// TODO check if we can update the rate limiter safely (without resetting the current count)
+// Do executes a HTTP request right away if its within the limits, or blocks
+// and waits for the limiter to allow it. See `NewRatedClient` for more info
 func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
 	span := telemetry.SpanFromContext(req.Context())
 	err := c.rater.Wait(req.Context())
