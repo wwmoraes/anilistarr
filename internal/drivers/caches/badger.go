@@ -89,6 +89,12 @@ func WithLogger(log logr.Logger) BadgerOption {
 	})
 }
 
+func WithInMemory(b bool) BadgerOption {
+	return BadgerOptionFn(func(option badger.Options) badger.Options {
+		return option.WithInMemory(b)
+	})
+}
+
 type badgerLogger struct {
 	log logr.Logger
 }
