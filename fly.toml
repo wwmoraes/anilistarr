@@ -6,6 +6,10 @@
 app = "anilistarr"
 primary_region = "ams"
 
+[env]
+ANILIST_GRAPHQL_ENDPOINT = "https://graphql.anilist.co"
+DATA_PATH = "/tmp"
+
 [http_service]
 internal_port = 8080
 force_https = true
