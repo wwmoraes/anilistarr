@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
@@ -15,14 +16,19 @@ func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions)
 	tracker := anilist.New(anilistEndpoint, 50)
 	if cacheOptions != nil {
 		// cache, err := caches.NewRedis(cacheOptions)
-		cache, err := caches.NewBolt("tmp/cache.db", nil)
+		// cache, err := caches.NewBolt("tmp/cache.db", nil)
+		cache, err := caches.NewBadger("tmp/badger")
 		if err != nil {
 			return nil, fmt.Errorf("bolt cache initialization failed: %w", err)
 		}
 
-		tracker, err = adapters.NewCachedTracker(tracker, cache)
-		if err != nil {
-			return nil, fmt.Errorf("cached adapter initialization failed: %w", err)
+		tracker = &adapters.CachedTracker{
+			Cache:   cache,
+			Tracker: tracker,
+			TTL: adapters.CachedTrackerTTL{
+				UserID:       24 * time.Hour,
+				MediaListIDs: 5 * time.Minute,
+			},
 		}
 	}
 

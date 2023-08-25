@@ -17,6 +17,7 @@ type boltCache struct {
 	*bbolt.DB
 }
 
+// NewBolt creates a Bolt-based Cache
 func NewBolt(path string, options *BoltOptions) (adapters.Cache, error) {
 	db, err := bbolt.Open(path, 0640, options)
 	if err != nil {
@@ -62,9 +63,15 @@ func (c *boltCache) GetString(ctx context.Context, key string) (string, error) {
 	return value, span.Assert(nil)
 }
 
-func (c *boltCache) SetString(ctx context.Context, key, value string) error {
+func (c *boltCache) SetString(ctx context.Context, key, value string, options ...adapters.CacheOption) error {
 	_, span := telemetry.StartFunction(ctx)
 	defer span.End()
+
+	//// Bolt does not support TTL, so no need to parse options for now
+	// params, err := adapters.NewCacheParams(options...)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return span.Assert(c.Update(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))

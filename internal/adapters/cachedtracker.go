@@ -3,35 +3,38 @@ package adapters
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
 const (
-	cacheKeyUserID string = "anilist:user:%s:id"
+	cacheKeyUserID     string = "anilist:user:%s:id"
+	cacheKeyUserMedia  string = "anilist:user:%s:media"
+	mediaListSeparator string = "|"
 )
 
-type cachedTracker struct {
-	cache   Cache
-	tracker usecases.Tracker
+type CachedTracker struct {
+	Cache   Cache
+	Tracker usecases.Tracker
+	TTL     CachedTrackerTTL
 }
 
-func NewCachedTracker(tracker usecases.Tracker, cache Cache) (usecases.Tracker, error) {
-	return &cachedTracker{
-		cache:   cache,
-		tracker: tracker,
-	}, nil
+type CachedTrackerTTL struct {
+	UserID       time.Duration
+	MediaListIDs time.Duration
 }
 
-func (wrapper *cachedTracker) GetUserID(ctx context.Context, name string) (string, error) {
+func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (string, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
 	key := fmt.Sprintf(cacheKeyUserID, name)
 
 	span.AddEvent("try cache")
-	userId, err := wrapper.cache.GetString(ctx, key)
+	userId, err := wrapper.Cache.GetString(ctx, key)
 	if err != nil {
 		return "", span.Assert(fmt.Errorf("failed to get user ID: %w", err))
 	}
@@ -42,24 +45,54 @@ func (wrapper *cachedTracker) GetUserID(ctx context.Context, name string) (strin
 	}
 
 	span.AddEvent("cache miss")
-	userId, err = wrapper.tracker.GetUserID(ctx, name)
+	userId, err = wrapper.Tracker.GetUserID(ctx, name)
 	if err != nil {
 		return "", span.Assert(fmt.Errorf("failed to get user ID: %w", err))
 	}
 
-	return userId, span.Assert(wrapper.cache.SetString(ctx, key, userId))
+	err = wrapper.Cache.SetString(
+		ctx,
+		key,
+		userId,
+		WithTTL(wrapper.TTL.UserID),
+	)
+
+	return userId, span.Assert(err)
 }
 
-func (wrapper *cachedTracker) GetMediaListIDs(ctx context.Context, userId string) ([]string, error) {
+func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userId string) ([]string, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	// TODO use cache to avoid DB DDoS/increased costs
-	ids, err := wrapper.tracker.GetMediaListIDs(ctx, userId)
+	key := fmt.Sprintf(cacheKeyUserMedia, userId)
+
+	span.AddEvent("try cache")
+	cachedIds, err := wrapper.Cache.GetString(ctx, key)
+	if err != nil {
+		return nil, span.Assert(fmt.Errorf("failed to get media list: %w", err))
+	}
+
+	if userId != "" {
+		span.AddEvent("cache hit")
+		return strings.Split(cachedIds, mediaListSeparator), span.Assert(err)
+	}
+
+	span.AddEvent("cache miss")
+	ids, err := wrapper.Tracker.GetMediaListIDs(ctx, userId)
+	if err != nil {
+		return nil, span.Assert(fmt.Errorf("failed to get user ID: %w", err))
+	}
+
+	err = wrapper.Cache.SetString(
+		ctx,
+		key,
+		strings.Join(ids, mediaListSeparator),
+		WithTTL(wrapper.TTL.MediaListIDs),
+	)
 
 	return ids, span.Assert(err)
 }
 
-func (wrapper *cachedTracker) Close() error {
-	return wrapper.cache.Close()
+func (wrapper *CachedTracker) Close() error {
+	return wrapper.Cache.Close()
 }

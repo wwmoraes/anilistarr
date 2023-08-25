@@ -12,6 +12,11 @@ import (
 
 type RedisOptions = redis.Options
 
+type redisCache struct {
+	*redis.Client
+}
+
+// NewRedis creates a Redis-backed Cache
 func NewRedis(options *RedisOptions) (adapters.Cache, error) {
 	rdb := redis.NewClient(options)
 
@@ -26,10 +31,6 @@ func NewRedis(options *RedisOptions) (adapters.Cache, error) {
 	}
 
 	return &redisCache{rdb}, nil
-}
-
-type redisCache struct {
-	*redis.Client
 }
 
 func (c *redisCache) GetString(ctx context.Context, key string) (string, error) {
@@ -48,9 +49,14 @@ func (c *redisCache) GetString(ctx context.Context, key string) (string, error) 
 	return res, span.Assert(nil)
 }
 
-func (c *redisCache) SetString(ctx context.Context, key, value string) error {
+func (c *redisCache) SetString(ctx context.Context, key, value string, options ...adapters.CacheOption) error {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	return span.Assert(c.Set(ctx, key, value, 0).Err())
+	params, err := adapters.NewCacheParams(options...)
+	if err != nil {
+		return err
+	}
+
+	return span.Assert(c.Set(ctx, key, value, params.TTL).Err())
 }
