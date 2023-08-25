@@ -1,7 +1,10 @@
 package anilist
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,11 +21,7 @@ type ratedClient struct {
 }
 
 // NewRatedClient creates a GraphQL-compatible HTTP client with rate-limiting
-// restrictions. Its useful to avoid blacklisting and a high rate of errors.
-//
-// Note: rate limiting is a blocking action. Requests that exceed the limit will
-// block and wait for the given interval to proceed. This may cause metric
-// distortions.
+// restrictions. Useful to avoid blacklisting on upstream services.
 func NewRatedClient(interval time.Duration, requests int, base *http.Client) graphql.Doer {
 	if base == nil {
 		base = http.DefaultClient
@@ -34,13 +33,28 @@ func NewRatedClient(interval time.Duration, requests int, base *http.Client) gra
 	}
 }
 
-// Do executes a HTTP request right away if its within the limits, or blocks
-// and waits for the limiter to allow it. See `NewRatedClient` for more info
+// Do executes a HTTP request right away if its within the limits. Otherwise it
+// returns a 429 + Retry-After header with the seconds to wait for
 func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
 	span := telemetry.SpanFromContext(req.Context())
-	err := c.rater.Wait(req.Context())
-	if err != nil {
+
+	re := c.rater.Reserve()
+	if !re.OK() {
+		err := fmt.Errorf("misconfigured rate limiter on the API, cannot act")
+		span.RecordError(err)
 		return nil, err
+	}
+
+	if re.Delay() > 0 {
+		re.Cancel()
+		return &http.Response{
+			Status:     http.StatusText(http.StatusTooManyRequests),
+			StatusCode: http.StatusTooManyRequests,
+			Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
+			Header: http.Header{
+				"Retry-After": []string{strconv.FormatFloat(math.Ceil(re.Delay().Seconds()), 'f', 0, 64)},
+			},
+		}, nil
 	}
 
 	resp, err := c.client.Do(req)
@@ -59,21 +73,13 @@ func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
 		return resp, nil
 	}
 
-	//// exceptional case: we wait and retry
-	//// first we make sure the rate limiter has the right burst
 	remaining, err := strconv.Atoi(resp.Header.Get("X-RateLimit-Remaining"))
 	if err != nil {
 		return nil, err
 	}
+
 	c.rater.SetBurst(remaining)
 
-	//// this should never happen if the rate limiter is properly set and the API
-	//// lives by its documentation
-	if remaining != 0 {
-		return nil, fmt.Errorf("WARNING inconsistent upstream API - try increasing the rate interval")
-	}
-
-	//// update future bursts
 	burst, err := strconv.Atoi(resp.Header.Get("X-RateLimit-Limit"))
 	if err != nil {
 		return nil, err
@@ -86,13 +92,5 @@ func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
 
 	c.rater.SetBurstAt(time.Unix(reset, 0), burst)
 
-	//// respect the wait time proposed by the API
-	after, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	time.Sleep(time.Duration(after) * time.Second)
-
-	return c.Do(req)
+	return resp, nil
 }
