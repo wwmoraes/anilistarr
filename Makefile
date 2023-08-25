@@ -103,3 +103,10 @@ redis-proxy:
 
 get-user:
 	@curl -v "http://127.0.0.1:8080/user?name=wwmoraes"
+
+docs:
+	@open http://localhost:6060/pkg/github.com/${IMAGE}/
+	@godoc -notes="BUG|TODO|FIX"
+
+run-image:
+	@${DOCKER} run --rm -it ${IMAGE}
