@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
@@ -13,29 +14,29 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions) (*usecases.MediaLister, error) {
+func NewAnilistBridge(anilistEndpoint string, dataPath string) (*usecases.MediaLister, error) {
 	tracker := anilist.New(anilistEndpoint, 50)
-	if cacheOptions != nil {
-		// cache, err := caches.NewRedis(cacheOptions)
-		// cache, err := caches.NewBolt("tmp/cache.db", nil)
-		cache, err := caches.NewBadger("tmp/badger", caches.WithLogger(telemetry.DefaultLogger()))
-		if err != nil {
-			return nil, fmt.Errorf("bolt cache initialization failed: %w", err)
-		}
 
-		tracker = &adapters.CachedTracker{
-			Cache:   cache,
-			Tracker: tracker,
-			TTL: adapters.CachedTrackerTTL{
-				UserID:       24 * time.Hour,
-				MediaListIDs: 5 * time.Minute,
-			},
-		}
+	// cache, err := caches.NewRedis(cacheOptions)
+	// cache, err := caches.NewBolt("tmp/cache.db", nil)
+	cache, err := caches.NewBadger(path.Join(dataPath, "badger", "cache"), caches.WithLogger(telemetry.DefaultLogger()))
+	if err != nil {
+		return nil, fmt.Errorf("bolt cache initialization failed: %w", err)
 	}
 
-	store, err := stores.NewSQL("sqlite", "tmp/media.db?loc=auto")
+	tracker = &adapters.CachedTracker{
+		Cache:   cache,
+		Tracker: tracker,
+		TTL: adapters.CachedTrackerTTL{
+			UserID:       24 * time.Hour,
+			MediaListIDs: 60 * time.Minute,
+		},
+	}
+
+	// store, err := stores.NewSQL("sqlite", "tmp/media.db?loc=auto")
+	store, err := stores.NewBadger(path.Join(dataPath, "badger", "store"))
 	if err != nil {
-		return nil, fmt.Errorf("sql store initialization failed: %w", err)
+		return nil, fmt.Errorf("store initialization failed: %w", err)
 	}
 
 	return &usecases.MediaLister{

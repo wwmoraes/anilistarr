@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/riandyrn/otelchi"
-	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	_ "go.uber.org/automaxprocs"
@@ -35,12 +34,7 @@ func main() {
 
 	mapper, err := NewAnilistBridge(
 		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
-		&caches.RedisOptions{
-			Addr:       os.Getenv("REDIS_ADDRESS"),
-			Username:   os.Getenv("REDIS_USERNAME"),
-			Password:   os.Getenv("REDIS_PASSWORD"),
-			ClientName: "anilistarr-handler",
-		},
+		os.Getenv("DATA_PATH"),
 	)
 	assert(err)
 
