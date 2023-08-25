@@ -9,6 +9,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/drivers/providers"
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
 	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
+	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -17,7 +18,7 @@ func NewAnilistBridge(anilistEndpoint string, cacheOptions *caches.RedisOptions)
 	if cacheOptions != nil {
 		// cache, err := caches.NewRedis(cacheOptions)
 		// cache, err := caches.NewBolt("tmp/cache.db", nil)
-		cache, err := caches.NewBadger("tmp/badger")
+		cache, err := caches.NewBadger("tmp/badger", caches.WithLogger(telemetry.DefaultLogger()))
 		if err != nil {
 			return nil, fmt.Errorf("bolt cache initialization failed: %w", err)
 		}

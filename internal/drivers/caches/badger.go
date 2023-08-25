@@ -3,21 +3,13 @@ package caches
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/go-logr/logr"
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
-
-type BadgerOption interface {
-	Apply(badger.Options) badger.Options
-}
-
-type BadgerOptionFn func(badger.Options) badger.Options
-
-func (fn BadgerOptionFn) Apply(options badger.Options) badger.Options {
-	return fn(options)
-}
 
 type badgerCache struct {
 	*badger.DB
@@ -79,4 +71,40 @@ func (c *badgerCache) SetString(ctx context.Context, key, value string, options 
 
 		return txn.SetEntry(entry.WithTTL(params.TTL))
 	}))
+}
+
+type BadgerOption interface {
+	Apply(badger.Options) badger.Options
+}
+
+type BadgerOptionFn func(badger.Options) badger.Options
+
+func (fn BadgerOptionFn) Apply(options badger.Options) badger.Options {
+	return fn(options)
+}
+
+func WithLogger(log logr.Logger) BadgerOption {
+	return BadgerOptionFn(func(options badger.Options) badger.Options {
+		return options.WithLogger(&badgerLogger{log})
+	})
+}
+
+type badgerLogger struct {
+	log logr.Logger
+}
+
+func (log *badgerLogger) Errorf(format string, a ...interface{}) {
+	log.log.Error(fmt.Errorf(format, a...), "Badger Error")
+}
+
+func (log *badgerLogger) Warningf(format string, a ...interface{}) {
+	log.log.Info(fmt.Sprintf(format, a...), "Badger Warning")
+}
+
+func (log *badgerLogger) Infof(format string, a ...interface{}) {
+	log.log.Info(fmt.Sprintf(format, a...), "Badger Info")
+}
+
+func (log *badgerLogger) Debugf(format string, a ...interface{}) {
+	log.log.Info(fmt.Sprintf(format, a...), "Badger Debug")
 }
