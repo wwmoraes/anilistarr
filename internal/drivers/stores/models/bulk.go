@@ -20,11 +20,11 @@ func (m MappingList) Upsert(ctx context.Context, db DB) error {
 	}
 
 	const baseSqlstr = `INSERT INTO mapping (` +
-		`tvdb_id, anilist_id` +
+		`target_id, source_id` +
 		`) VALUES %s` +
-		` ON CONFLICT (tvdb_id) DO ` +
+		` ON CONFLICT (target_id) DO ` +
 		`UPDATE SET ` +
-		`anilist_id = EXCLUDED.anilist_id `
+		`source_id = EXCLUDED.source_id `
 
 	sqlstr := fmt.Sprintf(baseSqlstr, strings.Join(rows, ","))
 
@@ -52,9 +52,9 @@ func MappingBySourceIDBulk(ctx context.Context, db DB, anilistIDs []sql.NullStri
 
 	// query
 	const baseSqlstr = `SELECT ` +
-		`tvdb_id, anilist_id ` +
+		`target_id, source_id ` +
 		`FROM mapping ` +
-		`WHERE anilist_id IN (%s)`
+		`WHERE source_id IN (%s)`
 	sqlstr := fmt.Sprintf(baseSqlstr, strings.Join(ids, ","))
 
 	// run
