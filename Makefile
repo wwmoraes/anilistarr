@@ -102,7 +102,10 @@ redis-proxy:
 	@flyctl redis proxy
 
 get-user:
-	@curl -v "http://127.0.0.1:8080/user?name=wwmoraes"
+	@curl -v "http://${HOST}:${PORT}/user?name=wwmoraes"
+
+get-list:
+	@curl -v "http://${HOST}:${PORT}/list?username=wwmoraes"
 
 docs:
 	@open http://localhost:6060/pkg/github.com/${IMAGE}/
