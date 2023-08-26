@@ -73,7 +73,7 @@ func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userId string
 		return nil, span.Assert(fmt.Errorf("failed to get media list: %w", err))
 	}
 
-	if userId != "" {
+	if cachedIds != "" {
 		span.AddEvent("cache hit")
 		return strings.Split(cachedIds, mediaListSeparator), span.Assert(err)
 	}
