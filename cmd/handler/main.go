@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,11 +33,17 @@ func main() {
 
 	log.Info("staring up", "name", telemetry.NAME, "version", telemetry.VERSION)
 
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "0.0.0.0"
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-	addr := "127.0.0.1:" + port
+
+	addr := fmt.Sprintf("%s:%s", host, port)
 
 	mapper, err := NewAnilistBridge(
 		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
