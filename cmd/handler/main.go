@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,10 +21,15 @@ func main() {
 	defer cancel()
 
 	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
-	assert(err)
-	defer shutdown(context.Background())
-
 	log := telemetry.DefaultLogger()
+	if errors.Is(err, telemetry.NoEndpointError) {
+		log.Error(err, "skipping instrumentation")
+		err = nil
+	} else {
+		defer shutdown(context.Background())
+	}
+	assert(err)
+
 	log.Info("staring up", "name", telemetry.NAME, "version", telemetry.VERSION)
 
 	port := os.Getenv("PORT")

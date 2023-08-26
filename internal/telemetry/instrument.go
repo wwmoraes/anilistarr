@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -26,6 +27,8 @@ import (
 )
 
 var (
+	NoEndpointError = errors.New("OTLP endpoint not provided")
+
 	otlpConnHandler sync.Once
 	otlpConn        *grpc.ClientConn
 	otlpConnErr     error
@@ -190,6 +193,10 @@ func InstrumentProfiling(ctx context.Context) (func() error, error) {
 }
 
 func InstrumentAll(ctx context.Context, otlpEndpoint string) (func(context.Context), error) {
+	if len(otlpEndpoint) <= 0 {
+		return nil, NoEndpointError
+	}
+
 	tracingShutdown, err := InstrumentTracing(ctx, otlpEndpoint)
 	if err != nil {
 		return nil, err
