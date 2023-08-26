@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Anilistarr
+  description: |-
+    Converts an Anilist user watching list to a custom list format which *arr apps support.
+  # termsOfService: http://swagger.io/terms/
+  contact:
+    email: anilistarr@artero.dev
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/wwmoraes/anilistarr/master/LICENSE
+  version: 0.1.0
+externalDocs:
+  description: Find out more about the project
+  url: http://github.com/wwmoraes/anilistarr
+servers:
+  - url: https://anilistarr.fly.dev
+paths:
+  /user:
+    get:
+      parameters:
+        - name: name
+          in: query
+          content:
+            text/plain:
+              example: wwmoraes
+      responses:
+        200:
+          description: user found
+          content:
+            text/plain:
+              example: 1234
+        500:
+          description: either a rate limit or other issue with the upstream tracker happened
+          content:
+            text/plain:
+              example: |
+                failed to get user ID: ...
+  /list:
+    get:
+      parameters:
+        - name: username
+          in: query
+          content:
+            text/plain:
+              example: wwmoraes
+      responses:
+        200:
+          description: media list for the given user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomList'
+        500:
+          description: either a rate limit or other issue with the upstream tracker happened
+          content:
+            text/plain:
+              example: |-
+                failed to get user ID: ...
+components:
+  schemas:
+    CustomList:
+      type: array
+      items:
+        type: object
+        properties:
+          TvdbID:
+            type: number
