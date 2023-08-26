@@ -108,5 +108,8 @@ docs:
 	@open http://localhost:6060/pkg/github.com/${IMAGE}/
 	@godoc -notes="BUG|TODO|FIX"
 
+run-image: DATA_PATH=/var/handler
 run-image:
-	@${DOCKER} run --rm -it ${IMAGE}
+	@${DOCKER} run --rm \
+	-e DATA_PATH \
+	-it ${IMAGE}
