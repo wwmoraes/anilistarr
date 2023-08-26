@@ -18,7 +18,7 @@ func NewAnilistBridge(anilistEndpoint string, dataPath string) (*usecases.MediaL
 	tracker := anilist.New(anilistEndpoint, 50)
 
 	// cache, err := caches.NewRedis(cacheOptions)
-	// cache, err := caches.NewBolt("tmp/cache.db", nil)
+	// cache, err := caches.NewBolt(path.Join(dataPath, "bolt-cache.db"), nil)
 	cache, err := caches.NewBadger(path.Join(dataPath, "badger", "cache"), caches.WithLogger(telemetry.DefaultLogger()))
 	if err != nil {
 		return nil, fmt.Errorf("bolt cache initialization failed: %w", err)
@@ -33,7 +33,7 @@ func NewAnilistBridge(anilistEndpoint string, dataPath string) (*usecases.MediaL
 		},
 	}
 
-	// store, err := stores.NewSQL("sqlite", "tmp/media.db?loc=auto")
+	// store, err := stores.NewSQL("sqlite", path.Join(dataPath, "media2.db?loc=auto"))
 	store, err := stores.NewBadger(path.Join(dataPath, "badger", "store"))
 	if err != nil {
 		return nil, fmt.Errorf("store initialization failed: %w", err)
