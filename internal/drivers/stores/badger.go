@@ -37,6 +37,7 @@ func (db *badgerStore) GetMedia(ctx context.Context, id string) (*entities.Media
 	var media *entities.Media
 
 	err := db.View(func(txn *badger.Txn) error {
+
 		item, err := txn.Get([]byte(id))
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			return nil
@@ -69,6 +70,10 @@ func (db *badgerStore) GetMediaBulk(ctx context.Context, ids []string) ([]*entit
 		var err error
 
 		for _, id := range ids {
+			if len(id) == 0 {
+				continue
+			}
+
 			item, err = txn.Get([]byte(id))
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				continue
