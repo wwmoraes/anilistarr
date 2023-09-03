@@ -51,11 +51,10 @@ func init() {
 	var err error
 	otlpResource, err = resource.Merge(resource.Empty(), resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceNamespace(NAMESPACE),
-		semconv.ServiceName(NAME),
-		semconv.ServiceVersion(VERSION),
 		semconv.CodeNamespace(MODULE),
-		semconv.DeploymentEnvironment(ENVIRONMENT),
+		semconv.ServiceName(NAME),
+		semconv.ServiceNamespace(NAMESPACE),
+		semconv.ServiceVersion(VERSION),
 	))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to create OTLP resource: %s", err.Error())
