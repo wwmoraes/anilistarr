@@ -6,6 +6,7 @@ import (
 	"io/fs"
 
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
 // JSONLocalProvider is a filesystem-based metadata provider
@@ -14,11 +15,15 @@ type JSONLocalProvider[F Metadata] struct {
 	Name string
 }
 
-func (source JSONLocalProvider[F]) Fetch(ctx context.Context) ([]Metadata, error) {
+func (source JSONLocalProvider[F]) String() string {
+	return string(source.Name)
+}
+
+func (source JSONLocalProvider[F]) Fetch(ctx context.Context, client usecases.Getter) ([]Metadata, error) {
 	_, span := telemetry.StartFunction(ctx)
 	defer span.End()
 
-	data, err := fs.ReadFile(source.Fs, source.Name)
+	data, err := fs.ReadFile(source.Fs, source.String())
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to read local JSON: %w", err))
 	}
