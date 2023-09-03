@@ -9,6 +9,8 @@ primary_region = "ams"
 [env]
 ANILIST_GRAPHQL_ENDPOINT = "https://graphql.anilist.co"
 DATA_PATH = "/var/handler"
+OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
+OTEL_EXPORTER_OTLP_ENDPOINT = "https://otlp-gateway-prod-eu-west-0.grafana.net/otlp"
 
 [build.args]
 VERSION = "0.1.0-rc.1"
