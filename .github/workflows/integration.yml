@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: calculate version
@@ -103,7 +103,7 @@ jobs:
     needs: metadata
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: setup golang
       uses: actions/setup-go@v3
       with:
@@ -140,7 +140,7 @@ jobs:
       CONTAINER_LINT_REPORT_FILE: hadolint-report.json
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: setup golang
       uses: actions/setup-go@v3
       with:
@@ -193,7 +193,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: setup golang
       uses: actions/setup-go@v3
       with:
@@ -245,7 +245,7 @@ jobs:
     if: always()
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: cache sonar scanner
@@ -296,7 +296,7 @@ jobs:
       GRYPE_DB_CACHE_TEMP_PATH: .cache/grype/db/
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: set up QEMU
       uses: docker/setup-qemu-action@v2
     - name: set up docker buildx
