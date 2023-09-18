@@ -120,7 +120,7 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
     - name: set up docker buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
     - name: build cache
       uses: pat-s/always-upload-cache@v2.1.5
       with:
