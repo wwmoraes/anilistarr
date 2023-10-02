@@ -11,7 +11,7 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/pyroscope-io/client v0.7.1
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5
-	github.com/redis/go-redis/v9 v9.0.5
+	github.com/redis/go-redis/v9 v9.2.1
 	github.com/riandyrn/otelchi v0.5.1
 	go.etcd.io/bbolt v1.3.7
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
