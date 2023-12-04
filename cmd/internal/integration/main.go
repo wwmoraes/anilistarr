@@ -31,19 +31,20 @@ func main() {
 		},
 	}
 
-	bridge := &usecases.MediaLister{
-		Tracker: &adapters.CachedTracker{
-			Cache:   &test.Cache{},
+	bridge, err := usecases.NewMediaLister(
+		&adapters.CachedTracker{
+			Cache: &test.Cache{},
 			Tracker: tracker,
 		},
-		Mapper: &adapters.Mapper{
+		&adapters.Mapper{
 			Provider: test.Provider,
 			Store:    &test.Store{},
 		},
-	}
+	)
+	assert(err)
 	defer bridge.Close()
 
-	err := bridge.Refresh(ctx, &test.HTTPClient{
+	err = bridge.Refresh(ctx, &test.HTTPClient{
 		Data: map[string]string{
 			test.Provider.String(): `[
 				{"anilist_id": 1, "thetvdb_id": 101},

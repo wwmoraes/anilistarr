@@ -2,6 +2,7 @@ package usecases_test
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -44,18 +45,20 @@ var (
 )
 
 func TestMediaBridge(t *testing.T) {
-	bridge := usecases.MediaLister{
-		Tracker: testTracker,
-		Mapper: &adapters.Mapper{
+	bridge, err := usecases.NewMediaLister(testTracker,
+		&adapters.Mapper{
 			Provider: test.Provider,
 			Store:    &test.Store{},
 		},
+	)
+	if err != nil {
+		t.Error("unexpected error when creating MediaLister:", err)
 	}
 
 	wantedCustomList := test.SonarrCustomListFromIDs(t, "91", "92", "93", "95", "98", "913")
 
 	ctx := context.Background()
-	err := bridge.Refresh(ctx, &testClient)
+	err = bridge.Refresh(ctx, &testClient)
 	if err != nil {
 		t.Error("unexpected error on Refresh:", err)
 	}
@@ -71,6 +74,20 @@ func TestMediaBridge(t *testing.T) {
 	err = bridge.Close()
 	if err != nil {
 		t.Error("unexpected error on Close:", err)
+	}
+}
+
+func TestNewMediaListerNoTracker(t *testing.T) {
+	_, err := usecases.NewMediaLister(nil, &adapters.Mapper{})
+	if !errors.Is(err, usecases.ErrNoTracker) {
+		t.Errorf("expected %q, got %q", usecases.ErrNoTracker, err)
+	}
+}
+
+func TestNewMediaListerNoMapper(t *testing.T) {
+	_, err := usecases.NewMediaLister(&test.Tracker{}, nil)
+	if !errors.Is(err, usecases.ErrNoMapper) {
+		t.Errorf("expected %q, got %q", usecases.ErrNoMapper, err)
 	}
 }
 

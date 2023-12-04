@@ -11,19 +11,50 @@ import (
 )
 
 var (
-	NoTrackerError = errors.New("no tracker set up")
+	ErrNoTracker = errors.New("no tracker set up")
+	ErrNoMapper  = errors.New("no mapper set up")
 )
 
-// MediaLister handles both a tracker to fetch user data and a mapper that can
+type MediaLister interface {
+	// Generate fetches the user media list from the Tracker and transform the IDs
+	// found to the target service through the Mapper
+	Generate(ctx context.Context, name string) (entities.CustomList, error)
+
+	// GetUserID searches the Tracker for the user ID by their name/handle
+	GetUserID(ctx context.Context, name string) (string, error)
+
+	// Close closes both the Tracker and Mapper
+	Close() error
+
+	// Refresh requests the Mapper to update its mapping definitions
+	Refresh(ctx context.Context, client Getter) error
+}
+
+func NewMediaLister(tracker Tracker, mapper Mapper) (MediaLister, error) {
+	if tracker == nil {
+		return nil, ErrNoTracker
+	}
+
+	if mapper == nil {
+		return nil, ErrNoMapper
+	}
+
+	return &mediaLister{
+		Tracker: tracker,
+		Mapper:  mapper,
+	}, nil
+}
+
+// mediaLister handles both a tracker to fetch user data and a mapper that can
 // transform the media IDs from the tracker to another service
-type MediaLister struct {
+type mediaLister struct {
 	Tracker Tracker
 	Mapper  Mapper
 }
 
 // Generate fetches the user media list from the Tracker and transform the IDs
 // found to the target service through the Mapper
-func (lister *MediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
+func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 	log := telemetry.LoggerFromContext(ctx).WithValues("username", name)
@@ -66,25 +97,21 @@ func (lister *MediaLister) Generate(ctx context.Context, name string) (entities.
 }
 
 // GetUserID searches the Tracker for the user ID by their name/handle
-func (lister *MediaLister) GetUserID(ctx context.Context, name string) (string, error) {
+func (lister *mediaLister) GetUserID(ctx context.Context, name string) (string, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
-
-	if lister.Tracker == nil {
-		return "", NoTrackerError
-	}
 
 	res, err := lister.Tracker.GetUserID(ctx, name)
 	return res, span.Assert(err)
 }
 
 // Close closes both the Tracker and Mapper
-func (lister *MediaLister) Close() error {
+func (lister *mediaLister) Close() error {
 	return errors.Join(lister.Tracker.Close(), lister.Mapper.Close())
 }
 
 // Refresh requests the Mapper to update its mapping definitions
-func (lister *MediaLister) Refresh(ctx context.Context, client Getter) error {
+func (lister *mediaLister) Refresh(ctx context.Context, client Getter) error {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
 

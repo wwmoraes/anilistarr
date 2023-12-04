@@ -14,7 +14,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-func NewAnilistBridge(anilistEndpoint string, dataPath string) (*usecases.MediaLister, error) {
+func NewAnilistMediaLister(anilistEndpoint string, dataPath string) (usecases.MediaLister, error) {
 	tracker := anilist.New(anilistEndpoint, 50)
 
 	// cache, err := caches.NewRedis(cacheOptions)
@@ -39,11 +39,8 @@ func NewAnilistBridge(anilistEndpoint string, dataPath string) (*usecases.MediaL
 		return nil, fmt.Errorf("store initialization failed: %w", err)
 	}
 
-	return &usecases.MediaLister{
-		Tracker: tracker,
-		Mapper: &adapters.Mapper{
-			Provider: providers.AnilistFribbsProvider,
-			Store:    store,
-		},
-	}, nil
+	return usecases.NewMediaLister(tracker, &adapters.Mapper{
+		Provider: providers.AnilistFribbsProvider,
+		Store:    store,
+	})
 }

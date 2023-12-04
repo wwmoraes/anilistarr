@@ -45,13 +45,13 @@ func main() {
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 
-	mapper, err := NewAnilistBridge(
+	mediaLister, err := NewAnilistMediaLister(
 		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
 		os.Getenv("DATA_PATH"),
 	)
 	assert(err)
 
-	api, err := NewRestAPI(mapper)
+	api, err := NewRestAPI(mediaLister)
 	assert(err)
 
 	ctx = telemetry.ContextWithLogger(ctx)
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	// update mapping every week
-	go scheduledRefresh(ctx, mapper, time.Hour*24*7)
+	go scheduledRefresh(ctx, mediaLister, time.Hour*24*7)
 	go server.ListenAndServe() //nolint:errcheck
 	log.Info("server listening", "address", addr)
 
@@ -91,7 +91,7 @@ func assert(err error) {
 	os.Exit(1)
 }
 
-func scheduledRefresh(ctx context.Context, linker *usecases.MediaLister, interval time.Duration) {
+func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval time.Duration) {
 	log := telemetry.LoggerFromContext(ctx)
 
 	for {
