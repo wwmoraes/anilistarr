@@ -1,0 +1,61 @@
+version: "0.2"
+ignorePaths:
+  - .github
+dictionaryDefinitions: []
+dictionaries: []
+words:
+  - Alloc
+  - Anidb
+  - anilist
+  - anilistarr
+  - Anisearch
+  - automaxprocs
+  - bbolt
+  - Debugf
+  - dgraph
+  - fribbs
+  - genqlient
+  - HTTPURL
+  - Imdb
+  - Infof
+  - jmoiron
+  - Kitsu
+  - Livechart
+  - logr
+  - mergo
+  - modernc
+  - nolint
+  - nosniff
+  - openslo
+  - opentelemetry
+  - otel
+  - otelchi
+  - otelhttp
+  - otelruntime
+  - otlp
+  - otlpmetric
+  - otlpmetricgrpc
+  - otlpr
+  - otlptrace
+  - otlptracegrpc
+  - OWASP
+  - promhttp
+  - promql
+  - pyroscope
+  - redisotel
+  - riandyrn
+  - romaji
+  - sdkmetric
+  - sdktrace
+  - semconv
+  - Sonarr
+  - sqlx
+  - themoviedb
+  - thetvdb
+  - Tmdb
+  - tvdb
+  - Upsert
+  - usecases
+  - Warningf
+ignoreWords: []
+import: []

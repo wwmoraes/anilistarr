@@ -1,61 +1,33 @@
 {
-  "cSpell.words": [
-    "Anidb",
-    "anilist",
-    "anilistarr",
-    "Anisearch",
-    "automaxprocs",
-    "bbolt",
-    "dgraph",
-    "fribbs",
-    "genqlient",
-    "HTTPURL",
-    "Imdb",
-    "jmoiron",
-    "Kitsu",
-    "Livechart",
-    "logr",
-    "modernc",
-    "nolint",
-    "nosniff",
-    "openslo",
-    "opentelemetry",
-    "otel",
-    "otelchi",
-    "otelhttp",
-    "otlp",
-    "otlpmetric",
-    "otlpmetricgrpc",
-    "otlpr",
-    "otlptrace",
-    "otlptracegrpc",
-    "OWASP",
-    "promhttp",
-    "promql",
-    "redisotel",
-    "riandyrn",
-    "romaji",
-    "sdkmetric",
-    "sdktrace",
-    "semconv",
-    "Sonarr",
-    "sqlx",
-    "themoviedb",
-    "thetvdb",
-    "Tmdb",
-    "tvdb",
-    "Upsert",
-    "usecases"
+  "betterStrongerToml.jsonSchema.associations": [
+    {
+      "pattern": "fly.toml",
+      "schema": "https://json.schemastore.org/fly.json"
+    }
   ],
+  "coverage-gutters.coverageBaseDir": "coverage",
+  "files.exclude": {
+    "bin": true,
+    "build": true,
+    "coverage": true,
+    "coverage.out": true,
+    "dist": true,
+    "tmp": true
+  },
+  "go.coverMode": "atomic",
   "go.coverageDecorator": {
-    "type": "highlight",
-    "coveredHighlightColor": "rgba(64,128,128,0.5)",
-    "uncoveredHighlightColor": "rgba(128,64,64,0.25)",
     "coveredBorderColor": "rgba(64,128,128,0.5)",
-    "uncoveredBorderColor": "rgba(128,64,64,0.25)",
     "coveredGutterStyle": "blockblue",
-    "uncoveredGutterStyle": "slashyellow"
+    "coveredHighlightColor": "rgba(64,128,128,0.5)",
+    "type": "highlight",
+    "uncoveredBorderColor": "rgba(128,64,64,0.25)",
+    "uncoveredGutterStyle": "slashyellow",
+    "uncoveredHighlightColor": "rgba(128,64,64,0.25)"
   },
   "go.coverageOptions": "showBothCoveredAndUncoveredCode",
-  "go.coverMode": "atomic"
+  "sonarlint.connectedMode.project": {
+    "connectionId": "wwmoraes",
+    "projectKey": "wwmoraes_anilistarr"
+  },
+  "todo-tree.tree.scanMode": "current file"
 }
