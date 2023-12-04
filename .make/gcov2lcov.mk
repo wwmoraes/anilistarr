@@ -1,0 +1,6 @@
+GCOV2LCOV ?= gcov2lcov
+
+GCOV2LCOV_LCOV_FILE ?= ${GOLANG_COVERAGE_PATH}/lcov.info
+
+${GCOV2LCOV_LCOV_FILE}: ${GOLANG_REPORT_SOURCE}
+	@${GCOV2LCOV} -infile $< -outfile $@

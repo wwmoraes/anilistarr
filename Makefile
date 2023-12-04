@@ -1,118 +1,51 @@
 -include .env
 -include .env.local
-DOCKER ?= docker
-GO ?= go
-LINTER ?= golangci-lint
-GORELEASER ?= goreleaser
-GOCOVERDIR ?= coverage/integration
 export
 
-SEPARATOR = $(shell printf "%0.s=" {1..80})
+GOLANG_INTEGRATION_ENABLED = 1
 
-PKG = github.com/wwmoraes/anilistarr
-CMD_SOURCE_FILES := $(shell find cmd -type f -name '*.go')
-INTERNAL_SOURCE_FILES := $(shell find internal -type f -name '*.go')
-SOURCE_FILES := $(CMD_SOURCE_FILES) $(INTERNAL_SOURCE_FILES)
+-include .make/*.mk
+
+CONTAINER_IMAGE = wwmoraes/anilistarr
+CONTAINER_STRUCTURE_TEST_FILE = container-structure-test.yaml
+CODECOV_FLAGS = -X fixes -f coverage/merged.txt
+GOLANG_INTEGRATION_SRC_PATH = cmd/internal/integration
+GOLANG_INTEGRATION_PACKAGES = ${GOLANG_PACKAGE}/internal/usecases,${GOLANG_PACKAGE}/internal/adapters
+
+codecov-report: coverage/merged.txt
+
+# SEPARATOR = $(shell printf "%0.s=" {1..80})
 
 .PHONY: build
-build: generate
-	$(info building)
-	@${GO} build -o ./bin/ ./...
+build: golang-build
 
 .PHONY: clean
-clean:
-	-@${RM} -r coverage
+clean: golang-clean
 
 .PHONY: release
-release:
-	@${GORELEASER} release --clean --skip-publish --skip-announce --snapshot
-
-.PHONY: generate
-generate:
-	$(info generating files)
-	@${GO} generate ./...
+release: golang-release
 
 .PHONY: test
-test:
-	@${GO} test -race -v ./...
+test: golang-test
 
 .PHONY: lint
-lint: golangci-lint-report.xml
-	@${LINTER} run
+lint: golang-lint
 
 .PHONY: coverage
-coverage: GOCOVERDIR=coverage/integration
-coverage: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
-coverage: coverage/merged.txt
-coverage:
-	$(info ${SEPARATOR})
-	$(info coverage report)
-	$(info ${SEPARATOR})
-	@${GO} tool cover -func="$<"
+coverage: golang-coverage
 
-PHONY: coverage-html
-coverage-html: coverage/coverage.html
+.PHONY: report
+report: golang-report
 
-${GOCOVERDIR}: ${SOURCE_FILES}
-${GOCOVERDIR}:
-	$(info ${SEPARATOR})
-	$(info running integration test)
-	$(info ${SEPARATOR})
-	@mkdir -p "$@"
-	@${GO} run -cover -race -mod=readonly ./cmd/internal/integration/...
-	@echo "${SEPARATOR}"
-	@echo "raw report"
-	@echo "${SEPARATOR}"
-	@${GO} tool covdata percent -i="$@" | column -t
+.PHONY: image
+image: container-image
 
-%/integration.txt: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
-%/integration.txt: ${GOCOVERDIR}
-	$(info ${SEPARATOR})
-	$(info generating gcov data)
-	$(info ${SEPARATOR})
-	@${GO} tool covdata textfmt -i="$<" -o="$@" -pkg="${PKGS}"
+.PHONY: image-test
+image-test: container-test
 
-coverage/test.txt: ${SOURCE_FILES}
-coverage/test.txt:
-	$(info ${SEPARATOR})
-	$(info running unit tests)
-	$(info ${SEPARATOR})
-	@${GO} test -v -race -mod=readonly -coverprofile=$@ ./...
-
-coverage/merged.txt: coverage/integration.txt coverage/test.txt
-	@${GO} run github.com/wadey/gocovmerge@latest $^ > $@
-
-coverage/coverage.html: coverage/merged.txt
-	$(info ${SEPARATOR})
-	$(info generating html report)
-	$(info ${SEPARATOR})
-	@${GO} tool cover -html=$< -o $@
-
-golangci-lint-report.xml: ${SOURCE_FILES}
-	@${LINTER} run --out-format checkstyle > $@
-
-IMAGE ?= wwmoraes/anilistarr
 # needs go install github.com/Khan/genqlient@latest
 anilist:
 	@cd internal/drivers/anilist && genqlient
-
-## https://github.com/moby/moby/issues/46129
-image: OTEL_EXPORTER_OTLP_ENDPOINT=
-image: CREATED=$(shell date -u +"%Y-%m-%dT%TZ")
-image: REVISION=$(shell git log -n 1 --format="%H")
-image: VERSION=$(patsubst v%,%,$(shell git describe --tags 2> /dev/null || echo "0.1.0-rc.0"))
-image:
-	$(info building image ${IMAGE})
-	@${DOCKER} build --load $(if ${TARGET},--target ${TARGET}) \
-		-t ${IMAGE} \
-		--build-arg VERSION=${VERSION} \
-		--label org.opencontainers.image.created=${CREATED} \
-		--label org.opencontainers.image.revision=${REVISION} \
-		--label org.opencontainers.image.documentation=https://github.com/${IMAGE}/blob/master/README.md \
-		--label org.opencontainers.image.source=https://github.com/${IMAGE} \
-		--label org.opencontainers.image.url=https://hub.docker.com/r/${IMAGE} \
-		.
-	@container-structure-test test -c container-structure-test.yaml -i wwmoraes/anilistarr
 
 run:
 	@${GO} run ./cmd/handler/...
@@ -135,6 +68,16 @@ docs:
 
 run-image: DATA_PATH=/var/handler
 run-image:
-	@${DOCKER} run --rm \
+	@${CONTAINER} run --rm \
 	-e DATA_PATH \
 	-it ${IMAGE}
+
+diagrams:
+	@structurizr-cli export -f plantuml/c4plantuml -w workspace.dsl -o docs
+	@plantuml docs/*.puml
+
+watch-diagrams:
+	@fswatch -o --event Updated workspace.dsl | xargs -n 1 sh -c "clear; date; ${MAKE} diagrams"
+
+# edit-diagrams:
+# 	@ structurizr/lite

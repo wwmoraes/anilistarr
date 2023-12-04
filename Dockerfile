@@ -27,11 +27,14 @@ FROM alpine:${ALPINE_VERSION} AS tmp
 FROM scratch
 
 LABEL org.opencontainers.image.authors="William Artero <docker@artero.dev>"
-LABEL org.opencontainers.image.description="anilist custom list provider for sonarr/radarr"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.title="Anilistarr"
-LABEL org.opencontainers.image.vendor="William Artero <docker@artero.dev>"
 LABEL org.opencontainers.image.base.name="scratch"
+LABEL org.opencontainers.image.description="anilist custom list provider for sonarr/radarr"
+LABEL org.opencontainers.image.documentation="https://github.com/wwmoraes/anilistarr/blob/master/README.md"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/wwmoraes/anilistarr"
+LABEL org.opencontainers.image.title="Anilistarr"
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/wwmoraes/anilistarr"
+LABEL org.opencontainers.image.vendor="William Artero <docker@artero.dev>"
 
 CMD ["/usr/local/bin/handler"]
 EXPOSE 8080
@@ -39,9 +42,7 @@ EXPOSE 8080
 COPY --from=tmp --chown=20000:20000 /tmp /var/handler
 COPY --from=certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ARG VERSION
-LABEL org.opencontainers.image.version="${VERSION}"
-
 COPY --from=build /src/bin/handler /usr/local/bin/handler
 
+WORKDIR /
 USER 20000:20000

@@ -3,15 +3,15 @@ fileExistenceTests:
   - name: handler binary
     path: /usr/local/bin/handler
     shouldExist: true
-    gid: 0
-    uid: 0
+    gid: 20000
+    uid: 20000
     permissions: -rwxr-xr-x
     isExecutableBy: any
 
 metadataTest:
   cmd: [/usr/local/bin/handler]
   workdir: /
-  entrypoint: []
+  # entrypoint: []
   exposedPorts:
     - "8080"
   labels:
