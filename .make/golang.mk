@@ -1,4 +1,6 @@
 GO ?= go
+COMMA := ,
+SPACE := $(shell echo " ")
 
 GOLANG_PACKAGE = $(shell ${GO} list)
 
@@ -21,6 +23,8 @@ GOLANG_REPORT_SOURCE := ${GOLANG_COVERAGE_PATH}/merged.txt
 else
 GOLANG_REPORT_SOURCE := ${GOLANG_COVERAGE_PATH}/test.txt
 endif
+
+GOLANG_PKGS = $(subst ${SPACE},${COMMA},$(addprefix ${GOLANG_PACKAGE}/,$(subst ${COMMA},${SPACE},${GOLANG_INTEGRATION_PACKAGES})))
 
 .PHONY: golang-build
 golang-build:
@@ -66,7 +70,7 @@ ${GOLANG_COVERAGE_PATH}/merged.txt: ${GOLANG_COVERAGE_PATH}/integration.txt ${GO
 
 ${GOLANG_COVERAGE_PATH}/integration.txt: ${GOCOVERDIR}
 	$(info converting integration results to gocov)
-	@${GO} tool covdata textfmt -i="$<" -o="$@" -pkg="${GOLANG_INTEGRATION_PACKAGES}"
+	@${GO} tool covdata textfmt -i="$<" -o="$@" -pkg="${GOLANG_PKGS}"
 
 ${GOCOVERDIR}: ${SOURCE_FILES}
 ${GOCOVERDIR}:
