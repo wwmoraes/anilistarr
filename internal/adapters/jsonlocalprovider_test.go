@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
 	"github.com/wwmoraes/anilistarr/internal/test"
 )
 
@@ -37,13 +38,20 @@ func (entry memoryMetadata) GetTargetID() string {
 }
 
 func TestJSONLocalProvider(t *testing.T) {
+	store, err := stores.NewBadger("", &stores.BadgerOptions{
+		InMemory: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	mapper := &adapters.Mapper{
 		Provider: testProvider,
-		Store:    &test.Store{},
+		Store:    store,
 	}
 
 	ctx := context.Background()
-	err := mapper.Refresh(ctx, nil)
+	err = mapper.Refresh(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

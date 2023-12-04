@@ -6,6 +6,8 @@ import (
 	"os/signal"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
+	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
@@ -31,14 +33,26 @@ func main() {
 		},
 	}
 
+	cache, err := caches.NewBadger("", &caches.BadgerOptions{
+		InMemory: true,
+		Logger:   &caches.BadgerLogr{Logger: telemetry.DefaultLogger()},
+	})
+	assert(err)
+
+	store, err := stores.NewBadger("", &stores.BadgerOptions{
+		InMemory: true,
+		Logger:   &stores.BadgerLogr{Logger: telemetry.DefaultLogger()},
+	})
+	assert(err)
+
 	bridge, err := usecases.NewMediaLister(
 		&adapters.CachedTracker{
-			Cache: &test.Cache{},
+			Cache:   cache,
 			Tracker: tracker,
 		},
 		&adapters.Mapper{
 			Provider: test.Provider,
-			Store:    &test.Store{},
+			Store:    store,
 		},
 	)
 	assert(err)

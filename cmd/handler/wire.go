@@ -19,7 +19,9 @@ func NewAnilistMediaLister(anilistEndpoint string, dataPath string) (usecases.Me
 
 	// cache, err := caches.NewRedis(cacheOptions)
 	// cache, err := caches.NewBolt(path.Join(dataPath, "bolt-cache.db"), nil)
-	cache, err := caches.NewBadger(path.Join(dataPath, "badger", "cache"), caches.WithLogger(telemetry.DefaultLogger()))
+	cache, err := caches.NewBadger(path.Join(dataPath, "badger", "cache"), &caches.BadgerOptions{
+		Logger: &caches.BadgerLogr{Logger: telemetry.DefaultLogger()},
+	})
 	if err != nil {
 		return nil, fmt.Errorf("bolt cache initialization failed: %w", err)
 	}
@@ -34,7 +36,9 @@ func NewAnilistMediaLister(anilistEndpoint string, dataPath string) (usecases.Me
 	}
 
 	// store, err := stores.NewSQL("sqlite", path.Join(dataPath, "media2.db?loc=auto"))
-	store, err := stores.NewBadger(path.Join(dataPath, "badger", "store"))
+	store, err := stores.NewBadger(path.Join(dataPath, "badger", "store"), &stores.BadgerOptions{
+		Logger: &caches.BadgerLogr{Logger: telemetry.DefaultLogger()},
+	})
 	if err != nil {
 		return nil, fmt.Errorf("store initialization failed: %w", err)
 	}

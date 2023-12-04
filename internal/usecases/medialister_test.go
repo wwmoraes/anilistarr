@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
 	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
@@ -45,10 +46,17 @@ var (
 )
 
 func TestMediaBridge(t *testing.T) {
+	store, err := stores.NewBadger("", &stores.BadgerOptions{
+		InMemory: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	bridge, err := usecases.NewMediaLister(testTracker,
 		&adapters.Mapper{
 			Provider: test.Provider,
-			Store:    &test.Store{},
+			Store:    store,
 		},
 	)
 	if err != nil {
