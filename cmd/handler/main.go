@@ -23,7 +23,7 @@ func main() {
 
 	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
 	log := telemetry.DefaultLogger()
-	if errors.Is(err, telemetry.NoEndpointError) {
+	if errors.Is(err, telemetry.ErrNoEndpoint) {
 		log.Error(err, "skipping instrumentation")
 		err = nil
 	} else {

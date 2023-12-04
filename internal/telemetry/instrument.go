@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	NoEndpointError = errors.New("OTLP endpoint not provided")
+	ErrNoEndpoint = errors.New("OTLP endpoint not provided")
 
 	otlpConnHandler sync.Once
 	otlpConn        *grpc.ClientConn
@@ -191,7 +191,7 @@ func InstrumentLogging(ctx context.Context, otlpEndpoint string) error {
 
 func InstrumentAll(ctx context.Context, otlpEndpoint string) (func(context.Context), error) {
 	if len(otlpEndpoint) <= 0 {
-		return nil, NoEndpointError
+		return nil, ErrNoEndpoint
 	}
 
 	tracingShutdown, err := InstrumentTracing(ctx, otlpEndpoint)
