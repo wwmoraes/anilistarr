@@ -1,0 +1,36 @@
+coverage:
+  status:
+    project:
+      default:
+        flags:
+        - usecases
+        - adapters
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+    - type: project
+      target: auto
+      threshold: 1%
+    - type: patch
+      target: 90%
+  individual_flags:
+  - name: usecases
+    paths:
+    - internal/usecases/*
+    carryforward: true
+    statuses:
+    - type: project
+      target: 20%
+    - type: patch
+      target: 100%
+  - name: adapters
+    paths:
+    - internal/adapters/*
+    carryforward: true
+    statuses:
+    - type: project
+      target: 20%
+    - type: patch
+      target: 100%
