@@ -80,14 +80,7 @@ func (lister *MediaLister) GetUserID(ctx context.Context, name string) (string, 
 
 // Close closes both the Tracker and Mapper
 func (lister *MediaLister) Close() error {
-	errT := lister.Tracker.Close()
-	errR := lister.Mapper.Close()
-
-	if errT != nil || errR != nil {
-		return fmt.Errorf("failed to close dependencies: %v", []error{errT, errR})
-	}
-
-	return nil
+	return errors.Join(lister.Tracker.Close(), lister.Mapper.Close())
 }
 
 // Refresh requests the Mapper to update its mapping definitions
