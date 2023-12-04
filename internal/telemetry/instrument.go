@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"runtime"
 	"sync"
 	"time"
 
 	"github.com/MrAlias/otlpr"
 	"github.com/go-logr/logr"
-	"github.com/pyroscope-io/client/pyroscope"
 	otelruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -169,27 +167,27 @@ func InstrumentLogging(ctx context.Context, otlpEndpoint string) error {
 	return nil
 }
 
-func InstrumentProfiling(ctx context.Context) (func() error, error) {
-	runtime.SetMutexProfileFraction(5)
-	runtime.SetBlockProfileRate(5)
+// func InstrumentProfiling(ctx context.Context) (func() error, error) {
+// 	runtime.SetMutexProfileFraction(5)
+// 	runtime.SetBlockProfileRate(5)
 
-	// TODO or https://pkg.go.dev/net/http/pprof
-	profiler, err := pyroscope.Start(pyroscope.Config{
-		ApplicationName: NAME,
-		ServerAddress:   "",
-		AuthToken:       "",
-		Logger:          pyroscope.StandardLogger,
-		ProfileTypes: []pyroscope.ProfileType{
-			pyroscope.ProfileCPU,
-			pyroscope.ProfileAllocObjects,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
+// 	// TODO or https://pkg.go.dev/net/http/pprof
+// 	profiler, err := pyroscope.Start(pyroscope.Config{
+// 		ApplicationName: NAME,
+// 		ServerAddress:   "",
+// 		AuthToken:       "",
+// 		Logger:          pyroscope.StandardLogger,
+// 		ProfileTypes: []pyroscope.ProfileType{
+// 			pyroscope.ProfileCPU,
+// 			pyroscope.ProfileAllocObjects,
+// 		},
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return profiler.Stop, nil
-}
+// 	return profiler.Stop, nil
+// }
 
 func InstrumentAll(ctx context.Context, otlpEndpoint string) (func(context.Context), error) {
 	if len(otlpEndpoint) <= 0 {
