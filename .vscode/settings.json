@@ -12,6 +12,7 @@
     "coverage": true,
     "coverage.out": true,
     "dist": true,
+    "golangci-lint-report.xml": true,
     "tmp": true
   },
   "go.coverMode": "atomic",

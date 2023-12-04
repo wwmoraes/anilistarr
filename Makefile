@@ -2,6 +2,7 @@
 -include .env.local
 DOCKER ?= docker
 GO ?= go
+LINTER ?= golangci-lint
 GORELEASER ?= goreleaser
 GOCOVERDIR ?= coverage/integration
 export
@@ -18,6 +19,10 @@ build: generate
 	$(info building)
 	@${GO} build -o ./bin/ ./...
 
+.PHONY: clean
+clean:
+	-@${RM} -r coverage
+
 .PHONY: release
 release:
 	@${GORELEASER} release --clean --skip-publish --skip-announce --snapshot
@@ -31,10 +36,14 @@ generate:
 test:
 	@${GO} test -race -v ./...
 
+.PHONY: lint
+lint: golangci-lint-report.xml
+	@${LINTER} run
+
 .PHONY: coverage
 coverage: GOCOVERDIR=coverage/integration
 coverage: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
-coverage: coverage/coverage.txt
+coverage: coverage/merged.txt
 coverage:
 	$(info ${SEPARATOR})
 	$(info coverage report)
@@ -56,18 +65,31 @@ ${GOCOVERDIR}:
 	@echo "${SEPARATOR}"
 	@${GO} tool covdata percent -i="$@" | column -t
 
-%/coverage.txt: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
-%/coverage.txt: ${GOCOVERDIR}
+%/integration.txt: PKGS="${PKG}/internal/usecases,${PKG}/internal/adapters"
+%/integration.txt: ${GOCOVERDIR}
 	$(info ${SEPARATOR})
 	$(info generating gcov data)
 	$(info ${SEPARATOR})
 	@${GO} tool covdata textfmt -i="$<" -o="$@" -pkg="${PKGS}"
 
-%/coverage.html: %/coverage.txt
+coverage/test.txt: ${SOURCE_FILES}
+coverage/test.txt:
+	$(info ${SEPARATOR})
+	$(info running unit tests)
+	$(info ${SEPARATOR})
+	@${GO} test -v -race -mod=readonly -coverprofile=$@ ./...
+
+coverage/merged.txt: coverage/integration.txt coverage/test.txt
+	@${GO} run github.com/wadey/gocovmerge@latest $^ > $@
+
+coverage/coverage.html: coverage/merged.txt
 	$(info ${SEPARATOR})
 	$(info generating html report)
 	$(info ${SEPARATOR})
 	@${GO} tool cover -html=$< -o $@
+
+golangci-lint-report.xml: ${SOURCE_FILES}
+	@${LINTER} run --out-format checkstyle > $@
 
 IMAGE ?= wwmoraes/anilistarr
 # needs go install github.com/Khan/genqlient@latest
