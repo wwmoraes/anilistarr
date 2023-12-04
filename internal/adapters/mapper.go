@@ -20,23 +20,6 @@ func (mapper *Mapper) Close() error {
 	return mapper.Store.Close()
 }
 
-func (mapper *Mapper) MapID(ctx context.Context, id entities.SourceID) (entities.TargetID, error) {
-	ctx, span := telemetry.StartFunction(ctx)
-	defer span.End()
-
-	media, err := mapper.Store.GetMedia(ctx, id)
-
-	if err != nil {
-		return "", span.Assert(fmt.Errorf("failed to map ID %s: %w", id, err))
-	}
-
-	if media == nil {
-		return "", span.Assert(nil)
-	}
-
-	return media.TargetID, span.Assert(nil)
-}
-
 func (mapper *Mapper) MapIDs(ctx context.Context, ids []entities.SourceID) ([]entities.TargetID, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
