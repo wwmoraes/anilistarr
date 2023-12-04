@@ -16,23 +16,11 @@ var (
 	usernameRegex = regexp.MustCompile("^[[:word:]]+$")
 )
 
-type RestAPI interface {
-	GetList(http.ResponseWriter, *http.Request)
-	GetMap(http.ResponseWriter, *http.Request)
-	GetUser(http.ResponseWriter, *http.Request)
-}
-
-type restAPI struct {
+type RestAPI struct {
 	mediaLister usecases.MediaLister
 }
 
-func NewRestAPI(mapper usecases.MediaLister) (RestAPI, error) {
-	return &restAPI{
-		mediaLister: mapper,
-	}, nil
-}
-
-func (face *restAPI) GetList(w http.ResponseWriter, r *http.Request) {
+func (face *RestAPI) GetList(w http.ResponseWriter, r *http.Request) {
 	span := telemetry.SpanFromContext(r.Context())
 
 	username := r.URL.Query().Get("username")
@@ -64,7 +52,7 @@ func (face *restAPI) GetList(w http.ResponseWriter, r *http.Request) {
 	span.RecordError(err)
 }
 
-func (face *restAPI) GetMap(w http.ResponseWriter, r *http.Request) {
+func (face *RestAPI) GetMap(w http.ResponseWriter, r *http.Request) {
 	span := telemetry.SpanFromContext(r.Context())
 
 	resp, err := http.Get("https://github.com/Fribb/anime-lists/raw/master/anime-list-full.json")
@@ -114,7 +102,7 @@ func (face *restAPI) GetMap(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(newData))
 }
 
-func (face *restAPI) GetUser(w http.ResponseWriter, r *http.Request) {
+func (face *RestAPI) GetUser(w http.ResponseWriter, r *http.Request) {
 	span := telemetry.SpanFromContext(r.Context())
 
 	name := r.URL.Query().Get("name")

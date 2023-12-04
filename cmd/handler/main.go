@@ -51,9 +51,7 @@ func main() {
 	)
 	assert(err)
 
-	api, err := NewRestAPI(mediaLister)
-	assert(err)
-
+	api := &RestAPI{mediaLister}
 	ctx = telemetry.ContextWithLogger(ctx)
 
 	r := chi.NewRouter()
