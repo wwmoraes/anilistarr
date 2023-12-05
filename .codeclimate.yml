@@ -1,0 +1,29 @@
+version: "2"
+
+plugins:
+  duplication:
+    enabled: true
+  editorconfig:
+    enabled: true
+  fixme:
+    enabled: true
+    config:
+      strings:
+      - FIX
+      - TODO
+      - BUG
+      - [ ]
+  gofmt:
+    enabled: true
+  golangci:
+    enabled: true
+  govet:
+    enabled: true
+  hadolint:
+    enabled: true
+  markdownlint:
+    enabled: true
+  shellcheck:
+    enabled: true
+  semgrep:
+    enabled: true
