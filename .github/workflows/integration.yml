@@ -37,6 +37,8 @@ env:
   GOLANG_VERSION: "1.20"
   GOLANG_FLAGS: -race -mod=readonly
   WORK_DIR: /usr/src
+  GOLANG_RUN_REPORT_FILE: run-report.json
+  GOLANG_REPORT_SOURCE: merged.txt
 
 permissions:
   contents: read
@@ -128,12 +130,18 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-build-
-    - name: generate
-      run: go generate ./...
+    - name: build
+      run: make build
       env:
         VERSION: ${{ needs.metadata.outputs.version }}+${{ github.sha }}
-    - name: build
-      uses: wwmoraes/actions/golang/build@master
+    # - name: generate
+    #   run: go generate ./...
+    #   env:
+    #     VERSION: ${{ needs.metadata.outputs.version }}+${{ github.sha }}
+    # - name: build
+    #   uses: wwmoraes/actions/packages/golang/build@develop
+    #   with:
+    #     flags: -race -mod=readonly
   lint:
     runs-on: ubuntu-latest
     env:
@@ -218,27 +226,40 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-test-
-    - name: test
-      uses: wwmoraes/actions/golang/integration@master
-      id: test
-      with:
-        run-flags: -race -mod=readonly
-        packages: ./cmd/internal/integration/...
-        coverage-packages: |-
-          github.com/${{ github.repository }}/internal/usecases
-          github.com/${{ github.repository }}/internal/adapters
+    - name: coverage test
+      run: make coverage
+    # - name: integration test
+    #   uses: wwmoraes/actions/golang/integration@master
+    #   with:
+    #     run-flags: -race -mod=readonly
+    #     packages: ./cmd/internal/integration/...
+    #     cover-profile: ${{ runner.temp }}/integration.txt
+    #     coverage-packages: |-
+    #       github.com/${{ github.repository }}/internal/usecases
+    #       github.com/${{ github.repository }}/internal/adapters
+    # - name: unit test
+    #   uses: wwmoraes/actions/golang/test@master
+    #   with:
+    #     flags: -race -mod=readonly
+    #     cover-profile: ${{ runner.temp }}/unit.txt
+    # - name: aggregate test results
+    #   run: >-
+    #     go run github.com/wadey/gocovmerge@latest
+    #     ${{ runner.temp }}/integration.txt
+    #     ${{ runner.temp }}/unit.txt
+    #     >  ${{ runner.temp }}/merged.txt
     - name: upload coverage report
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: coverage-report
-        path: ${{ steps.test.outputs.cover-profile }}
-    - name: upload test report
+        path: ${{ env.GOLANG_REPORT_SOURCE }}
+    - name: upload run report
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: test-report
-        path: ${{ steps.test.outputs.report-file }}
+        name: run-report
+        path: ${{ env.GOLANG_RUN_REPORT_FILE }}
   report:
     runs-on: ubuntu-latest
     needs: [lint, test]
@@ -268,10 +289,10 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: container-lint-report
-    - name: download test report
+    - name: download run report
       uses: actions/download-artifact@v3
       with:
-        name: test-report
+        name: run-report
     - name: download coverage report
       uses: actions/download-artifact@v3
       with:
@@ -290,6 +311,11 @@ jobs:
         home: ${{ runner.temp }}/sonar-scanner
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
+      with:
+        flags: -X fixes
+        files: >-
+          ${{ env.GOLANG_REPORT_SOURCE }}
+          ${{ env.GOLANG_RUN_REPORT_FILE }}
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   container:
