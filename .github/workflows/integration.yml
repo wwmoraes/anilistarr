@@ -67,7 +67,7 @@ jobs:
         version_format: ${major}.${minor}.${patch}-rc.${increment}
     - name: generate container meta
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         context: workflow
         images: ${{ github.repository }}
