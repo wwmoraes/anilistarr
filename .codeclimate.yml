@@ -1,5 +1,8 @@
 version: "2"
 
+exclude_patterns:
+- '**/*.xo.go'
+
 plugins:
   duplication:
     enabled: true
