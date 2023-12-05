@@ -331,7 +331,7 @@ jobs:
         curl -Os https://cli.codecov.io/latest/linux/codecov
         shasum -a 256 -c codecov.SHA256SUM
 
-        install -d codecov ${{ runner.temp }}/bin/codecov
+        install -D codecov ${{ runner.temp }}/bin
 
         echo $PATH | grep -E "(^|:)${{ runner.temp }}/bin(:|$)" || echo "${{ runner.temp }}/bin" >> $GITHUB_PATH
 
