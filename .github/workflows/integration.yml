@@ -34,11 +34,12 @@ on:
     - sonar-project.properties
 
 env:
-  GOLANG_VERSION: "1.20"
   GOLANG_FLAGS: -race -mod=readonly
-  WORK_DIR: /usr/src
+  GOLANG_INTEGRATION_SRC_PATH: cmd/internal/integration
+  GOLANG_MERGED_GOCOV_FILE: merged.txt
   GOLANG_RUN_REPORT_FILE: run-report.json
-  GOLANG_REPORT_SOURCE: merged.txt
+  GOLANG_VERSION: "1.20"
+  WORK_DIR: /usr/src
 
 permissions:
   contents: read
@@ -253,7 +254,7 @@ jobs:
       if: always()
       with:
         name: coverage-report
-        path: ${{ env.GOLANG_REPORT_SOURCE }}
+        path: ${{ env.GOLANG_MERGED_GOCOV_FILE }}
     - name: upload run report
       uses: actions/upload-artifact@v3
       if: always()
@@ -314,7 +315,7 @@ jobs:
       with:
         flags: -X fixes
         files: >-
-          ${{ env.GOLANG_REPORT_SOURCE }}
+          ${{ env.GOLANG_MERGED_GOCOV_FILE }}
           ${{ env.GOLANG_RUN_REPORT_FILE }}
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
