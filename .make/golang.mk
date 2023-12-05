@@ -4,8 +4,6 @@ SPACE := $(shell echo " ")
 
 GOLANG_PACKAGE = $(shell ${GO} list)
 
-GOCOVERDIR ?= coverage/integration
-
 GOLANG_FLAGS ?= -race -mod=readonly
 GOLANG_OUTPUT_BIN_PATH ?= bin
 
@@ -19,6 +17,8 @@ GOLANG_UNIT_TEST_GOCOV_FILE ?= ${GOLANG_COVERAGE_PATH}/unit.txt
 GOLANG_INTEGRATION_SRC_PATH ?=
 GOLANG_INTEGRATION_PACKAGES ?=
 GOLANG_INTEGRATION_ENABLED ?= $(if ${GOLANG_INTEGRATION_SRC_PATH},1)
+
+GOCOVERDIR ?= ${GOLANG_COVERAGE_PATH}/integration
 
 CMD_SOURCE_FILES := $(shell ${GO} list -f '{{ range .GoFiles }}{{ printf "%s/%s\n" $$.Dir . }}{{ end }}' ./cmd/...)
 INTERNAL_SOURCE_FILES := $(shell ${GO} list -f '{{ range .GoFiles }}{{ printf "%s/%s\n" $$.Dir . }}{{ end }}' ./internal/...)

@@ -35,6 +35,7 @@ on:
 
 env:
   GOLANG_FLAGS: -race -mod=readonly
+  GOLANG_COVERAGE_PATH: coverage
   GOLANG_MERGED_GOCOV_FILE: coverage/merged.txt
   GOLANG_RUN_REPORT_FILE: coverage/run-report.json
   GOLANG_VERSION: "1.20"
@@ -295,11 +296,13 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: run-report
+        path: ${{ env.GOLANG_COVERAGE_PATH }}
 
     - name: download coverage report
       uses: actions/download-artifact@v3
       with:
         name: coverage-report
+        path: ${{ env.GOLANG_COVERAGE_PATH }}
 
     # - name: SonarCloud Scan
     #   uses: sonarsource/sonarcloud-github-action@master
