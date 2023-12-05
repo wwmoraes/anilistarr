@@ -25,10 +25,9 @@ INTERNAL_SOURCE_FILES := $(shell ${GO} list -f '{{ range .GoFiles }}{{ printf "%
 SOURCE_FILES := ${CMD_SOURCE_FILES} ${INTERNAL_SOURCE_FILES}
 
 ### use either the unit test or the merged gocov file for reports
+GOLANG_COVERAGE_REPORT_SOURCE := ${GOLANG_UNIT_TEST_GOCOV_FILE}
 ifneq (${GOLANG_INTEGRATION_ENABLED},)
 GOLANG_COVERAGE_REPORT_SOURCE := ${GOLANG_MERGED_GOCOV_FILE}
-else
-GOLANG_COVERAGE_REPORT_SOURCE := ${GOLANG_UNIT_TEST_GOCOV_FILE}
 endif
 
 ### prefix the relative paths with the package name. Required by go tool covdata

@@ -1,3 +1,8 @@
+# Disable built-in rules and variables and suffixes
+MAKEFLAGS += --no-builtin-rules
+MAKEFLAGS += --no-builtin-variables
+.SUFFIXES:
+
 -include .env
 -include .env.local
 export
@@ -9,6 +14,9 @@ GOLANG_INTEGRATION_SRC_PATH = cmd/internal/integration
 GOLANG_INTEGRATION_PACKAGES = internal/usecases,internal/adapters
 
 -include .make/*.mk
+
+codecov-report: ${GOLANG_COVERAGE_REPORT_SOURCE}
+${CC_REPORT_JSON_PATH}: ${GOLANG_COVERAGE_REPORT_SOURCE}
 
 ### local targets
 

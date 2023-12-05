@@ -35,9 +35,8 @@ on:
 
 env:
   GOLANG_FLAGS: -race -mod=readonly
-  GOLANG_INTEGRATION_SRC_PATH: cmd/internal/integration
-  GOLANG_MERGED_GOCOV_FILE: merged.txt
-  GOLANG_RUN_REPORT_FILE: run-report.json
+  GOLANG_MERGED_GOCOV_FILE: coverage/merged.txt
+  GOLANG_RUN_REPORT_FILE: coverage/run-report.json
   GOLANG_VERSION: "1.20"
   WORK_DIR: /usr/src
 
