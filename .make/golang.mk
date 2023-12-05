@@ -9,6 +9,7 @@ GOCOVERDIR ?= coverage/integration
 GOLANG_FLAGS ?= -race -mod=readonly
 GOLANG_COVERAGE_PATH ?= coverage
 GOLANG_OUTPUT_BIN_PATH ?= bin
+GOLANG_RUN_REPORT_FILE ?= run-report.json
 
 GOLANG_INTEGRATION_ENABLED ?=
 GOLANG_INTEGRATION_SRC_PATH ?=
@@ -52,9 +53,7 @@ golang-coverage:
 	@${GO} tool cover -func="$<"
 
 ${GOLANG_COVERAGE_PATH}/coverage.html: ${GOLANG_REPORT_SOURCE}
-	$(info ${SEPARATOR})
 	$(info generating html report from ${GOLANG_REPORT_SOURCE})
-	$(info ${SEPARATOR})
 	@${GO} tool cover -html=$< -o $@
 
 ${GOLANG_COVERAGE_PATH}/test.txt: ${SOURCE_FILES}
@@ -76,7 +75,6 @@ ${GOCOVERDIR}: ${SOURCE_FILES}
 ${GOCOVERDIR}:
 	$(info running integration test)
 	@mkdir -p "$@"
-	@${GO} run -cover ${GOLANG_FLAGS} ./${GOLANG_INTEGRATION_SRC_PATH}/...
-	@echo "raw report"
+	@${GO} tool test2json ${GO} run -cover ${GOLANG_FLAGS} ./${GOLANG_INTEGRATION_SRC_PATH}/... | tee ${GOLANG_RUN_REPORT_FILE}
 	@${GO} tool covdata percent -i="$@" | column -t
 endif
