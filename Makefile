@@ -5,15 +5,12 @@ export
 GOLANG_INTEGRATION_ENABLED = 1
 CONTAINER_STRUCTURE_TEST_FILE = container-structure-test.yaml
 CONTAINER_IMAGE = wwmoraes/anilistarr
-CODECOV_FLAGS = -X fixes -f coverage/merged.txt
 GOLANG_INTEGRATION_SRC_PATH = cmd/internal/integration
 GOLANG_INTEGRATION_PACKAGES = internal/usecases,internal/adapters
 
-codecov-report: coverage/merged.txt
-
 -include .make/*.mk
 
-# SEPARATOR = $(shell printf "%0.s=" {1..80})
+### local targets
 
 .PHONY: build
 build: golang-build
@@ -33,8 +30,11 @@ lint: golang-lint
 .PHONY: coverage
 coverage: golang-coverage
 
+.PHONY: coverage-html
+coverage-html: golang-coverage-html
+
 .PHONY: report
-report: golang-report
+report: code-climate-report codecov-report
 
 .PHONY: image
 image: container-image

@@ -55,8 +55,8 @@ golang-clean:
 golang-test:
 	@${GO} test ${GOLANG_FLAGS} -v ./...
 
-.PHONY: golang-report
-golang-report: ${GOLANG_COVERAGE_REPORT_TARGET}
+.PHONY: golang-coverage-html
+golang-coverage-html: ${GOLANG_COVERAGE_REPORT_TARGET}
 
 .PHONY: golang-coverage
 golang-coverage: ${GOLANG_COVERAGE_REPORT_SOURCE}
