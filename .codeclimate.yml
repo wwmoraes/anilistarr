@@ -8,6 +8,8 @@ plugins:
     enabled: true
   editorconfig:
     enabled: true
+    config:
+      editorconfig: .editorconfig
   fixme:
     enabled: true
     config:
@@ -15,7 +17,7 @@ plugins:
       - FIX
       - TODO
       - BUG
-      - [ ]
+      - "[ ]"
   gofmt:
     enabled: true
   golangci:
