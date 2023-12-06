@@ -33,7 +33,10 @@ release: golang-release
 test: golang-test
 
 .PHONY: lint
-lint: golang-lint
+lint: golang-lint container-lint
+
+.PHONY: lint-report
+lint-report: golang-lint-report container-lint-report
 
 .PHONY: coverage
 coverage: golang-coverage

@@ -147,15 +147,19 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CONTAINER_LINT_REPORT_FILE: hadolint-report.json
+      GOLANGCI_LINT_REPORT_FILE: golangci-lint-report.json
     steps:
     - name: checkout
       uses: actions/checkout@v3
+
     - name: setup golang
       uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GOLANG_VERSION }}
+
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
+
     - name: cache modules
       uses: pat-s/always-upload-cache@v2.1.5
       with:
@@ -164,8 +168,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
           ${{ runner.os }}-modules-
+
     - name: download modules
       run: go mod download
+
     - name: cache lint
       uses: pat-s/always-upload-cache@v2.1.5
       with:
@@ -174,12 +180,21 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-lint-${{ hashFiles('.golangci.yaml') }}
           ${{ runner.os }}-lint-
-    - name: lint code source
-      uses: wwmoraes/actions/golang/lint@master
-      id: lint
+
+    - name: lint code
+      run: make lint-report
+      env:
+        CONTAINER_LINT_FORMAT: sarif
+        GOLANGCI_LINT_FORMAT: github-actions
+
+    - name: setup reviewdog
+      uses: reviewdog/action-setup@v1
       with:
-        work-dir: ${{ env.WORK_DIR }}
-        version: v1.46-alpine
+        reviewdog_version: latest
+
+    - name: review code
+      run: make review-report
+
     - name: upload code lint report
       uses: actions/upload-artifact@v3
       if: always()
@@ -303,6 +318,13 @@ jobs:
       with:
         name: coverage-report
         path: ${{ env.GOLANG_COVERAGE_PATH }}
+
+    - name: touch downloaded reports
+      run: |-
+        ls
+        ls coverage
+        touch -c coverage/run-report.json
+        touch -c coverage/merged.txt
 
     # - name: SonarCloud Scan
     #   uses: sonarsource/sonarcloud-github-action@master

@@ -1,8 +1,12 @@
 CONTAINER ?= docker
+CONTAINER_LINT ?= hadolint
 CONTAINER_STRUCTURE_TEST ?= container-structure-test
 
 CONTAINER_IMAGE ?=
 CONTAINER_STRUCTURE_TEST_FILE ?=
+CONTAINER_LINT_REPORT_FILE ?= hadolint-report.json
+CONTAINER_DOCKERFILE ?= Dockerfile
+CONTAINER_LINT_FORMAT ?= sarif
 
 ## https://github.com/moby/moby/issues/46129
 container-image: OTEL_EXPORTER_OTLP_ENDPOINT=
@@ -21,3 +25,13 @@ container-image:
 
 container-test: ${CONTAINER_STRUCTURE_TEST_FILE}
 	@${CONTAINER_STRUCTURE_TEST} test -c "$<" -i "${CONTAINER_IMAGE}"
+
+container-lint: ${CONTAINER_DOCKERFILE}
+	$(info linting container source $<)
+	@${CONTAINER_LINT} $<
+
+container-lint-report: ${CONTAINER_LINT_REPORT_FILE}
+
+${CONTAINER_LINT_REPORT_FILE}: ${CONTAINER_DOCKERFILE}
+	$(info generating lint report of container source $<)
+	@${CONTAINER_LINT} -f ${CONTAINER_LINT_FORMAT} $< > $@

@@ -1,14 +1,12 @@
+# cspell:disable
+
 schemaVersion: "2.0.0"
 fileExistenceTests:
   - name: handler binary
     path: /usr/local/bin/handler
     shouldExist: true
-    ## Docker and Podman differ on how they handle the ownership of binaries.
-    ## Docker retains the source UID and GID; Podman ignores it, and reports the
-    ## active UID:GID as per the last USER directive
-    ## TODO fix binary owership
-    # gid: 0
-    # uid: 0
+    gid: 0
+    uid: 0
     permissions: -rwxr-xr-x
     isExecutableBy: any
 
