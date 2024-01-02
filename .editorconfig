@@ -21,7 +21,7 @@ indent_style = tab
 [*.go]
 indent_style = tab
 
-[go.mod]
+[go.{mod,work}]
 indent_style = tab
 
 [.git*]

@@ -1,0 +1,126 @@
+name: sdlc-run
+description: runs a compiled Dagger Go application
+author: William Artero
+
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  go-version:
+    description: Go runtime version
+    required: true
+  source-dir:
+    description: Path with the Dagger Go client source code
+    required: true
+  output-dir:
+    description: Path where to generate the compiled binary
+    default: ./bin
+  output-bin:
+    description: Name of the final compiled binary
+    default: sdlc
+  dagger-version:
+    description: Dagger CLI version
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+  # - name: download sdlc
+  #   uses: actions/download-artifact@v3
+  #   with:
+  #     name: ${{ inputs.output-bin }}
+  #     path: ${{ inputs.output-dir }}
+
+  # thank you GH for dropping the executable permission when storing artifacts
+  # - name: chmod
+  #   run: chmod +x ${{ inputs.output-dir }}/${{ inputs.output-bin }}
+  #   shell: sh
+
+  # - name: run
+  #   uses: dagger/dagger-for-github@v5
+  #   with:
+  #     verb: run
+  #     args: ${{ inputs.output-dir }}/${{ inputs.output-bin }} ${{ github.job }}
+  #     version: ${{ inputs.dagger-version }}
+
+  - name: setup golang
+    uses: actions/setup-go@v3
+    with:
+      go-version: ${{ inputs.go-version }}
+
+  - name: Install Dagger CLI
+    run: curl -L https://dl.dagger.io/dagger/install.sh | sh
+    shell: sh
+    env:
+      BIN_DIR: /usr/local/bin
+
+  - name: set golang environment variables
+    uses: wwmoraes/actions/golang/env@master
+
+  - name: restore modules cache
+    id: module-cache
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ env.GOMODCACHE }}
+      key: ${{ runner.os }}-modules-${{ hashFiles(inputs.source-dir, '/go.sum') }}
+      restore-keys: |
+        ${{ runner.os }}-modules-${{ hashFiles(inputs.source-dir, '/go.sum') }}
+        ${{ runner.os }}-modules-
+
+  - name: download modules
+    if: steps.module-cache.outputs.cache-hit != 'true'
+    run: go mod download
+    working-directory: ${{ inputs.source-dir }}
+    shell: sh
+
+  - name: restore build cache
+    id: build-cache
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ env.GOCACHE }}
+      key: ${{ runner.os }}-build-${{ hashFiles(inputs.source-dir, '/**.go') }}
+      restore-keys: |
+        ${{ runner.os }}-build-${{ hashFiles(inputs.source-dir, '/**.go') }}
+        ${{ runner.os }}-build-
+
+  - name: build
+    uses: wwmoraes/actions/golang/build@master
+    with:
+      packages: ./${{ inputs.source-dir }}
+      output-dir: ${{ inputs.output-dir }}
+      output-bin: ${{ inputs.output-bin }}
+
+  - name: run
+    run: dagger run go run ./${{ inputs.source-dir }} ${{ github.job }} < /dev/zero
+    shell: sh
+
+  # - name: run
+  #   uses: dagger/dagger-for-github@v5
+  #   with:
+  #     verb: run
+  #     dagger-flags: --progress plain
+  #     args: ${{ inputs.output-dir }}/${{ inputs.output-bin }} ${{ github.job }}
+  #     version: ${{ inputs.dagger-version }}
+
+  # - name: run
+  #   uses: dagger/dagger-for-github@v5
+  #   with:
+  #     verb: run
+  #     args: go run ./${{ inputs.source-dir }} ${{ github.job }}
+  #     version: ${{ inputs.dagger-version }}
+
+  - name: save build cache
+    uses: actions/cache/save@v3
+    if: always()
+    with:
+      path: ${{ env.GOCACHE }}
+      key: ${{ runner.os }}-build-${{ hashFiles(inputs.source-dir, '/**.go') }}
+
+  - name: save modules cache
+    uses: actions/cache/save@v3
+    if: always()
+    with:
+      path: ${{ env.GOMODCACHE }}
+      key: ${{ runner.os }}-modules-${{ hashFiles(inputs.source-dir, '/go.sum') }}

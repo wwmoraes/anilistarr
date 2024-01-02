@@ -1,0 +1,68 @@
+name: sdlc-build
+description: compiles a Dagger Go application
+author: William Artero
+
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  go-version:
+    description: Go runtime version
+    required: true
+  source-dir:
+    description: Path with the Dagger Go client source code
+    required: true
+  output-dir:
+    description: Path where to generate the compiled binary
+    default: ./bin
+  output-bin:
+    description: Name of the final compiled binary
+    default: sdlc
+
+runs:
+  using: composite
+
+  steps:
+  - name: setup golang
+    uses: actions/setup-go@v3
+    with:
+      go-version: ${{ inputs.go-version }}
+
+  - name: set golang environment variables
+    uses: wwmoraes/actions/golang/env@master
+
+  - name: restore modules cache
+    id: cache
+    uses: actions/cache/restore@v3
+    with:
+      key: ${{ runner.os }}-modules-${{ hashFiles(inputs.source-dir, '/go.sum') }}
+      restore-keys: |
+        ${{ runner.os }}-modules-${{ hashFiles(inputs.source-dir, '/go.sum') }}
+        ${{ runner.os }}-modules-
+
+  - name: download modules
+    if: steps.cache.outputs.cache-hit != 'true'
+    run: go mod download
+    working-directory: ${{ inputs.source-dir }}
+    shell: sh
+
+  - name: build
+    uses: wwmoraes/actions/golang/build@master
+    with:
+      packages: ./${{ inputs.source-dir }}
+      output-dir: ${{ inputs.output-dir }}
+      output-bin: ${{ inputs.output-bin }}
+
+  - name: upload
+    uses: actions/upload-artifact@v3
+    with:
+      name: ${{ inputs.output-bin }}
+      path: ${{ inputs.output-dir }}/${{ inputs.output-bin }}
+
+  - name: save modules cache
+    uses: actions/cache/save@v3
+    if: always()
+    with:
+      path: ${{ env.GOMODCACHE }}
+      key: ${{ runner.os }}-modules-${{ hashFiles(inputs.source-dir, '/go.sum') }}

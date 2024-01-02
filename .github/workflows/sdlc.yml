@@ -1,0 +1,180 @@
+name: SDLC
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    # branches:
+    # - master
+    # tags-ignore:
+    # - "*"
+    paths:
+    - .dockerignore
+    - .github/workflows/sdlc.yml
+    - .golangci.yaml
+    - .goreleaser.yaml
+    - '**.go'
+    - container-structure-test.yaml
+    - Dockerfile
+    - go.mod
+    - go.sum
+    - sonar-project.properties
+  pull_request:
+    # branches:
+    # - master
+    paths:
+    - .dockerignore
+    - .github/workflows/sdlc.yml
+    - .golangci.yaml
+    - .goreleaser.yaml
+    - '**.go'
+    - container-structure-test.yaml
+    - Dockerfile
+    - go.mod
+    - go.sum
+    - sonar-project.properties
+
+env:
+  DAGGER_VERSION: 0.9.5
+  GO_VERSION: "1.21"
+  OUTPUT_BIN: sdlc
+  OUTPUT_DIR: ./bin
+  SOURCE_DIR: sdlc
+
+jobs:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+
+  #   - name: checkout
+  #     uses: actions/checkout@v3
+
+  #   - name: build
+  #     uses: ./.github/actions/sdlc/build
+  #     with:
+  #       go-version: ${{ env.GO_VERSION }}
+  #       output-bin: ${{ env.OUTPUT_BIN }}
+  #       output-dir: ${{ env.OUTPUT_DIR }}
+  #       source-dir: ${{ env.SOURCE_DIR }}
+
+  integrate:
+    runs-on: ubuntu-latest
+    # needs: build
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v3
+
+    # - name: run
+    #   uses: ./.github/actions/sdlc/run
+    #   with:
+    #     dagger-version: ${{ env.DAGGER_VERSION }}
+    #     go-version: ${{ env.GO_VERSION }}
+    #     output-bin: ${{ env.OUTPUT_BIN }}
+    #     output-dir: ${{ env.OUTPUT_DIR }}
+    #     source-dir: ${{ env.SOURCE_DIR }}
+
+    - name: setup golang
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Install Dagger CLI
+      run: curl -L https://dl.dagger.io/dagger/install.sh | sh
+      shell: sh
+      env:
+        BIN_DIR: /usr/local/bin
+
+    - name: set golang environment variables
+      uses: wwmoraes/actions/golang/env@master
+
+    - name: restore modules cache
+      id: module-cache
+      uses: actions/cache/restore@v3
+      with:
+        path: ${{ env.GOMODCACHE }}
+        key: ${{ runner.os }}-modules-${{ hashFiles(env.SOURCE_DIR, '/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-modules-${{ hashFiles(env.SOURCE_DIR, '/go.sum') }}
+          ${{ runner.os }}-modules-
+
+    - name: download modules
+      if: steps.module-cache.outputs.cache-hit != 'true'
+      run: go mod download
+      working-directory: ${{ env.SOURCE_DIR }}
+      shell: sh
+
+    - name: restore build cache
+      id: build-cache
+      uses: actions/cache/restore@v3
+      with:
+        path: ${{ env.GOCACHE }}
+        key: ${{ runner.os }}-build-${{ hashFiles(env.SOURCE_DIR, '/**.go') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ hashFiles(env.SOURCE_DIR, '/**.go') }}
+          ${{ runner.os }}-build-
+
+    - name: build
+      uses: wwmoraes/actions/golang/build@master
+      with:
+        packages: ./${{ env.SOURCE_DIR }}
+        output-dir: ${{ env.OUTPUT_DIR }}
+        output-bin: ${{ env.OUTPUT_BIN }}
+
+    - name: run
+      run: dagger run ${{ env.OUTPUT_DIR }}/${{ env.OUTPUT_BIN }} ${{ github.job }} < /dev/zero
+      shell: sh
+      continue-on-error: true
+
+    - name: run
+      run: ${{ env.OUTPUT_DIR }}/${{ env.OUTPUT_BIN }} ${{ github.job }}
+      shell: sh
+      continue-on-error: true
+
+    - name: save build cache
+      uses: actions/cache/save@v3
+      if: always()
+      with:
+        path: ${{ env.GOCACHE }}
+        key: ${{ runner.os }}-build-${{ hashFiles(env.SOURCE_DIR, '/**.go') }}
+
+    - name: save modules cache
+      uses: actions/cache/save@v3
+      if: always()
+      with:
+        path: ${{ env.GOMODCACHE }}
+        key: ${{ runner.os }}-modules-${{ hashFiles(env.SOURCE_DIR, '/go.sum') }}
+
+
+  deliver:
+    runs-on: ubuntu-latest
+    needs: integrate
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: run
+      uses: ./.github/actions/sdlc/run
+      with:
+        dagger-version: ${{ env.DAGGER_VERSION }}
+        go-version: ${{ env.GO_VERSION }}
+        output-bin: ${{ env.OUTPUT_BIN }}
+        output-dir: ${{ env.OUTPUT_DIR }}
+        source-dir: ${{ env.SOURCE_DIR }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: deliver
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: run
+      uses: ./.github/actions/sdlc/run
+      with:
+        dagger-version: ${{ env.DAGGER_VERSION }}
+        go-version: ${{ env.GO_VERSION }}
+        output-bin: ${{ env.OUTPUT_BIN }}
+        output-dir: ${{ env.OUTPUT_DIR }}
+        source-dir: ${{ env.SOURCE_DIR }}
