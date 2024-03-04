@@ -1,0 +1,22 @@
+@startuml
+set separator none
+title Anilistarr - System Context
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+System(Anilist, "Anilist", $descr="", $tags="", $link="")
+System(Github, "Github", $descr="", $tags="", $link="")
+System(Anilistarr, "Anilistarr", $descr="converts anime sources for *arr services", $tags="", $link="")
+System(Sonarr, "Sonarr", $descr="", $tags="", $link="")
+System(Radarr, "Radarr", $descr="", $tags="", $link="")
+
+Rel(Anilistarr, Anilist, "Uses", $techn="HTTP/GraphQL", $tags="", $link="")
+Rel(Anilistarr, Github, "Uses", $techn="HTTP", $tags="", $link="")
+Rel(Sonarr, Anilistarr, "Uses", $techn="HTTP/REST", $tags="", $link="")
+Rel(Radarr, Anilistarr, "Uses", $techn="HTTP/REST", $tags="", $link="")
+
+SHOW_LEGEND(true)
+@enduml

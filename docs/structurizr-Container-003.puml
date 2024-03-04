@@ -1,0 +1,20 @@
+@startuml
+set separator none
+title Github - Containers
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(Anilistarr, "Anilistarr", $descr="converts anime sources for *arr services", $tags="", $link="")
+
+System_Boundary("Github_boundary", "Github", $tags="") {
+  Container(Github.GitHub, "GitHub", $techn="", $descr="", $tags="", $link="")
+}
+
+Rel(Anilistarr, Github.GitHub, "Uses", $techn="HTTP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+@enduml

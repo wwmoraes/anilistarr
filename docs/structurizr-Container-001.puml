@@ -1,0 +1,20 @@
+@startuml
+set separator none
+title Anilist - Containers
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System(Anilistarr, "Anilistarr", $descr="converts anime sources for *arr services", $tags="", $link="")
+
+System_Boundary("Anilist_boundary", "Anilist", $tags="") {
+  Container(Anilist.GraphQLAPI, "GraphQL API", $techn="", $descr="", $tags="", $link="")
+}
+
+Rel(Anilistarr, Anilist.GraphQLAPI, "Uses", $techn="HTTP/GraphQL", $tags="", $link="")
+
+SHOW_LEGEND(true)
+@enduml

@@ -1,0 +1,99 @@
+@startuml
+set separator none
+title Anilistarr - anilistarr - Components
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(Anilist, "Anilist", $descr="", $tags="", $link="")
+System(Github, "Github", $descr="", $tags="", $link="")
+Container(Anilistarr.Redis, "Redis", $techn="", $descr="", $tags="", $link="")
+Container(Anilistarr.BoltDB, "BoltDB", $techn="", $descr="", $tags="", $link="")
+Container(Anilistarr.BadgerDB, "BadgerDB", $techn="", $descr="", $tags="", $link="")
+Container(Anilistarr.PostgreSQL, "PostgreSQL", $techn="", $descr="", $tags="", $link="")
+System(Sonarr, "Sonarr", $descr="", $tags="", $link="")
+System(Radarr, "Radarr", $descr="", $tags="", $link="")
+
+Container_Boundary("Anilistarr.anilistarr_boundary", "anilistarr", $tags="") {
+  AddBoundaryTag("adapters", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+  Boundary(group_1, "adapters", $tags="adapters") {
+      AddBoundaryTag("adapters/cache", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      Boundary(group_2, "cache", $tags="adapters/cache") {
+        Component(Anilistarr.anilistarr.Cache, "Cache", $techn="interface", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.CachedTracker, "CachedTracker", $techn="", $descr="", $tags="", $link="")
+      }
+
+      AddBoundaryTag("adapters/mapper", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      Boundary(group_3, "mapper", $tags="adapters/mapper") {
+        Component(Anilistarr.anilistarr.JSONProvider, "JSON Provider", $techn="struct", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.Provider, "Provider", $techn="interface", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.Store, "Store", $techn="interface", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.TrackerMapper, "TrackerMapper", $techn="", $descr="", $tags="", $link="")
+      }
+
+  }
+
+  AddBoundaryTag("drivers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+  Boundary(group_4, "drivers", $tags="drivers") {
+      AddBoundaryTag("drivers/persistence", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      Boundary(group_5, "persistence", $tags="drivers/persistence") {
+        Component(Anilistarr.anilistarr.RedisDriver, "Redis Driver", $techn="", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.BoltDBDriver, "BoltDB Driver", $techn="", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.BadgerDBDriver, "BadgerDB Driver", $techn="struct", $descr="", $tags="", $link="")
+        Component(Anilistarr.anilistarr.SQLDriver, "SQL Driver", $techn="struct", $descr="", $tags="", $link="")
+      }
+
+      AddBoundaryTag("drivers/providers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      Boundary(group_6, "providers", $tags="drivers/providers") {
+        Component(Anilistarr.anilistarr.AnilistFribbsProvider, "Anilist Fribbs Provider", $techn="struct", $descr="", $tags="", $link="")
+      }
+
+      AddBoundaryTag("drivers/trackers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      Boundary(group_7, "trackers", $tags="drivers/trackers") {
+        Component(Anilistarr.anilistarr.anilist, "anilist", $techn="struct", $descr="", $tags="", $link="")
+      }
+
+  }
+
+  AddBoundaryTag("usecases", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+  Boundary(group_8, "usecases", $tags="usecases") {
+    Component(Anilistarr.anilistarr.Tracker, "Tracker", $techn="interface", $descr="", $tags="", $link="")
+    Component(Anilistarr.anilistarr.Mapper, "Mapper", $techn="interface", $descr="", $tags="", $link="")
+    Component(Anilistarr.anilistarr.MediaLister, "MediaLister", $techn="struct", $descr="", $tags="", $link="")
+  }
+
+  Component(Anilistarr.anilistarr.RESTAPI, "REST API", $techn="", $descr="", $tags="", $link="")
+}
+
+Rel(Anilistarr.anilistarr.anilist, Anilist, "Uses", $techn="HTTP/GraphQL", $tags="", $link="")
+Rel(Anilistarr.anilistarr.RedisDriver, Anilistarr.Redis, "uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.BoltDBDriver, Anilistarr.BoltDB, "uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.BadgerDBDriver, Anilistarr.BadgerDB, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.SQLDriver, Anilistarr.PostgreSQL, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.AnilistFribbsProvider, Github, "Uses", $techn="HTTP", $tags="", $link="")
+Rel(Anilistarr.anilistarr.JSONProvider, Anilistarr.anilistarr.AnilistFribbsProvider, "Inherited by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Provider, Anilistarr.anilistarr.JSONProvider, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Store, Anilistarr.anilistarr.BadgerDBDriver, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Store, Anilistarr.anilistarr.SQLDriver, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.TrackerMapper, Anilistarr.anilistarr.Store, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.TrackerMapper, Anilistarr.anilistarr.Provider, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Cache, Anilistarr.anilistarr.RedisDriver, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Cache, Anilistarr.anilistarr.BoltDBDriver, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Cache, Anilistarr.anilistarr.BadgerDBDriver, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.CachedTracker, Anilistarr.anilistarr.Cache, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Tracker, Anilistarr.anilistarr.anilist, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Tracker, Anilistarr.anilistarr.CachedTracker, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.CachedTracker, Anilistarr.anilistarr.Tracker, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.Mapper, Anilistarr.anilistarr.TrackerMapper, "Implemented by", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.MediaLister, Anilistarr.anilistarr.Tracker, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.MediaLister, Anilistarr.anilistarr.Mapper, "Uses", $techn="", $tags="", $link="")
+Rel(Anilistarr.anilistarr.RESTAPI, Anilistarr.anilistarr.MediaLister, "Uses", $techn="", $tags="", $link="")
+Rel(Sonarr, Anilistarr.anilistarr.RESTAPI, "Uses", $techn="HTTP/REST", $tags="", $link="")
+Rel(Radarr, Anilistarr.anilistarr.RESTAPI, "Uses", $techn="HTTP/REST", $tags="", $link="")
+
+SHOW_LEGEND(true)
+@enduml
