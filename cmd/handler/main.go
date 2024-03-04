@@ -43,11 +43,18 @@ func main() {
 		port = "8080"
 	}
 
-	addr := fmt.Sprintf("%s:%s", host, port)
+	dataPath := os.Getenv("DATA_PATH")
+
+	store, err := NewStore(dataPath)
+	assert(err)
+
+	cache, err := NewCache(dataPath)
+	assert(err)
 
 	mediaLister, err := NewAnilistMediaLister(
 		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
-		os.Getenv("DATA_PATH"),
+		store,
+		cache,
 	)
 	assert(err)
 
@@ -63,14 +70,14 @@ func main() {
 	r.Get("/user", api.GetUser)
 
 	server := http.Server{
-		Addr:    addr,
+		Addr:    fmt.Sprintf("%s:%s", host, port),
 		Handler: r,
 	}
 
 	// update mapping every week
 	go scheduledRefresh(ctx, mediaLister, time.Hour*24*7)
 	go server.ListenAndServe() //nolint:errcheck
-	log.Info("server listening", "address", addr)
+	log.Info("server listening", "address", server.Addr)
 
 	<-ctx.Done()
 	cancel()
