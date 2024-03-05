@@ -14,6 +14,7 @@ GOLANG_MERGED_GOCOV_FILE ?= ${GOLANG_COVERAGE_PATH}/merged.txt
 GOLANG_RUN_REPORT_FILE ?= ${GOLANG_COVERAGE_PATH}/run-report.json
 GOLANG_UNIT_TEST_GOCOV_FILE ?= ${GOLANG_COVERAGE_PATH}/unit.txt
 
+GOLANG_TEST_PACKAGES ?= ./...
 GOLANG_INTEGRATION_SRC_PATH ?=
 GOLANG_INTEGRATION_PACKAGES ?=
 GOLANG_INTEGRATION_ENABLED ?= $(if ${GOLANG_INTEGRATION_SRC_PATH},1)
@@ -52,7 +53,7 @@ golang-clean:
 
 .PHONY: golang-test
 golang-test:
-	@${GO} test ${GOLANG_FLAGS} -v ./...
+	@${GO} test ${GOLANG_FLAGS} -v ${GOLANG_TEST_PACKAGES}
 
 .PHONY: golang-coverage-html
 golang-coverage-html: ${GOLANG_COVERAGE_REPORT_TARGET}
@@ -74,7 +75,7 @@ ${GOLANG_COVERAGE_REPORT_TARGET}: ${GOLANG_COVERAGE_REPORT_SOURCE}
 ${GOLANG_UNIT_TEST_GOCOV_FILE}: ${SOURCE_FILES}
 ${GOLANG_UNIT_TEST_GOCOV_FILE}:
 	$(info running unit tests)
-	@${GO} test -v ${GOLANG_FLAGS} -coverprofile=$@ ./...
+	@${GO} test -v ${GOLANG_FLAGS} -coverprofile=$@ ${GOLANG_TEST_PACKAGES}
 
 ### only run integration test and merge test results if enabled
 ifneq (${GOLANG_INTEGRATION_ENABLED},)

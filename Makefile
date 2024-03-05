@@ -12,6 +12,7 @@ CONTAINER_STRUCTURE_TEST_FILE = container-structure-test.yaml
 CONTAINER_IMAGE = wwmoraes/anilistarr
 GOLANG_INTEGRATION_SRC_PATH = cmd/internal/integration
 GOLANG_INTEGRATION_PACKAGES = internal/usecases,internal/adapters
+GOLANG_TEST_PACKAGES = ./internal/adapters/... ./internal/usecases/...
 
 -include .make/*.mk
 
