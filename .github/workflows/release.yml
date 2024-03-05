@@ -114,7 +114,7 @@ jobs:
       env:
         VERSION: ${{ needs.metadata.outputs.version }}
     - name: run goreleaser
-      uses: goreleaser/goreleaser-action@v4
+      uses: goreleaser/goreleaser-action@v5
       with:
         args: release --clean --skip-validate
       env:
