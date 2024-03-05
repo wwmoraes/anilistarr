@@ -1,8 +1,10 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
 openapi: 3.1.0
 info:
   title: Anilistarr
   description: |-
-    Converts an Anilist user watching list to a custom list format which *arr apps support.
+    Converts an Anilist user watching list to a custom list format which *arr
+    apps support.
   # termsOfService: http://swagger.io/terms/
   contact:
     email: anilistarr@artero.dev
@@ -16,14 +18,16 @@ externalDocs:
 servers:
   - url: https://anilistarr.fly.dev
 paths:
-  /user:
+  /user/{name}/id:
     get:
+      operationId: GetUserID
       parameters:
-        - name: name
-          in: query
-          content:
-            text/plain:
-              example: wwmoraes
+      - name: name
+        in: path
+        required: true
+        content:
+          text/plain:
+            example: wwmoraes
       responses:
         200:
           description: user found
@@ -36,14 +40,16 @@ paths:
             text/plain:
               example: |
                 failed to get user ID: ...
-  /list:
+  /user/{name}/media:
     get:
+      operationId: GetUserMedia
       parameters:
-        - name: username
-          in: query
-          content:
-            text/plain:
-              example: wwmoraes
+      - name: name
+        in: path
+        required: true
+        content:
+          text/plain:
+            example: wwmoraes
       responses:
         200:
           description: media list for the given user

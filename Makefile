@@ -67,10 +67,10 @@ redis-proxy:
 	@flyctl redis proxy
 
 get-user:
-	@curl -v "http://${HOST}:${PORT}/user?name=wwmoraes"
+	@curl -v "http://${HOST}:${PORT}/user/wwmoraes/id"
 
-get-list:
-	@curl -v "http://${HOST}:${PORT}/list?username=wwmoraes"
+get-media:
+	@curl -v "http://${HOST}:${PORT}/user/wwmoraes/media"
 
 docs:
 	@open http://localhost:6060/pkg/github.com/${IMAGE}/
@@ -91,3 +91,12 @@ watch-diagrams:
 
 # edit-diagrams:
 # 	@ structurizr/lite
+
+api:
+	@mkdir -p internal/api
+	@oapi-codegen \
+		-generate types,chi-server,spec \
+		-package api \
+		-o internal/api/api.gen.go \
+		swagger.yaml
+	@sed -i '' '/var err error/d' internal/api/api.gen.go

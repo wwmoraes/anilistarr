@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/riandyrn/otelchi"
+	"github.com/wwmoraes/anilistarr/internal/api"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	_ "go.uber.org/automaxprocs"
@@ -58,16 +59,17 @@ func main() {
 	)
 	assert(err)
 
-	api := &RestAPI{mediaLister}
 	ctx = telemetry.ContextWithLogger(ctx)
 
 	r := chi.NewRouter()
 	r.Use(otelchi.Middleware(telemetry.NAME, otelchi.WithChiRoutes(r)))
 	r.Use(telemetry.NewHandlerMiddleware)
 	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), 1000)))
-	r.Get("/list", api.GetList)
-	r.Get("/map", api.GetMap)
-	r.Get("/user", api.GetUser)
+
+	service, err := api.NewService(mediaLister)
+	assert(err)
+
+	api.HandlerFromMux(service, r)
 
 	server := http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, port),
