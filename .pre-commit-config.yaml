@@ -3,7 +3,7 @@
 ## See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
+  rev: v4.6.0
   hooks:
   - id: check-added-large-files
   - id: check-case-conflict
@@ -29,11 +29,11 @@ repos:
   - id: editorconfig-checker
     exclude: vscode/.config/Code/User/globalStorage/.*
 - repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.37.0
+  rev: v0.41.0
   hooks:
   - id: markdownlint
 - repo: https://github.com/hadolint/hadolint
-  rev: v2.12.1-beta
+  rev: v2.13.0-beta
   hooks:
   - id: hadolint
 - repo: https://github.com/tekwizely/pre-commit-golang
