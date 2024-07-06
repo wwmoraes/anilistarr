@@ -1,10 +1,20 @@
+# yaml-language-server: $schema=https://json.schemastore.org/codecov.json
 coverage:
   status:
     project:
       default:
+        target: auto
+      integration:
+        target: auto
         flags:
-        - usecases
-        - adapters
+        - integration
+      unit:
+        target: auto
+        flags:
+        - unit
+    patch:
+      default:
+        target: auto
 
 flag_management:
   default_rules:
@@ -16,21 +26,26 @@ flag_management:
     - type: patch
       target: 90%
   individual_flags:
-  - name: usecases
+  - name: integration
     paths:
-    - internal/usecases/*
-    carryforward: true
+    - internal/adapters/
+    - internal/usecases/
+  - name: unit
+    paths:
+    - internal/adapters/
+    - internal/usecases/
+
+component_management:
+  default_rules:
     statuses:
     - type: project
-      target: 20%
     - type: patch
-      target: 100%
-  - name: adapters
+  individual_components:
+  - component_id: adapters
+    name: Adapters
     paths:
-    - internal/adapters/*
-    carryforward: true
-    statuses:
-    - type: project
-      target: 20%
-    - type: patch
-      target: 100%
+    - internal/adapters/**
+  - component_id: usecases
+    name: Use Cases
+    paths:
+    - internal/usecases/**
