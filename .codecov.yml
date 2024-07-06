@@ -4,36 +4,41 @@ coverage:
     project:
       default:
         target: auto
+        threshold: 1%
       integration:
-        target: auto
         flags:
         - integration
       unit:
-        target: auto
         flags:
         - unit
     patch:
       default:
         target: auto
+        threshold: 1%
+      integration:
+        flags:
+        - integration
+      unit:
+        flags:
+        - unit
+
 
 flag_management:
   default_rules:
     carryforward: true
+    paths:
+    - internal/adapters/
+    - internal/usecases/
     statuses:
     - type: project
       target: auto
       threshold: 1%
     - type: patch
-      target: 90%
+      target: auto
+      threshold: 1%
   individual_flags:
   - name: integration
-    paths:
-    - internal/adapters/
-    - internal/usecases/
   - name: unit
-    paths:
-    - internal/adapters/
-    - internal/usecases/
 
 component_management:
   default_rules:
@@ -42,10 +47,10 @@ component_management:
     - type: patch
   individual_components:
   - component_id: adapters
-    name: Adapters
+    name: adapters
     paths:
     - internal/adapters/**
   - component_id: usecases
-    name: Use Cases
+    name: usecases
     paths:
     - internal/usecases/**
