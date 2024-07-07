@@ -1,20 +1,528 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
 # cspell:disable
 run:
   modules-download-mode: readonly
-  issues-exit-code: 0
-  timeout: 2m
+  allow-parallel-runners: true
+  allow-serial-runners: true
 output:
-  format: colored-line-number
+  show-stats: true
+  sort-order:
+  - linter
+  - severity
+  - file
+  sort-results: true
+  formats:
+  - format: colored-line-number
+  - format: sarif
+    path: golangci-lint.sarif
 linters-settings:
-  enable:
-  - stylecheck
-  - unconvert
-  - gosec
-  - errorlint
-  - maligned
-  - interfacer
-  - unparam
-  - whitespace
-  - wrapcheck
-  - prealloc
-  - nolintlint
+  asasalint: {}
+  bidichk: {}
+  copyloopvar:
+    ignore-alias: false
+  cyclop:
+    max-complexity: 10 # http://www.mccabe.com/pdf/mccabe-nist235r.pdf chapter 2.5
+    package-average: 5
+    skip-tests: false
+  decorder:
+    dec-order:
+    - const
+    - var
+    - type
+    - func
+    disable-dec-order-check: false
+    disable-init-func-first-check: false
+    disable-dec-num-check: false
+    disable-type-dec-num-check: true
+  depguard:
+    rules:
+      json:
+        deny:
+        - pkg: encoding/json
+          desc: >-
+            The standard library json package is not optimized. Use instead the
+            github.com/goccy/go-json, which is faster and memory-performant.
+  dogsled:
+    max-blank-identifiers: 2
+  dupl:
+    threshold: 100
+  dupword: {}
+  errcheck:
+    check-blank: true
+    check-type-assertions: true
+    disable-default-exclusions: true
+    exclude-functions:
+    - (*strings.Builder).WriteString
+    exclude: ""
+    ignore: ""
+  errchkjson:
+    check-error-free-encoding: true
+    report-no-exported: true
+  errorlint: {}
+  exhaustive:
+    check-generated: true
+    default-case-required: true
+    default-signifies-exhaustive: false
+    explicit-exhaustive-map: true
+    explicit-exhaustive-switch: true
+    ignore-enum-members: ".+_UNSPECIFIED"
+  exhaustruct:
+    exclude: [] # TODO(william) exclude known value objects
+  forbidigo:
+    exclude-godoc-examples: true
+    analyze-types: true
+    forbid:
+    - p: ^panic$
+      msg: >-
+        Do not use panic statements.
+        It's hard to debug and disrupts observability.
+    - p: ^print.*$
+      msg: >-
+        Do not use built-in print statements.
+        Prefer a logger and/or the Sprint*/Fprint* variants.
+    - p: ^fmt\.Print.*$
+      msg: >-
+        Do not use plain print statements.
+        Prefer a logger and/or the Sprint*/Fprint* variants.
+    - p: ^assert$
+      msg: >-
+        Do not use the plain assert.
+        Use AssertWith and a meaningful wrapping message.
+    - p: ^exec\.(Cmd|Command|CommandContext)*
+      pkg: os/exec
+      msg: >-
+        Do not create subprocesses using external binaries.
+        Search on pkg.go.dev for a library to solve the problem directly instead.
+    - p: ^log\..*
+      pkg: log
+      msg: >-
+        Do not use the standard logger.
+        Use the telemetry logger instead.
+  funlen:
+    ignore-comments: true
+  gci:
+    custom-order: true
+    skip-generated: true
+    sections:
+    - standard
+    - default
+    - prefix(github.com/wwmoraes/anilistarr)
+  ginkgolinter: {}
+  gocognit:
+    min-complexity: 10
+  goconst:
+    ignore-calls: false
+    min-len: 2
+    min-occurrences: 3
+    numbers: true
+  gocritic:
+    enable-all: true
+  gocyclo:
+    min-complexity: 10 # http://www.mccabe.com/pdf/mccabe-nist235r.pdf chapter 2.5
+  godot:
+    capital: false
+    check-all: false
+    period: false
+  godox:
+    keywords:
+    - "TODO"
+    - "BUG"
+    - "FIX"
+    - "NOTE"
+    - "[ ]"
+  gofmt:
+    simplify: true
+    rewrite-rules:
+    - pattern: 'interface{}'
+      replacement: 'any'
+    - pattern: 'a[b:len(a)]'
+      replacement: 'a[b:]'
+  gofumpt:
+    extra-rules: true
+    module-path: github.com/wwmoraes/anilistarr
+  goheader:
+    template-path: .vscode/header.txt
+  goimports:
+    local-prefixes: github.com/wwmoraes/anilistarr
+  gomoddirectives:
+    exclude-forbidden: true
+    replace-allow-list:
+    - github.com/miladabc/gonfig
+    - github.com/ugorji/go
+  gomodguard:
+    blocked:
+      local_replace_directives: true
+    allowed:
+      domains:
+      - github.com
+      - go.mongodb.org
+      - go.opentelemetry.io
+      - golang.org
+      - google.golang.org
+      - gopkg.in
+      modules:
+      - git.sr.ht/~emersion/go-jsonschema
+  gosimple:
+    checks: ["all"]
+  gosec:
+    confidence: low
+    exclude-generated: false
+    severity: low
+  gosmopolitan:
+    allow-time-local: false
+    ignore-tests: false
+  govet:
+    enable-all: true
+    settings:
+      shadow:
+        strict: true
+  grouper:
+    const-require-grouping: false
+    const-require-single-const: true
+    import-require-grouping: false
+    import-require-single-import: true
+    type-require-grouping: false
+    type-require-single-type: false
+    var-require-grouping: false
+    var-require-single-var: true
+  importas:
+    no-extra-aliases: true
+    no-unaliased: false
+    alias:
+    - alias: pcsngv1alpha
+      pkg: github.com/wwmoraes/anilistarr/internal/drivers/grpc/pcsng/v1alpha
+    - alias: semconv
+      pkg: go.opentelemetry.io/otel/semconv/v1.24.0
+    - alias: otelruntime
+      pkg: go.opentelemetry.io/contrib/instrumentation/runtime
+    - alias: sdkmetric
+      pkg: go.opentelemetry.io/otel/sdk/metric
+    - alias: sdktrace
+      pkg: go.opentelemetry.io/otel/sdk/trace
+    # avoids clashing with the main badger package
+    - alias: badgerstore
+      pkg: github.com/ostafen/clover/v2/store/badger
+    # TODO(william) rename package to match the folder name and drop this alias
+    - alias: vmwarevcenter
+      pkg: github.com/wwmoraes/anilistarr/internal/drivers/vcenter
+  inamedparam: {}
+  interfacebloat:
+    max: 6 # TODO(william) fine tune the maximum methods per interface
+  # intrange: {}
+  ireturn:
+    allow:
+    - anon
+    - empty
+    - error
+    - stdlib
+    - generic
+    # Telemetry
+    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.HTTPSpan$"
+    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Span$"
+    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer$"
+    - "go\\.opentelemetry\\.io/otel/metric"
+    - "go\\.opentelemetry\\.io/otel/trace"
+    - "github\\.com/go-logr/logr\\.LogSink$"
+  lll:
+    line-length: 120
+    tab-width: 2
+  loggercheck:
+    kitlog: false
+    klog: false
+    logr: true
+    no-printf-like: true
+    require-string-key: false
+    zap: false
+  maintidx:
+    # https://learn.microsoft.com/en-us/visualstudio/code-quality/code-metrics-maintainability-index-range-and-meaning?view=vs-2022
+    under: 57 # TODO(william) fine-tune maintainability index [target 85?]
+  makezero:
+    always: true
+  misspell:
+    locale: US
+    mode: restricted
+  mnd:
+    ignored-functions:
+    - '^cobra\.ExactArgs$'
+    - '^net\.IPv4$'
+    - '^os\.Exit$'
+    - '^os\.MkdirAll$'
+    - '^os\.OpenFile$'
+    - '^os\.WriteFile$'
+    ignored-numbers:
+    - 1
+    - 2
+  musttag:
+    functions:
+    - name: (*github.com/miladabc/gonfig.Config).Into
+      tag: config
+      arg-pos: 0
+  nakedret:
+    max-func-lines: 0
+  nestif:
+    min-complexity: 4 # TODO(william) reduce nested if complexity to 3
+  nilnil: {}
+  nlreturn:
+    block-size: 1
+  nolintlint:
+    require-explanation: true
+    require-specific: true
+  nonamedreturns:
+    report-error-in-defer: true
+  paralleltest: {}
+  perfsprint: {}
+  prealloc:
+    for-loops: true
+    range-loops: true
+    simple: true
+  predeclared:
+    q: true
+  promlinter:
+    strict: true
+  protogetter: {}
+  reassign:
+    patterns: [".*"]
+  revive:
+    enable-all-rules: true
+    ignore-generated-header: true
+    rules:
+    # custom settings
+    - name: exported
+      arguments:
+      - checkPrivateReceivers
+      - sayRepetitiveInsteadOfStutters
+    - name: unhandled-error
+      severity: warning
+      arguments:
+      - "strings\\.Builder\\.WriteString"
+      - "fmt\\.(P|Fp|Sp)rint(f|ln)?"
+    # undesired checks
+    - name: add-constant # duplicate of mnd
+      disabled: true
+    - name: cognitive-complexity # duplicate of gocyclo
+      disabled: true
+    - name: confusing-naming # drivers implement the same interface methods
+      disabled: true
+    - name: function-length # duplicate of funlen
+      disabled: true
+    - name: get-return # handlers don't return values
+      disabled: true
+    - name: line-length-limit # duplicate of lll
+      disabled: true
+    - name: max-public-structs # DDD+ISP = granular interfaces
+      disabled: true
+  rowserrcheck: {}
+  sloglint:
+    no-global: all
+    context: all
+    static-msg: true
+  spancheck:
+    checks:
+    - end
+    - record-error
+    - set-status
+    extra-start-span-signatures:
+    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Start:opentelemetry"
+    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.StartFunction:opentelemetry"
+    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer)\\.Start:opentelemetry"
+    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer)\\.StartFunction:opentelemetry"
+    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer)\\.StartHTTPResponse:opentelemetry"
+    ignore-check-signatures: # does not work sadly
+    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Span)\\.Assert"
+    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Span)\\.Errorf"
+  staticcheck:
+    checks: [all]
+    http_status_code_whitelist: []
+  stylecheck:
+    checks: [all]
+    initialisms: []
+    http-status-code-whitelist: []
+  tagalign:
+    strict: true
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        config: upperSnake
+        json: goCamel
+        toml: goCamel
+        yaml: goCamel
+  tenv:
+    all: true
+  testifylint:
+    enable-all: true
+  testpackage:
+    allow-packages: []
+  thelper: {}
+  usestdlibvars:
+    constant-kind: true
+    crypto-hash: true
+    default-rpc-path: true
+    http-method: true
+    http-status-code: true
+    sql-isolation-level: true
+    time-layout: true
+    time-month: true
+    time-weekday: true
+    tls-signature-scheme: true
+  unconvert:
+    fast-math: true
+  unparam:
+    check-exported: true
+  unused: {}
+  varnamelen:
+    ignore-decls:
+    - w http.ResponseWriter
+    - r *http.Request
+    ignore-names:
+    - fd
+    - id
+    - ok
+  whitespace:
+    multi-func: true
+    multi-if: true
+  wrapcheck:
+    ignoreSigs:
+      - (github.com/wwmoraes/anilistarr/pkg/telemetry.Span).Assert(
+      - (github.com/wwmoraes/anilistarr/pkg/telemetry.Span).Errorf(
+      - errors.Join(
+      - errors.New(
+      - errors.Unwrap(
+      - fmt.Errorf(
+      - status.Error(
+      - status.Errorf(
+  wsl: {}
+linters:
+  enable-all: true
+  fast: true
+  disable:
+  - cyclop # Checks function and package cyclomatic complexity.
+  - decorder # Check declaration order and count of types, constants, variables and functions.
+  - dupl # Tool for code clone detection.
+  - err113 # Checks errors handling expressions.
+  - exhaustive # Check exhaustiveness of enum switch statements.
+  - exhaustruct # Checks if all structure fields are initialized.
+  - gocognit # Computes and checks the cognitive complexity of functions.
+  - goconst # Finds repeated strings that could be replaced by a constant.
+  - gocritic # Checks for bugs, performance and style issues.
+  - gocyclo # Computes and checks the cyclomatic complexity of functions.
+  - godox # Checks FIXME, TODO and other comment keywords.
+  - govet # Vet examines Go source code and reports suspicious constructs.
+  - grouper # Analyze expression groups.
+  - ireturn # Accept Interfaces, Return Concrete Types.
+  - lll # Reports long lines.
+  - maintidx # Maintidx measures the maintainability index of each function.
+  - makezero # Finds slice declarations with non-zero initial length.
+  - misspell # Finds commonly misspelled English words.
+  - revive # General linter. Drop-in replacement of golint.
+  - spancheck # Checks for mistakes with OpenTelemetry/Census spans.
+  ## opted out
+  - ginkgolinter # Enforces standards of using ginkgo and gomega.
+  - gochecknoglobals # Checks that no global variables exist. (no settings sadly)
+  - rowserrcheck # Checks whether Rows.Err of rows is checked successfully. [no SQL in use]
+  ## broken
+  - godot ## Check if comments end in a period. [changes comments indiscriminately]
+  - goheader ## Checks is file header matches to pattern. [breaks packages]
+  ## deprecated linters (step 1)
+  - execinquery
+  - gomnd ## renamed to mnd
+issues:
+  exclude-use-default: false
+  exclude-case-sensitive: false
+  exclude-dirs-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+severity:
+  default-severity: error
+  case-sensitive: false
+  rules:
+  - severity: warning
+    linters:
+    # - asasalint
+    # - bidichk
+    # - copyloopvar
+    - cyclop
+    # - decorder
+    # - depguard
+    - dogsled
+    - dupword
+    # - errcheck
+    # - errchkjson
+    # - errorlint
+    # - exhaustive
+    - exhaustruct
+    # - forbidigo
+    - funlen
+    - gci
+    - ginkgolinter
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    # - gofmt
+    # - gofumpt
+    - goimports
+    - gomoddirectives
+    - gomodguard
+    # - gosec
+    - gosimple
+    - gosmopolitan
+    # - govet
+    - grouper
+    - importas
+    - inamedparam
+    - interfacebloat
+    - intrange
+    - ireturn
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - misspell
+    - mnd
+    # - musttag
+    # - nakedret
+    - nestif
+    - nilnil
+    - nlreturn
+    # - nolintlint
+    # - nonamedreturns
+    # - paralleltest
+    - perfsprint
+    - prealloc
+    # - predeclared
+    - promlinter
+    # - protogetter
+    # - reassign
+    # - revive
+    - sloglint
+    # - spancheck
+    # - staticcheck
+    - stylecheck
+    - tagalign
+    # - tagliatelle
+    # - tenv
+    # - testifylint
+    # - testpackage
+    # - thelper
+    # - unconvert
+    # - unparam
+    # - unused
+    - usestdlibvars
+    - varnamelen
+    - whitespace
+    # - wrapcheck
+    - wsl
+  - severity: note
+    linters:
+    - dupl
+    - godox
+  ## deprecated or broken
+  - severity: none
+    linters:
+    ## broken
+    - godot
+    - goheader
+    ## deprecated
+    - execinquery
+    - gomnd

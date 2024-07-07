@@ -17,6 +17,7 @@
     "dist": true,
     "golangci-lint-report.xml": true,
     "tmp": true,
+    "golangci-lint.sarif": true,
     "hadolint.sarif": true
   },
   "go.coverMode": "atomic",
