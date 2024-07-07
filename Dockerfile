@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1
 
-ARG GOLANG_VERSION=1.20
-ARG ALPINE_VERSION=3.18
+ARG GOLANG_VERSION=1.22
+ARG ALPINE_VERSION=3.20
 
 FROM golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} AS build
 
@@ -20,7 +20,9 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM alpine:${ALPINE_VERSION} AS certificates
 
-RUN apk add --no-cache ca-certificates=20230506-r0
+# we always want the latest CA bundle
+# hadolint ignore=DL3018
+RUN apk add --no-cache ca-certificates
 
 
 FROM alpine:${ALPINE_VERSION} AS tmp
