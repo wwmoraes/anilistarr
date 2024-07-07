@@ -1,0 +1,5 @@
+[default]
+binary = false
+
+[files]
+extend-exclude = ["**/*.gen.go"]

@@ -1,5 +1,5 @@
 *.env.local
-*.xml
+*.sarif
 /bin/
 /coverage/
 /dist/

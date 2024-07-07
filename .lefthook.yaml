@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+assert_lefthook_installed: true
+prepare-commit-msg:
+  commands:
+    koji:
+      run: exec < /dev/tty && koji --hook || true
+      interactive: true
+commit-msg:
+  commands:
+    commitlint:
+      run: grep -q "^fixup! " "{1}" || commitlint lint --message "{1}"
+    trailers:
+      run: git interpret-trailers --in-place --trailer "sign" --trim-empty "{1}"
+pre-commit:
+  piped: true
+  commands:
+    typos:
+      priority: 1
+      run: typos --force-exclude {staged_files}
+      exclude: .*\.(jpg|png)$
+    ## TODO check case conflict?
+    ## TODO check JSON
+    ## TODO check YAML
+    ## TODO check TOML
+    ## TODO check trailing whitespace?
+    checktask:
+      priority: 1
+      run: task -a -j > /dev/null
+      glob: Taskfile.yaml
+    editorconfig-checker:
+      priority: 1
+      run: editorconfig-checker ${ARGS} {staged_files}
+      env:
+        ARGS: ""
+      exclude: .*\.(jpg|png)$
+    ## TODO XML/HTML lint
+    ## TODO hadolint
+    ## TODO markdownlint
+    gofumpt:
+      priority: 1
+      run: gofumpt -l -w {staged_files}
+      glob: "**/*.go"
+      stage_fixed: true
+    golangci-lint:
+      priority: 1
+      run: golangci-lint run
+      glob: "**/*.go"
+    tidy:
+      priority: 40
+      run: go mod tidy
+      glob: "{**/*.go,go.mod}"
+      stage_fixed: true
+pre-push:
+  piped: true
+  commands:
+    build:
+      priority: 50
+      run: task build
+      glob: "{**/*.go,go.mod,go.sum}"
+    test:
+      priority: 50
+      run: task test
+      glob: "{**/*.go,go.mod,go.sum}"
+skip_output:
+- meta
+# - summary
+# - skips

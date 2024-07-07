@@ -1,4 +1,7 @@
 {
+  "files.associations": {
+    "*.sarif": "json"
+  },
   "betterStrongerToml.jsonSchema.associations": [
     {
       "pattern": "fly.toml",
@@ -13,7 +16,8 @@
     "coverage.out": true,
     "dist": true,
     "golangci-lint-report.xml": true,
-    "tmp": true
+    "tmp": true,
+    "hadolint.sarif": true
   },
   "go.coverMode": "atomic",
   "go.coverageDecorator": {
