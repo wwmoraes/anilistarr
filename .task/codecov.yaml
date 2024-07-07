@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: 3
+
+vars:
+  FEATURES: '{{ .FEATURES | default "fixes" }}'
+
+tasks:
+  report:unflagged:*:
+    desc: Reports unflagged coverage data.
+    label: codecov:report:unflagged:{{ .FILE }}
+    requires:
+      vars:
+      - CODECOV_TOKEN
+    vars:
+      FILE: '{{ index .MATCH 0 }}'
+    env:
+      CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
+    cmd: >-
+      codecov create-report
+      --nonZero
+      --feature {{ .FEATURES | q }}
+      --file {{ .FILE | q }}
+      {{ .CLI_ARGS }}
+    sources:
+    - '{{ .FILE }}'
+  report:flagged:*:*:
+    desc: Reports flagged coverage data.
+    label: codecov:report:flagged:{{ .FLAG }}:{{ .FILE }}
+    requires:
+      vars:
+      - CODECOV_TOKEN
+    vars:
+      FLAG: '{{ index .MATCH 0 }}'
+      FILE: '{{ index .MATCH 1 }}'
+    env:
+      CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
+    cmd: >-
+      codecov create-report
+      --nonZero
+      --feature {{ .FEATURES | q }}
+      --flag {{ .FLAG | q }}
+      --file {{ .FILE | q }}
+      {{ .CLI_ARGS }}
+    sources:
+    - '{{ .FILE }}'

@@ -1,0 +1,351 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: 3
+
+dotenv:
+- .env.local
+- .env
+
+vars:
+  GO: '{{ .GO | default "go" }}'
+  GOLANG_PACKAGE:
+    sh: go list
+  GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-v -race -mod=readonly" }}'
+  GOLANG_TEST_FLAGS: '{{ .GOLANG_TEST_FLAGS | default "-shuffle on" }}'
+  GOLANG_TEST_PACKAGES: >-
+    internal/adapters
+    internal/usecases
+  CONTAINER_IMAGE: wwmoraes/anilistarr
+  VERSION:
+    sh: >-
+      git describe --tags 2> /dev/null
+      | sed -e 's/^v//'
+      || echo "0.1.0-rc.0"
+
+includes:
+  codecov:
+    taskfile: .task/codecov.yaml
+    internal: true
+
+tasks:
+  handler:get-user:
+    desc: Retrieves user ID through the handler API.
+    cmd: curl -v "http://${HOST}:${PORT}/user/wwmoraes/id"
+  handler:get-media:
+    desc: Retrieves user media through the handler API.
+    cmd: curl -v "http://${HOST}:${PORT}/user/wwmoraes/media"
+  build:
+    desc: Builds the server binary.
+    deps:
+    - api
+    - qlient:anilist
+    env:
+      VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
+    cmds:
+    - ${GO} generate ./...
+    - ${GO} build {{ .GOLANG_FLAGS }} -o ./bin/ ./...
+    sources:
+    - '**/*.go'
+    - exclude: '**/*_test.go'
+    generates:
+    - bin/*
+  clean:
+    desc: Cleans up generated artifacts.
+    vars:
+      DIRECTORIES: >-
+        bin
+        build
+        coverage
+        dist
+    deps:
+    - for:
+        var: DIRECTORIES
+      task: gnu:rm:dir:{{ .ITEM }}
+    - for: sources
+      task: gnu:rm:file:{{ .ITEM }}
+    sources:
+    - golangci-lint-report.xml
+  configure:
+    desc: Configures the repository and project for work.
+    deps:
+    - lefthook:install
+  diagrams:
+    desc: Generates system diagrams based on the domain model.
+    cmds:
+    - structurizr-cli export -f plantuml/c4plantuml -w workspace.dsl -o docs
+    - plantuml docs/*.puml
+    sources:
+    - workspace.dsl
+    generates:
+    - docs/*.puml
+    - docs/*.png
+  lint:
+    desc: Runs static analysis on the code base.
+    deps:
+    - task: lint:code
+    - task: lint:container
+  api:
+    desc: Generates the OpenAPI code from the specification.
+    cmds:
+    - mkdir -p internal/api
+    - >-
+      oapi-codegen
+      -generate types,chi-server,spec
+      -package api
+      -o internal/api/api.gen.go
+      swagger.yaml
+    - sed -i '' '/var err error/d' internal/api/api.gen.go
+    sources:
+    - swagger.yaml
+    generates:
+    - internal/api/api.gen.go
+  docs:
+    desc: Starts a local Golang package documentation server.
+    silent: true
+    ignore_error: true
+    cmd: pkgsite -open
+  docker:run:
+    desc: Runs a container version of the solution.
+    deps:
+    - docker:build
+    interactive: true
+    ignore_error: true
+    cmd: docker run --rm -e DATA_PATH=/var/handler -it {{ .CONTAINER_IMAGE | q }}
+  docker:build:
+    desc: Builds the container image.
+    requires:
+      vars:
+      - CONTAINER_IMAGE
+    env:
+      ## avoids mixing application debugging with buildkit
+      GRPC_GO_LOG_VERBOSITY_LEVEL: null
+      GRPC_GO_LOG_SEVERITY_LEVEL: null
+      ## https://github.com/moby/moby/issues/46129
+      OTEL_EXPORTER_OTLP_ENDPOINT: null
+    vars:
+      CREATED:
+        sh: date -u +"%Y-%m-%dT%TZ"
+      REVISION:
+        sh: git log -n 1 --format="%H"
+      VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
+      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
+      CONTEXT: '{{ .CONTEXT | default "." }}'
+    # TODO separate build to tar + load with status
+    cmd: >-
+      docker build --load
+      {{ if .TARGET -}} --target {{ .TARGET | q }} {{- end }}
+      -f {{ .DOCKERFILE | q }}
+      -t {{ .CONTAINER_IMAGE | q }}
+      --build-arg VERSION={{ .VERSION | q }}
+      --label org.opencontainers.image.created={{ .CREATED | q }}
+      --label org.opencontainers.image.revision={{ .REVISION | q }}
+      --label org.opencontainers.image.version={{ .VERSION | q }}
+      {{ .CLI_ARGS }}
+      {{ .CONTEXT | q }}
+  redis:cli:
+    desc: Opens a Redis CLI instance towards the Redis proxy.
+    interactive: true
+    ignore_error: true
+    cmd: redis-cli -p 16379
+  redis:proxy:
+    desc: Starts a local Redis proxy to the upstream instance on Fly.
+    interactive: true
+    ignore_error: true
+    cmd: flyctl redis proxy
+  qlient:anilist:
+    desc: Generates the GraphQL client for the Anilist service.
+    dir: internal/drivers/trackers/anilist
+    cmd: ${GO} run github.com/Khan/genqlient@latest
+    sources:
+    - genqclient.yaml
+    - '*.graphql'
+    generates:
+    - generated.go
+  run:handler:
+    desc: Runs the API handler.
+    interactive: true
+    ignore_error: true
+    deps:
+    - build
+    cmd: ./bin/handler
+  release:snapshot:
+    desc: Creates a snapshot release of the solution.
+    deps:
+    - build
+    cmd: goreleaser release --clean --skip-publish --skip-announce --snapshot
+  lint:code:
+    desc: Runs static analysis on the source code.
+    vars:
+      GOLANGCI_LINT_SARIF: '{{ .HADOLINT_SARIF | default "golangci-lint.sarif" }}'
+    cmd: >-
+      golangci-lint run --show-stats=false --out-format sarif
+      | tee {{ .GOLANGCI_LINT_SARIF | q }}
+      | sarif-fmt
+      ; jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
+      {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
+    sources:
+    - cmd/**/*.go
+    - internal/**/*.go
+    - pkg/**/*.go
+    generates:
+    - '{{ .GOLANGCI_LINT_SARIF }}'
+  lint:container:
+    desc: Runs static analysis on the container image source.
+    vars:
+      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
+      HADOLINT_SARIF: '{{ .HADOLINT_SARIF | default "hadolint.sarif" }}'
+    cmd: >-
+      hadolint -f json {{ .DOCKERFILE | q }}
+      | hadolint-sarif
+      | tee {{ .HADOLINT_SARIF | q }}
+      | sarif-fmt
+      ; jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
+      {{ .HADOLINT_SARIF | q }} > /dev/null
+    sources:
+    - '{{ .DOCKERFILE }}'
+    generates:
+    - '{{ .HADOLINT_SARIF }}'
+  coverage:report:
+    desc: (Re)generates the coverage report.
+    run: once
+    deps:
+    - test:merge
+    cmd: ${GO} tool cover -html=coverage/merged.txt -o coverage/coverage.html
+    sources:
+    - coverage/merged.txt
+    generates:
+    - coverage/coverage.html
+  coverage:open:
+    desc: Opens the HTML coverage report on the default browser.
+    deps:
+    - coverage:report
+    cmd: open coverage/coverage.html
+  coverage:upload:
+    summary: Uploads all coverage data to Codecov.
+    silent: true
+    method: none
+    deps:
+    - coverage:upload:unit
+    - coverage:upload:integration
+  coverage:upload:unit:
+    summary: Uploads the unit test coverage data to Codecov.
+    deps:
+    - test:unit
+    requires:
+      vars:
+      - CODECOV_TOKEN
+    env:
+      CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
+    cmd:
+      task: codecov:report:flagged:unit:coverage/unit.txt
+  coverage:upload:integration:
+    summary: Uploads the integration test coverage data to Codecov.
+    deps:
+    - test:integration
+    requires:
+      vars:
+      - CODECOV_TOKEN
+    env:
+      CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
+    cmd:
+      task: codecov:report:flagged:integration:coverage/integration.txt
+  test:
+    aliases:
+    - coverage
+    desc: Runs all tests and shows current coverage percentage.
+    deps:
+    - test:merge
+    silent: true
+    cmd: ${GO} tool cover -func="coverage/merged.txt"
+  test:unit:
+    desc: Runs unit tests.
+    cmds:
+    - mkdir -p coverage
+    - >-
+      ${GO} test {{ .GOLANG_FLAGS }} {{ .GOLANG_TEST_FLAGS }} -coverprofile=coverage/unit.txt
+      ./{{ .GOLANG_TEST_PACKAGES | splitList " " | join "/... ./" }}/...
+    sources:
+    - '**/*.go'
+    generates:
+    - coverage/unit.txt
+  test:integration:
+    desc: Runs instrumented tests.
+    env:
+      GOCOVERDIR: coverage/integration
+    cmds:
+    - mkdir -p ${GOCOVERDIR}
+    - ${GO} run -cover {{ .GOLANG_FLAGS }} ./cmd/internal/integration/...
+    - >-
+      ${GO} tool covdata textfmt
+      -i="${GOCOVERDIR}"
+      -o="coverage/integration.txt"
+      -pkg="{{ .GOLANG_PACKAGE }}/{{ .GOLANG_TEST_PACKAGES | splitList " " | join (print "," .GOLANG_PACKAGE "/") }}"
+    sources:
+    - '**/*.go'
+    - exclude: '**/*_test.go'
+    generates:
+    - coverage/integration.txt
+  test:container:
+    desc: Tests the generated container image structure.
+    cmd: >-
+      container-structure-test test
+      -c container-structure-test.yaml
+      -i wwmoraes/anilistarr
+  lefthook:install:
+    summary: Configures git hooks using lefthook.
+    vars:
+      GIT_CORE_HOOKSPATH: .git/hooks # sh: git rev-parse --git-path hooks
+    cmds:
+    - task: git:hook:clean
+      vars:
+        GIT_CORE_HOOKSPATH: '{{ .GIT_CORE_HOOKSPATH }}'
+    - lefthook install
+    sources:
+    - .lefthook.yaml
+    - .lefthook-local.yaml
+    generates:
+    - '{{ .GIT_CORE_HOOKSPATH }}/*'
+  git:hook:clean:
+    summary: Removes git hooks from the local repository.
+    vars:
+      GIT_CORE_HOOKSPATH: '{{ .GIT_CORE_HOOKSPATH | default ".git/hooks" }}'
+    deps:
+    - for: sources
+      task: gnu:rm:file:{{ .ITEM }}
+    sources:
+    - '{{ .GIT_CORE_HOOKSPATH }}/*'
+  ## internals
+  test:merge:
+    internal: true
+    silent: true
+    run: once
+    deps:
+    - test:unit
+    - test:integration
+    cmd: >-
+      ${GO} run github.com/wadey/gocovmerge@latest
+      coverage/unit.txt
+      coverage/integration.txt
+      > coverage/merged.txt
+    sources:
+    - coverage/unit.txt
+    - coverage/integration.txt
+    generates:
+    - coverage/merged.txt
+  gnu:rm:dir:*:
+    internal: true
+    silent: true
+    label: gnu:rm:dir:{{ .TARGET }}
+    vars:
+      TARGET: '{{ index .MATCH 0 }}'
+    cmd: rm -rf {{ .TARGET | q }}
+    status:
+    - test ! -d {{ .TARGET | q }}
+  gnu:rm:file:*:
+    internal: true
+    silent: true
+    label: gnu:rm:file:{{ .TARGET }}
+    vars:
+      TARGET: '{{ index .MATCH 0 }}'
+    cmd: rm -f {{ .TARGET | q }}
+    status:
+    - test ! -f {{ .TARGET | q }}
