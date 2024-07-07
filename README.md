@@ -5,17 +5,15 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/wwmoraes/anilistarr.svg)](https://pkg.go.dev/github.com/wwmoraes/anilistarr)
 [![GitHub Issues](https://img.shields.io/github/issues/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/pulls)
+![Codecov](https://img.shields.io/codecov/c/github/wwmoraes/anilistarr)
 
+![GitHub branch status](https://img.shields.io/github/checks-status/wwmoraes/anilistarr/master)
 [![Integration](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/wwmoraes/anilistarr/master.svg)](https://results.pre-commit.ci/latest/github/wwmoraes/anilistarr/master)
-
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=coverage)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=wwmoraes_anilistarr&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=wwmoraes_anilistarr)
+[![Release](https://github.com/wwmoraes/anilistarr/actions/workflows/release.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/release.yml)
+[![Security](https://github.com/wwmoraes/anilistarr/actions/workflows/security.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/security.yml)
+[![Documentation](https://github.com/wwmoraes/anilistarr/actions/workflows/documentation.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/documentation.yml)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwwmoraes%2Fanilistarr.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwwmoraes%2Fanilistarr?ref=badge_shield)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/7718/badge)](https://bestpractices.coreinfrastructure.org/projects/7718)
 
 [![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/wwmoraes/anilistarr)](https://hub.docker.com/r/wwmoraes/anilistarr)
