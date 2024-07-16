@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"go.opentelemetry.io/otel/semconv/v1.20.0/httpconv"
 	"golang.org/x/time/rate"
+
+	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 type ratedClient struct {
@@ -42,11 +43,13 @@ func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
 	if !re.OK() {
 		err := fmt.Errorf("misconfigured rate limiter on the API, cannot act")
 		span.RecordError(err)
+
 		return nil, err
 	}
 
 	if re.Delay() > 0 {
 		re.Cancel()
+
 		return &http.Response{
 			Status:     http.StatusText(http.StatusTooManyRequests),
 			StatusCode: http.StatusTooManyRequests,

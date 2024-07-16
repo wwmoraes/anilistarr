@@ -7,6 +7,7 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/dgraph-io/badger/v4"
+
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/entities"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
@@ -47,6 +48,7 @@ func (c *badgerPersistence) GetString(ctx context.Context, key string) (string, 
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			return nil
 		}
+
 		if err != nil {
 			return err
 		}
@@ -57,6 +59,7 @@ func (c *badgerPersistence) GetString(ctx context.Context, key string) (string, 
 
 		return data.Value(func(val []byte) error {
 			value = string(val)
+
 			return nil
 		})
 	})
@@ -87,11 +90,11 @@ func (db *badgerPersistence) GetMedia(ctx context.Context, id string) (*entities
 	var media *entities.Media
 
 	err := db.View(func(txn *badger.Txn) error {
-
 		item, err := txn.Get([]byte(id))
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			return nil
 		}
+
 		if err != nil {
 			return err
 		}
@@ -117,6 +120,7 @@ func (db *badgerPersistence) GetMediaBulk(ctx context.Context, ids []string) ([]
 
 	err := db.View(func(txn *badger.Txn) error {
 		var item *badger.Item
+
 		var err error
 
 		for _, id := range ids {
@@ -128,6 +132,7 @@ func (db *badgerPersistence) GetMediaBulk(ctx context.Context, ids []string) ([]
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				continue
 			}
+
 			if err != nil {
 				return err
 			}

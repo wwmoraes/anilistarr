@@ -10,6 +10,7 @@ import (
 
 const Provider adapters.JSONProvider[Metadata] = `memory:///test`
 
+//nolint:tagliatelle // JSON tags must match the upstream naming convention
 type Metadata struct {
 	SourceID uint64 `json:"anilist_id,omitempty"`
 	TargetID uint64 `json:"thetvdb_id,omitempty"`

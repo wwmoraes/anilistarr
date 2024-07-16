@@ -14,16 +14,22 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
+const (
+	cacheUserTTL      = 24 * time.Hour
+	cacheMediaListTTL = time.Hour
+	anilistPageSize   = 50
+)
+
 func NewAnilistMediaLister(anilistEndpoint string, store adapters.Store, cache adapters.Cache) (usecases.MediaLister, error) {
-	tracker := anilist.New(anilistEndpoint, 50)
+	tracker := anilist.New(anilistEndpoint, anilistPageSize)
 
 	if cache != nil {
 		tracker = &adapters.CachedTracker{
 			Cache:   cache,
 			Tracker: tracker,
 			TTL: adapters.CachedTrackerTTL{
-				UserID:       24 * time.Hour,
-				MediaListIDs: 60 * time.Minute,
+				UserID:       cacheUserTTL,
+				MediaListIDs: cacheMediaListTTL,
 			},
 		}
 	}
@@ -53,7 +59,6 @@ func NewCache(dataPath string) (adapters.Cache, error) {
 	cache, err := caches.NewBadger(path.Join(dataPath, "badger", "cache"), &caches.BadgerOptions{
 		Logger: &caches.BadgerLogr{Logger: telemetry.DefaultLogger()},
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("cache initialization failed: %w", err)
 	}

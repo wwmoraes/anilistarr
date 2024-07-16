@@ -1,9 +1,10 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/goccy/go-json"
 
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
@@ -19,6 +20,7 @@ func NewService(mediaLister usecases.MediaLister) (ServerInterface, error) {
 	if mediaLister == nil {
 		return nil, fmt.Errorf("Server needs a valid Media Lister instance")
 	}
+
 	return &apiService{
 		mediaLister: mediaLister,
 	}, nil
@@ -28,9 +30,10 @@ func (service *apiService) GetUserID(w http.ResponseWriter, r *http.Request, nam
 	span := telemetry.SpanFromContext(r.Context())
 
 	userId, err := service.mediaLister.GetUserID(r.Context(), name)
-	span.RecordError(err)
 	if err != nil {
+		span.RecordError(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -46,16 +49,18 @@ func (service *apiService) GetUserMedia(w http.ResponseWriter, r *http.Request, 
 	span := telemetry.SpanFromContext(r.Context())
 
 	customList, err := service.mediaLister.Generate(r.Context(), name)
-	span.RecordError(err)
 	if err != nil {
+		span.RecordError(err)
 		http.Error(w, err.Error(), http.StatusBadGateway)
+
 		return
 	}
 
 	data, err := json.Marshal(customList)
-	span.RecordError(err)
 	if err != nil {
+		span.RecordError(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 

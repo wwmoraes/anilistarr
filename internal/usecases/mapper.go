@@ -11,6 +11,6 @@ import (
 type Mapper interface {
 	io.Closer
 
-	MapIDs(context.Context, []entities.SourceID) ([]entities.TargetID, error)
-	Refresh(context.Context, Getter) error
+	MapIDs(ctx context.Context, ids []entities.SourceID) ([]entities.TargetID, error)
+	Refresh(ctx context.Context, client Getter) error
 }

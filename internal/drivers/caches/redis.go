@@ -6,6 +6,7 @@ import (
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )

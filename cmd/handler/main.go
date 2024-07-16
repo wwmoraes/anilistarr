@@ -18,6 +18,13 @@ import (
 	"golang.org/x/time/rate"
 )
 
+const (
+	apiInboundRateBurst     = 1000
+	refreshInterval         = time.Hour * 24 * 7
+	gracefulShutdownTimeout = 5 * time.Second
+)
+
+//nolint:funlen // TODO tidy handler main fn
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -64,7 +71,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(otelchi.Middleware(telemetry.NAME, otelchi.WithChiRoutes(r)))
 	r.Use(telemetry.NewHandlerMiddleware)
-	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), 1000)))
+	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), apiInboundRateBurst)))
 
 	service, err := api.NewService(mediaLister)
 	assert(err)
@@ -77,8 +84,10 @@ func main() {
 	}
 
 	// update mapping every week
-	go scheduledRefresh(ctx, mediaLister, time.Hour*24*7)
-	go server.ListenAndServe() //nolint:errcheck
+	go scheduledRefresh(ctx, mediaLister, refreshInterval)
+	//nolint:errcheck // ignore listen errors
+	go server.ListenAndServe()
+
 	log.Info("server listening", "address", server.Addr)
 
 	<-ctx.Done()
@@ -103,13 +112,16 @@ func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval
 
 	for {
 		log.Info("refreshing linker metadata")
+
 		err := linker.Refresh(ctx, http.DefaultClient)
 		assert(err)
+
 		log.Info("linker metadata refreshed")
 
 		select {
 		case <-ctx.Done():
 			log.Info("scheduled refresh stopped")
+
 			return
 		case <-time.After(interval):
 			continue
@@ -122,7 +134,7 @@ func gracefulShutdown(server *http.Server) {
 
 	log.Info("shutting down, press Ctrl+C again to force")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
 	defer cancel()
 
 	assert(server.Shutdown(ctx))

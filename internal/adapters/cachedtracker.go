@@ -35,6 +35,7 @@ func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (strin
 	key := fmt.Sprintf(cacheKeyUserID, name)
 
 	span.AddEvent("try cache")
+
 	userId, err := wrapper.Cache.GetString(ctx, key)
 	if err != nil {
 		return "", span.Assert(fmt.Errorf("failed to get user ID: %w", err))
@@ -42,10 +43,12 @@ func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (strin
 
 	if userId != "" {
 		span.AddEvent("cache hit")
+
 		return userId, span.Assert(err)
 	}
 
 	span.AddEvent("cache miss")
+
 	userId, err = wrapper.Tracker.GetUserID(ctx, name)
 	if err != nil {
 		return "", span.Assert(fmt.Errorf("failed to get user ID: %w", err))
@@ -68,6 +71,7 @@ func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userId string
 	key := fmt.Sprintf(cacheKeyUserMedia, userId)
 
 	span.AddEvent("try cache")
+
 	cachedIds, err := wrapper.Cache.GetString(ctx, key)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get media list: %w", err))
@@ -75,10 +79,12 @@ func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userId string
 
 	if cachedIds != "" {
 		span.AddEvent("cache hit")
+
 		return strings.Split(cachedIds, mediaListSeparator), span.Assert(err)
 	}
 
 	span.AddEvent("cache miss")
+
 	ids, err := wrapper.Tracker.GetMediaListIDs(ctx, userId)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get user ID: %w", err))

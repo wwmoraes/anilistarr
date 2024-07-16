@@ -66,6 +66,7 @@ func TestMediaBridge(t *testing.T) {
 	wantedCustomList := test.SonarrCustomListFromIDs(t, "91", "92", "93", "95", "98", "913")
 
 	ctx := context.Background()
+
 	err = bridge.Refresh(ctx, &testClient)
 	if err != nil {
 		t.Error("unexpected error on Refresh:", err)
@@ -75,6 +76,7 @@ func TestMediaBridge(t *testing.T) {
 	if err != nil {
 		t.Error("unexpected error on GetUserID:", err)
 	}
+
 	if !reflect.DeepEqual(customList, wantedCustomList) {
 		t.Errorf("custom list does not match: got '%v', expected '%v'", customList, wantedCustomList)
 	}

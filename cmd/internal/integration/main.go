@@ -18,6 +18,7 @@ const (
 	coverageUserId   = 9000
 )
 
+//nolint:funlen // TODO refactor integration main func
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()

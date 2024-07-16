@@ -1,7 +1,4 @@
 {
-  "files.associations": {
-    "*.sarif": "json"
-  },
   "betterStrongerToml.jsonSchema.associations": [
     {
       "pattern": "fly.toml",
@@ -9,6 +6,9 @@
     }
   ],
   "coverage-gutters.coverageBaseDir": "coverage",
+  "files.associations": {
+    "*.sarif": "json"
+  },
   "files.exclude": {
     "bin": true,
     "build": true,
@@ -35,5 +35,10 @@
     "connectionId": "wwmoraes",
     "projectKey": "wwmoraes_anilistarr"
   },
+  "go.lintOnSave": "workspace",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--fast"
+  ],
   "todo-tree.tree.scanMode": "current file"
 }

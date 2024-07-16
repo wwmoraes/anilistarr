@@ -10,8 +10,8 @@ type HTTPClient struct {
 	Data map[string]string
 }
 
-func (client *HTTPClient) Get(url string) (*http.Response, error) {
-	data, ok := client.Data[url]
+func (client *HTTPClient) Get(uri string) (*http.Response, error) {
+	data, ok := client.Data[uri]
 	if !ok {
 		return &http.Response{
 			Status:     http.StatusText(http.StatusNotFound),

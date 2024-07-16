@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 
+	_ "modernc.org/sqlite"
+
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores/models"
 	"github.com/wwmoraes/anilistarr/internal/entities"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
-
-	_ "modernc.org/sqlite"
 )
 
 type Sql struct {

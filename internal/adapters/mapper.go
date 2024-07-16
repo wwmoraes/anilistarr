@@ -56,6 +56,7 @@ func (mapper *Mapper) Refresh(ctx context.Context, client usecases.Getter) error
 	}
 
 	medias := make([]*entities.Media, 0, len(data))
+
 	for _, entry := range data {
 		if entry.GetTargetID() == "0" || entry.GetSourceID() == "0" {
 			continue

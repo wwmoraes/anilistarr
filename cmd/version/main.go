@@ -38,6 +38,7 @@ type constantNames struct {
 	Version   string
 }
 
+//nolint:funlen // TODO refactor version main func
 func main() {
 	constModule := flag.String(
 		"const-module",
@@ -91,6 +92,7 @@ func main() {
 		"",
 		"output file to generate",
 	)
+
 	flag.Parse()
 
 	assert(checkFlag("name"))

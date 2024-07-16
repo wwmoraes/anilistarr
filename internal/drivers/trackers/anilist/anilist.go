@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
+
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
@@ -54,6 +55,7 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]string, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
+
 	log := telemetry.LoggerFromContext(ctx)
 
 	userIdInt, err := strconv.Atoi(userId)
@@ -64,6 +66,7 @@ func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]s
 	page := 1
 	anilistIds := make([]string, 0, tracker.PageSize)
 	telemetry.Int(span, "page.size", tracker.PageSize)
+
 	for {
 		if ctx.Err() != nil {
 			break
@@ -79,6 +82,7 @@ func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]s
 		res, err := GetWatching(extCtx, tracker.Client, userIdInt, page, tracker.PageSize)
 		err = extSpan.Assert(err)
 		extSpan.End()
+
 		if err != nil {
 			return nil, span.Assert(fmt.Errorf(usecases.FailedMediaErrorTemplate, err))
 		}

@@ -57,15 +57,18 @@ type mediaLister struct {
 func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
 	ctx, span := telemetry.StartFunction(ctx)
 	defer span.End()
+
 	log := telemetry.LoggerFromContext(ctx).WithValues("username", name)
 
 	log.Info("retrieving user ID")
+
 	userId, err := lister.GetUserID(ctx, name)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get user ID: %w", err))
 	}
 
 	log.Info("retrieving media list IDs", "userID", userId)
+
 	sourceIds, err := lister.Tracker.GetMediaListIDs(ctx, userId)
 	if err != nil {
 		return nil, span.Assert(fmt.Errorf("failed to get media list IDs: %w", err))
@@ -77,9 +80,11 @@ func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.
 	}
 
 	customList := make(entities.CustomList, 0, len(targetIds))
+
 	for index, entry := range targetIds {
 		if entry == "" {
 			log.Info("no TVDB ID registered for source ID", "sourceID", sourceIds[index])
+
 			continue
 		}
 
@@ -102,6 +107,7 @@ func (lister *mediaLister) GetUserID(ctx context.Context, name string) (string, 
 	defer span.End()
 
 	res, err := lister.Tracker.GetUserID(ctx, name)
+
 	return res, span.Assert(err)
 }
 

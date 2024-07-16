@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"go.etcd.io/bbolt"
+
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
-	"go.etcd.io/bbolt"
 )
 
 const bucketName = "anilistarr"
@@ -19,7 +20,7 @@ type boltCache struct {
 
 // NewBolt creates a Bolt-based Cache
 func NewBolt(path string, options *BoltOptions) (adapters.Cache, error) {
-	db, err := bbolt.Open(path, 0640, options)
+	db, err := bbolt.Open(path, 0o640, options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open bolt database: %w", err)
 	}

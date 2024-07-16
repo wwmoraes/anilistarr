@@ -1,8 +1,9 @@
 package adapters
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/goccy/go-json"
 )
 
 // Metadata represents any data that contains both the source Tracker media ID
@@ -14,6 +15,7 @@ type Metadata interface {
 
 func unmarshalJSON[F Metadata](data []byte) ([]Metadata, error) {
 	var dataEntries []F
+
 	err := json.Unmarshal(data, &dataEntries)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
