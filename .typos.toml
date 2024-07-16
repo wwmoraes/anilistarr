@@ -2,4 +2,4 @@
 binary = false
 
 [files]
-extend-exclude = [".golangci.yaml", "**/*.gen.go"]
+extend-exclude = [".golangci.yaml", "**/*.gen.go", ".vscode/*.schema.json"]

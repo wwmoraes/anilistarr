@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+# yaml-language-server: $schema=.vscode/golangci.schema.json
 # cspell:disable
 run:
   modules-download-mode: readonly
@@ -161,7 +161,11 @@ linters-settings:
       - google.golang.org
       - gopkg.in
       modules:
+      - dario.cat/mergo
       - git.sr.ht/~emersion/go-jsonschema
+      - go.etcd.io/bbolt
+      - go.uber.org/automaxprocs
+      - modernc.org/sqlite
   gosimple:
     checks: ["all"]
   gosec:
@@ -243,6 +247,7 @@ linters-settings:
     mode: restricted
   mnd:
     ignored-functions:
+    - '^bbolt\.Open$'
     - '^cobra\.ExactArgs$'
     - '^net\.IPv4$'
     - '^os\.Exit$'

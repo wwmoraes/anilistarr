@@ -42,8 +42,8 @@ pre-commit:
       glob: "**/*.go"
       stage_fixed: true
     golangci-lint:
-      priority: 1
-      run: golangci-lint run
+      priority: 10
+      run: task lint:code
       glob: "**/*.go"
     tidy:
       priority: 40

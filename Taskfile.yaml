@@ -20,6 +20,11 @@ vars:
       git describe --tags 2> /dev/null
       | sed -e 's/^v//'
       || echo "0.1.0-rc.0"
+  FIX: >-
+    gci
+    gofmt
+    gofumpt
+    tagalign
 
 includes:
   codecov:
@@ -106,6 +111,13 @@ tasks:
     silent: true
     ignore_error: true
     cmd: pkgsite -open
+  fix:
+    desc: Runs linters that support fixing found issues.
+    cmd: >-
+      golangci-lint run
+      --fix
+      --out-format colored-line-number
+      --enable-only {{ .FIX | splitList " " | join "," | q }}
   docker:run:
     desc: Runs a container version of the solution.
     deps:
