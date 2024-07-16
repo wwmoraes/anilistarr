@@ -24,6 +24,7 @@ var (
 	}
 )
 
+//nolint:tagliatelle // JSON tags must match the upstream naming convention
 type memoryMetadata struct {
 	AnilistID uint64 `json:"anilist_id"`
 	TheTvdbID uint64 `json:"thetvdb_id"`
@@ -51,12 +52,14 @@ func TestJSONLocalProvider(t *testing.T) {
 	}
 
 	ctx := context.Background()
+
 	err = mapper.Refresh(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	wantedTargetIds := []string{"91", "92"}
+
 	targetIds, err := mapper.MapIDs(ctx, []string{"1", "2", "3"})
 	if err != nil {
 		t.Fatal(err)
@@ -64,5 +67,21 @@ func TestJSONLocalProvider(t *testing.T) {
 
 	if !reflect.DeepEqual(targetIds, wantedTargetIds) {
 		t.Fatalf("mapped IDs don't match: got %v, wanted %v", targetIds, wantedTargetIds)
+	}
+}
+
+func TestJSONLocalProvider_error(t *testing.T) {
+	provider := adapters.JSONLocalProvider[memoryMetadata]{
+		Fs:   test.MemoryFS{},
+		Name: "test.json",
+	}
+
+	gotMetadata, err := provider.Fetch(context.TODO(), nil)
+	if gotMetadata != nil {
+		t.Errorf("JSONLocalProvider.Fetch() = %v, want %v", gotMetadata, nil)
+	}
+
+	if err == nil {
+		t.Errorf("JSONLocalProvider.Fetch() error = %v, wantErr %v", err, true)
 	}
 }
