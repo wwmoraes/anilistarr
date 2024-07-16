@@ -38,6 +38,10 @@ pre-commit:
       priority: 10
       run: task lint:markdown
       glob: "**/*.md"
+    hadolint:
+      priority: 10
+      run: task lint:container
+      glob: Dockerfile
     golangci-lint:
       priority: 10
       run: task lint:code
