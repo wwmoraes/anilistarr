@@ -1,5 +1,6 @@
 *.env.local
 *.sarif
+*-image.tar
 /bin/
 /coverage/
 /dist/

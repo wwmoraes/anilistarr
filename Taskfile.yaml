@@ -124,7 +124,11 @@ tasks:
     - docker:build
     interactive: true
     ignore_error: true
-    cmd: docker run --rm -e DATA_PATH=/var/handler -it {{ .CONTAINER_IMAGE | q }}
+    cmd: >-
+      docker run --rm
+      -e DATA_PATH=/var/handler
+      -it {{ .CONTAINER_IMAGE | q }}
+      {{ .CLI_ARGS }}
   docker:build:
     desc: Builds the container image.
     requires:
@@ -144,10 +148,9 @@ tasks:
       VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
       DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
       CONTEXT: '{{ .CONTEXT | default "." }}'
-    # TODO separate build to tar + load with status
     cmd: >-
-      docker build --load
-      {{ if .TARGET -}} --target {{ .TARGET | q }} {{- end }}
+      docker build
+      --output=type=tar,dest={{ .DOCKERFILE }}-image.tar
       -f {{ .DOCKERFILE | q }}
       -t {{ .CONTAINER_IMAGE | q }}
       --build-arg VERSION={{ .VERSION | q }}
@@ -156,6 +159,19 @@ tasks:
       --label org.opencontainers.image.version={{ .VERSION | q }}
       {{ .CLI_ARGS }}
       {{ .CONTEXT | q }}
+    sources:
+    - '{{ .DOCKERFILE }}'
+    generates:
+    - '{{ .DOCKERFILE }}-image.tar'
+  docker:load:
+    aliases:
+    - docker
+    desc: Loads a built container image into the local runtime.
+    deps:
+    - docker:build
+    vars:
+      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
+    cmd: docker load -i {{ .DOCKERFILE }}-image.tar
   redis:cli:
     desc: Opens a Redis CLI instance towards the Redis proxy.
     interactive: true
