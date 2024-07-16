@@ -10,6 +10,7 @@
     "*.sarif": "json"
   },
   "files.exclude": {
+    ".direnv": true,
     "bin": true,
     "build": true,
     "coverage": true,
