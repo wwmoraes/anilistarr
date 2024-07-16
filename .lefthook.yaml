@@ -47,7 +47,7 @@ pre-commit:
       glob: "**/*.go"
     tidy:
       priority: 40
-      run: go mod tidy
+      run: task go:tidy
       glob: "{**/*.go,go.mod}"
       stage_fixed: true
 pre-push:

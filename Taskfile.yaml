@@ -6,11 +6,11 @@ dotenv:
 - .env
 
 vars:
-  GO: '{{ .GO | default "go" }}'
+  GO: '{{ env "GO" | default "go" }}'
   GOLANG_PACKAGE:
     sh: go list
-  GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-v -race -mod=readonly" }}'
-  GOLANG_TEST_FLAGS: '{{ .GOLANG_TEST_FLAGS | default "-shuffle on" }}'
+  GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-race -mod=readonly" }}'
+  GOLANG_TEST_FLAGS: '{{ .GOLANG_TEST_FLAGS | default "-v -shuffle on" }}'
   GOLANG_TEST_PACKAGES: >-
     internal/adapters
     internal/usecases
@@ -38,11 +38,14 @@ tasks:
     deps:
     - api
     - qlient:anilist
+    - go:tidy
     env:
       VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
     cmds:
-    - ${GO} generate ./...
-    - ${GO} build {{ .GOLANG_FLAGS }} -o ./bin/ ./...
+    - >-
+      {{ .GO }} generate ./...
+    - >-
+      {{ .GO }} build {{ .GOLANG_FLAGS }} -o ./bin/ ./...
     sources:
     - '**/*.go'
     - exclude: '**/*_test.go'
@@ -154,7 +157,8 @@ tasks:
   qlient:anilist:
     desc: Generates the GraphQL client for the Anilist service.
     dir: internal/drivers/trackers/anilist
-    cmd: ${GO} run github.com/Khan/genqlient@latest
+    cmd: >-
+      {{ .GO }} run github.com/Khan/genqlient@latest
     sources:
     - genqclient.yaml
     - '*.graphql'
@@ -209,7 +213,8 @@ tasks:
     run: once
     deps:
     - test:merge
-    cmd: ${GO} tool cover -html=coverage/merged.txt -o coverage/coverage.html
+    cmd: >-
+      {{ .GO }} tool cover -html=coverage/merged.txt -o coverage/coverage.html
     sources:
     - coverage/merged.txt
     generates:
@@ -255,13 +260,14 @@ tasks:
     deps:
     - test:merge
     silent: true
-    cmd: ${GO} tool cover -func="coverage/merged.txt"
+    cmd: >-
+      {{ .GO }} tool cover -func="coverage/merged.txt"
   test:unit:
     desc: Runs unit tests.
     cmds:
     - mkdir -p coverage
     - >-
-      ${GO} test {{ .GOLANG_FLAGS }} {{ .GOLANG_TEST_FLAGS }} -coverprofile=coverage/unit.txt
+      {{ .GO }} test {{ .GOLANG_FLAGS }} {{ .GOLANG_TEST_FLAGS }} -coverprofile=coverage/unit.txt
       ./{{ .GOLANG_TEST_PACKAGES | splitList " " | join "/... ./" }}/...
     sources:
     - '**/*.go'
@@ -273,9 +279,10 @@ tasks:
       GOCOVERDIR: coverage/integration
     cmds:
     - mkdir -p ${GOCOVERDIR}
-    - ${GO} run -cover {{ .GOLANG_FLAGS }} ./cmd/internal/integration/...
     - >-
-      ${GO} tool covdata textfmt
+      {{ .GO }} run -cover {{ .GOLANG_FLAGS }} ./cmd/internal/integration/...
+    - >-
+      {{ .GO }} tool covdata textfmt
       -i="${GOCOVERDIR}"
       -o="coverage/integration.txt"
       -pkg="{{ .GOLANG_PACKAGE }}/{{ .GOLANG_TEST_PACKAGES | splitList " " | join (print "," .GOLANG_PACKAGE "/") }}"
@@ -313,16 +320,23 @@ tasks:
       task: gnu:rm:file:{{ .ITEM }}
     sources:
     - '{{ .GIT_CORE_HOOKSPATH }}/*'
+  go:tidy:
+    summary: Updates Golang dependency references.
+    cmd: go mod tidy
+    sources:
+    - go.mod
+    - '**/*.go'
+    generates:
+    - go.sum
   ## internals
   test:merge:
     internal: true
-    silent: true
     run: once
     deps:
     - test:unit
     - test:integration
     cmd: >-
-      ${GO} run github.com/wadey/gocovmerge@latest
+      {{ .GO }} run github.com/wadey/gocovmerge@latest
       coverage/unit.txt
       coverage/integration.txt
       > coverage/merged.txt
