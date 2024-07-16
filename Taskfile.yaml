@@ -101,7 +101,7 @@ tasks:
       -package api
       -o internal/api/api.gen.go
       swagger.yaml
-    - sed -i '' '/var err error/d' internal/api/api.gen.go
+    - sed -i'' '/var err error/d' internal/api/api.gen.go
     sources:
     - swagger.yaml
     generates:
