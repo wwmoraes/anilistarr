@@ -236,6 +236,11 @@ tasks:
     - '{{ .DOCKERFILE }}'
     generates:
     - '{{ .HADOLINT_SARIF }}'
+  lint:markdown:
+    summary: Lints markdown files.
+    cmd: markdownlint .
+    sources:
+    - "**/*.md"
   coverage:report:
     desc: (Re)generates the coverage report.
     run: once

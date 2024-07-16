@@ -34,13 +34,15 @@ pre-commit:
         ARGS: ""
       exclude: .*\.(jpg|png)$
     ## TODO XML/HTML lint
-    ## TODO hadolint
-    ## TODO markdownlint
     gofumpt:
       priority: 1
       run: gofumpt -l -w {staged_files}
       glob: "**/*.go"
       stage_fixed: true
+    lint-markdown:
+      priority: 10
+      run: task lint:markdown
+      glob: "**/*.md"
     golangci-lint:
       priority: 10
       run: task lint:code
