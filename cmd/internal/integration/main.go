@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/signal"
 
+	_ "go.uber.org/automaxprocs"
+
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
