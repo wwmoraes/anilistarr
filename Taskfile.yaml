@@ -6,10 +6,11 @@ dotenv:
 - .env
 
 vars:
-  GO: '{{ env "GO" | default "go" }}'
+  GO: '{{ .GO | default "go" }}'
   GOLANG_PACKAGE:
     sh: go list
   GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-race -mod=readonly" }}'
+  GOLANG_BUILD_FLAGS: '{{ .GOLANG_BUILD_FLAGS | default "-trimpath" }}'
   GOLANG_TEST_FLAGS: '{{ .GOLANG_TEST_FLAGS | default "-v -shuffle on" }}'
   GOLANG_TEST_PACKAGES: >-
     internal/adapters
@@ -44,13 +45,19 @@ tasks:
     - api
     - qlient:anilist
     - go:tidy
-    env:
-      VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
+    vars:
+      GOLANG_BUILD_FLAGS: >-
+        {{ .GOLANG_BUILD_FLAGS }}
+        -ldflags="-X 'main.version={{ .VERSION }}'"
     cmds:
     - >-
       {{ .GO }} generate ./...
     - >-
-      {{ .GO }} build {{ .GOLANG_FLAGS }} -o ./bin/ ./...
+      {{ .GO }} build
+      {{ .GOLANG_FLAGS }}
+      {{ .GOLANG_BUILD_FLAGS }}
+      -o ./bin/
+      ./...
     sources:
     - '**/*.go'
     - exclude: '**/*_test.go'
@@ -207,7 +214,7 @@ tasks:
   lint:code:
     desc: Runs static analysis on the source code.
     vars:
-      GOLANGCI_LINT_SARIF: '{{ .HADOLINT_SARIF | default "golangci-lint.sarif" }}'
+      GOLANGCI_LINT_SARIF: '{{ .GOLANGCI_LINT_SARIF | default "golangci-lint.sarif" }}'
     cmd: >-
       golangci-lint run --show-stats=false --out-format sarif
       | tee {{ .GOLANGCI_LINT_SARIF | q }}
@@ -312,6 +319,7 @@ tasks:
       GOCOVERDIR: coverage/integration
     cmds:
     - mkdir -p ${GOCOVERDIR}
+    - rm -rf ${GOCOVERDIR}/* 2>/dev/null || true
     - >-
       {{ .GO }} run -cover {{ .GOLANG_FLAGS }} ./cmd/internal/integration/...
     - >-
