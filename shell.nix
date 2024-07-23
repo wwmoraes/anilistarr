@@ -163,7 +163,6 @@ in with pkgs; mkShell {
     docker-client
     editorconfig-checker
     git
-    go
     go-task
     goreleaser
     hadolint
@@ -174,6 +173,7 @@ in with pkgs; mkShell {
     python312Packages.codecov
     typos
     unstable.container-structure-test
+    unstable.go
     unstable.golangci-lint
     unstable.hadolint-sarif
     unstable.sarif-fmt
