@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=.vscode/golangci.schema.json
+# yaml-language-server: $schema=https://github.com/wwmoraes/kaizen/raw/master/schemas/golangci.schema.json
 # cspell:disable
 run:
   modules-download-mode: readonly
