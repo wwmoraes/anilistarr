@@ -35,10 +35,14 @@ includes:
 tasks:
   handler:get-user:
     desc: Retrieves user ID through the handler API.
-    cmd: curl -v "http://${HOST}:${PORT}/user/wwmoraes/id"
+    vars:
+      USERNAME: '{{ .CLI_ARGS | default "wwmoraes" }}'
+    cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/id"
   handler:get-media:
     desc: Retrieves user media through the handler API.
-    cmd: curl -v "http://${HOST}:${PORT}/user/wwmoraes/media"
+    vars:
+      USERNAME: '{{ .CLI_ARGS | default "wwmoraes" }}'
+    cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/media"
   build:
     desc: Builds the server binary.
     deps:
