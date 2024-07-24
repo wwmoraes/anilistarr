@@ -160,7 +160,7 @@ tasks:
       DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
       CONTEXT: '{{ .CONTEXT | default "." }}'
     cmd: >-
-      docker build
+      docker buildx build
       --output=type=tar,dest={{ .DOCKERFILE }}-image.tar
       -f {{ .DOCKERFILE | q }}
       -t {{ .CONTAINER_IMAGE | q }}
