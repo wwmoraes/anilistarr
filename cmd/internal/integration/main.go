@@ -13,6 +13,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
+	"github.com/wwmoraes/anilistarr/pkg/process"
 )
 
 const (
@@ -22,6 +23,8 @@ const (
 
 //nolint:funlen // TODO refactor integration main func
 func main() {
+	defer process.HandleExit()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
@@ -40,13 +43,13 @@ func main() {
 		InMemory: true,
 		Logger:   &caches.BadgerLogr{Logger: telemetry.DefaultLogger()},
 	})
-	assert(err)
+	process.Assert(err)
 
 	store, err := stores.NewBadger("", &stores.BadgerOptions{
 		InMemory: true,
 		Logger:   &stores.BadgerLogr{Logger: telemetry.DefaultLogger()},
 	})
-	assert(err)
+	process.Assert(err)
 
 	bridge, err := usecases.NewMediaLister(
 		&adapters.CachedTracker{
@@ -58,7 +61,7 @@ func main() {
 			Store:    store,
 		},
 	)
-	assert(err)
+	process.Assert(err)
 	defer bridge.Close()
 
 	err = bridge.Refresh(ctx, &test.HTTPClient{
@@ -73,26 +76,15 @@ func main() {
 			]`,
 		},
 	})
-	assert(err)
+	process.Assert(err)
 
 	userId, err := bridge.GetUserID(ctx, coverageUsername)
-	assert(err)
+	process.Assert(err)
 
 	log.Info("GetUserID", "username", coverageUsername, "userID", userId)
 
 	customList, err := bridge.Generate(ctx, coverageUsername)
-	assert(err)
+	process.Assert(err)
 
 	log.Info("GenerateCustomList", "username", coverageUsername, "list", customList)
-}
-
-func assert(err error) {
-	if err == nil {
-		return
-	}
-
-	log := telemetry.DefaultLogger()
-
-	log.Error(err, "assertion failed")
-	os.Exit(1)
 }

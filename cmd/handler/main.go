@@ -11,11 +11,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/riandyrn/otelchi"
+	_ "go.uber.org/automaxprocs"
+	"golang.org/x/time/rate"
+
 	"github.com/wwmoraes/anilistarr/internal/api"
 	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
-	_ "go.uber.org/automaxprocs"
-	"golang.org/x/time/rate"
+	"github.com/wwmoraes/anilistarr/pkg/process"
 )
 
 const (
@@ -26,18 +28,22 @@ const (
 
 //nolint:funlen // TODO tidy handler main fn
 func main() {
+	defer process.HandleExit()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
 	log := telemetry.DefaultLogger()
+
+	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
 	if errors.Is(err, telemetry.ErrNoEndpoint) {
 		log.Error(err, "skipping instrumentation")
 		err = nil
 	} else {
 		defer shutdown(context.Background())
 	}
-	assert(err)
+
+	process.Assert(err)
 
 	log.Info("staring up", "name", telemetry.NAME, "version", telemetry.VERSION)
 
@@ -54,17 +60,17 @@ func main() {
 	dataPath := os.Getenv("DATA_PATH")
 
 	store, err := NewStore(dataPath)
-	assert(err)
+	process.Assert(err)
 
 	cache, err := NewCache(dataPath)
-	assert(err)
+	process.Assert(err)
 
 	mediaLister, err := NewAnilistMediaLister(
 		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
 		store,
 		cache,
 	)
-	assert(err)
+	process.Assert(err)
 
 	ctx = telemetry.ContextWithLogger(ctx)
 
@@ -74,7 +80,7 @@ func main() {
 	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), apiInboundRateBurst)))
 
 	service, err := api.NewService(mediaLister)
-	assert(err)
+	process.Assert(err)
 
 	api.HandlerFromMux(service, r)
 
@@ -96,17 +102,6 @@ func main() {
 	gracefulShutdown(&server)
 }
 
-func assert(err error) {
-	if err == nil {
-		return
-	}
-
-	log := telemetry.DefaultLogger()
-
-	log.Error(err, "assertion failed")
-	os.Exit(1)
-}
-
 func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval time.Duration) {
 	log := telemetry.LoggerFromContext(ctx)
 
@@ -114,7 +109,7 @@ func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval
 		log.Info("refreshing linker metadata")
 
 		err := linker.Refresh(ctx, http.DefaultClient)
-		assert(err)
+		process.Assert(err)
 
 		log.Info("linker metadata refreshed")
 
@@ -137,5 +132,5 @@ func gracefulShutdown(server *http.Server) {
 	ctx, cancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
 	defer cancel()
 
-	assert(server.Shutdown(ctx))
+	process.Assert(server.Shutdown(ctx))
 }
