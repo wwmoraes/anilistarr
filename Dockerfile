@@ -12,6 +12,7 @@ RUN go mod download -x
 
 COPY *.go .
 COPY cmd cmd
+COPY pkg pkg
 COPY internal internal
 ARG VERSION
 RUN --mount=type=cache,target=/root/.cache/go-build \
