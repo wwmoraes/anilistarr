@@ -39,8 +39,7 @@ var version = "0.2.0-8-g6002c65"
 func main() {
 	defer process.HandleExit()
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
+	ctx := context.Background()
 
 	log := logr.New(logging.NewStandardLogSink())
 	ctx = logr.NewContext(ctx, log)
@@ -54,6 +53,12 @@ func main() {
 	if err != nil {
 		log.Error(err, "failed to initialize telemetry")
 	}
+
+	defer telemetry.Shutdown(ctx)
+	defer telemetry.ForceFlush(ctx)
+
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	defer cancel()
 
 	log.Info("staring up", "name", NAME, "version", version)
 
