@@ -3,8 +3,6 @@ package adapters
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
 
 	telemetry "github.com/wwmoraes/gotell"
 
@@ -23,22 +21,12 @@ func (source JSONProvider[F]) Fetch(ctx context.Context, client usecases.Getter)
 	defer span.End()
 
 	if client == nil {
-		client = http.DefaultClient
+		return nil, ErrNoGetter
 	}
 
-	res, err := client.Get(string(source))
+	data, err := client.Get(string(source))
 	if err != nil {
-		return nil, span.Assert(fmt.Errorf("failed to fetch remote JSON: %w", err))
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("provider data not found")
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, span.Assert(fmt.Errorf("failed to read fetched JSON response body: %w", err))
+		return nil, span.Assert(fmt.Errorf("failed to get JSON: %w", err))
 	}
 
 	metadata, err := unmarshalJSON[F](data)

@@ -67,7 +67,7 @@ func main() {
 	process.Assert(err)
 	defer bridge.Close()
 
-	err = bridge.Refresh(ctx, &test.HTTPClient{
+	err = bridge.Refresh(ctx, usecases.HTTPGetterAsGetter(&test.HTTPClient{
 		Data: map[string]string{
 			test.Provider.String(): `[
 				{"anilist_id": 1, "thetvdb_id": 101},
@@ -78,7 +78,7 @@ func main() {
 				{"anilist_id": 13, "thetvdb_id": 113}
 			]`,
 		},
-	})
+	}))
 	process.Assert(err)
 
 	userId, err := bridge.GetUserID(ctx, coverageUsername)
