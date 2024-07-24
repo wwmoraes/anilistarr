@@ -127,36 +127,36 @@ query GetUserByName ($name: String!) {
 `
 
 func GetUserByName(
-	ctx context.Context,
-	client graphql.Client,
+	ctx_ context.Context,
+	client_ graphql.Client,
 	name string,
 ) (*GetUserByNameResponse, error) {
-	req := &graphql.Request{
+	req_ := &graphql.Request{
 		OpName: "GetUserByName",
 		Query:  GetUserByName_Operation,
 		Variables: &__GetUserByNameInput{
 			Name: name,
 		},
 	}
-	var err error
+	var err_ error
 
-	var data GetUserByNameResponse
-	resp := &graphql.Response{Data: &data}
+	var data_ GetUserByNameResponse
+	resp_ := &graphql.Response{Data: &data_}
 
-	err = client.MakeRequest(
-		ctx,
-		req,
-		resp,
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
 	)
 
-	return &data, err
+	return &data_, err_
 }
 
 // The query or mutation executed by GetWatching.
 const GetWatching_Operation = `
 query GetWatching ($userId: Int!, $page: Int!, $perPage: Int!) {
 	Page(page: $page, perPage: $perPage) {
-		mediaList(userId: $userId, type: ANIME, status: CURRENT) {
+		mediaList(userId: $userId, type: ANIME, status_in: [CURRENT,PLANNING]) {
 			media {
 				id
 				idMal
@@ -170,13 +170,13 @@ query GetWatching ($userId: Int!, $page: Int!, $perPage: Int!) {
 `
 
 func GetWatching(
-	ctx context.Context,
-	client graphql.Client,
+	ctx_ context.Context,
+	client_ graphql.Client,
 	userId int,
 	page int,
 	perPage int,
 ) (*GetWatchingResponse, error) {
-	req := &graphql.Request{
+	req_ := &graphql.Request{
 		OpName: "GetWatching",
 		Query:  GetWatching_Operation,
 		Variables: &__GetWatchingInput{
@@ -185,16 +185,16 @@ func GetWatching(
 			PerPage: perPage,
 		},
 	}
-	var err error
+	var err_ error
 
-	var data GetWatchingResponse
-	resp := &graphql.Response{Data: &data}
+	var data_ GetWatchingResponse
+	resp_ := &graphql.Response{Data: &data_}
 
-	err = client.MakeRequest(
-		ctx,
-		req,
-		resp,
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
 	)
 
-	return &data, err
+	return &data_, err_
 }
