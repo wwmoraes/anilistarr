@@ -142,7 +142,7 @@ jobs:
           ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-build-
     - name: build
-      run: direnv exec . task build
+      run: task build
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -174,7 +174,7 @@ jobs:
           ${{ runner.os }}-lint-${{ hashFiles('.golangci.yaml') }}
           ${{ runner.os }}-lint-
     - name: run lint
-      run: direnv exec . task lint
+      run: task lint
       continue-on-error: true
     - name: Upload golangci-lint report
       uses: github/codeql-action/upload-sarif@v3
@@ -219,7 +219,7 @@ jobs:
           ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-test-
     - name: run test
-      run: direnv exec . task test
+      run: task test
     - name: upload coverage report
       run: task coverage:upload
       if: always()
@@ -275,7 +275,7 @@ jobs:
     #       VERSION=${{ needs.metadata.outputs.version }}
     - name: build container image
       run: >-
-        direnv exec . task docker:build
+        task docker:build
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
         --build-arg GOLANG_VERSION=${{ env.GOLANG_VERSION }}
@@ -287,4 +287,4 @@ jobs:
         rm -rf ${{ runner.temp }}/.buildx-cache
         mv ${{ runner.temp }}/.buildx-cache-new ${{ runner.temp }}/.buildx-cache
     - name: test container
-      run: direnv exec . task test:container
+      run: task test:container
