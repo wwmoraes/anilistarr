@@ -51,7 +51,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: calculate version
-      uses: paulhatch/semantic-version@v5
+      uses: paulhatch/semantic-version@v5.4.0
       id: version
       with:
         branch: ${{ github.ref_name }}
@@ -105,18 +105,18 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4
+      uses: JRMurr/direnv-nix-action@v4.1.0
       with:
         install-nix: true
         cache-store: true
     - name: initialize
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: go
     - name: build
       run: task build
     - name: analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
         category: "/language:go"
   security-scan:
@@ -126,12 +126,12 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4
+      uses: JRMurr/direnv-nix-action@v4.1.0
       with:
         install-nix: true
         cache-store: true
     - name: set up docker buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
     - name: build cache
       uses: pat-s/always-upload-cache@v3
       with:
@@ -144,7 +144,7 @@ jobs:
           ${{ runner.os }}-buildx-
         # yamllint enable rule:line-length
     - name: build
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v6
       env:
         DOCKER_BUILDKIT: 0
         BUILDKIT_INLINE_CACHE: 1

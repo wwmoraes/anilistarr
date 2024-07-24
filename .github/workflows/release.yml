@@ -26,7 +26,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: calculate version
-      uses: paulhatch/semantic-version@v5
+      uses: paulhatch/semantic-version@v5.4.0
       id: version
       with:
         branch: ${{ github.ref_name }}
@@ -88,7 +88,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4
+      uses: JRMurr/direnv-nix-action@v4.1.0
       with:
         install-nix: true
         cache-store: true
@@ -124,14 +124,14 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4
+      uses: JRMurr/direnv-nix-action@v4.1.0
       with:
         install-nix: true
         cache-store: true
     - name: set up QEMU
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@v3
     - name: set up docker buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
     - name: cache buildx
       uses: pat-s/always-upload-cache@v3
       with:
@@ -147,12 +147,12 @@ jobs:
     # https://github.com/docker/build-push-action/issues/252
     # https://github.com/moby/buildkit/issues/1896
     - name: login to DockerHub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: push multi-arch image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v6
       env:
         DOCKER_BUILDKIT: 1
         BUILDKIT_INLINE_CACHE: 1
