@@ -29,12 +29,14 @@ on:
     - .github/workflows/integration.yml
     - .golangci.yaml
     - .goreleaser.yaml
+    - .task/*.yaml
     - '**.go'
     - container-structure-test.yaml
     - Dockerfile
     - go.mod
     - go.sum
     - shell.nix
+    - Taskfile.yaml
 
 env:
   GOLANG_FLAGS: -race -mod=readonly

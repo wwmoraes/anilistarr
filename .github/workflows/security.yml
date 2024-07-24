@@ -11,11 +11,13 @@ on:
     - .envrc
     - .github/workflows/codeql.yml
     - .golangci.yaml
+    - .task/*.yaml
     - '**.go'
     - Dockerfile
     - go.mod
     - go.sum
     - shell.nix
+    - Taskfile.yaml
   pull_request:
     branches:
     - master
