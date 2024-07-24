@@ -9,6 +9,8 @@ on:
     - "*"
     paths:
     - .dockerignore
+    - .env
+    - .envrc
     - .github/workflows/integration.yml
     - .golangci.yaml
     - .goreleaser.yaml
@@ -23,6 +25,8 @@ on:
     - master
     paths:
     - .dockerignore
+    - .env
+    - .envrc
     - .github/workflows/integration.yml
     - .golangci.yaml
     - .goreleaser.yaml

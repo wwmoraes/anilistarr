@@ -13,6 +13,8 @@ on:
     - go.mod
     - go.sum
     - '**.go'
+    - .env
+    - .envrc
   pull_request:
     branches:
     - master
