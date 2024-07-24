@@ -20,7 +20,7 @@ type badgerPersistence struct {
 }
 
 func NewBadger(path string, options *BadgerOptions) (Persistence, error) {
-	opt := badger.DefaultOptions(path)
+	opt := badger.DefaultOptions(path).WithLoggingLevel(badger.ERROR)
 
 	if options != nil {
 		err := mergo.Merge(&opt, *options, mergo.WithOverride)
