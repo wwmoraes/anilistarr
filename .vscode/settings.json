@@ -17,9 +17,9 @@
     "coverage.out": true,
     "dist": true,
     "golangci-lint-report.xml": true,
-    "tmp": true,
     "golangci-lint.sarif": true,
-    "hadolint.sarif": true
+    "hadolint.sarif": true,
+    "tmp": true
   },
   "go.coverMode": "atomic",
   "go.coverageDecorator": {
@@ -32,14 +32,10 @@
     "uncoveredHighlightColor": "rgba(128,64,64,0.25)"
   },
   "go.coverageOptions": "showBothCoveredAndUncoveredCode",
-  "sonarlint.connectedMode.project": {
-    "connectionId": "wwmoraes",
-    "projectKey": "wwmoraes_anilistarr"
-  },
-  "go.lintOnSave": "workspace",
-  "go.lintTool": "golangci-lint",
   "go.lintFlags": [
     "--fast"
   ],
+  "go.lintOnSave": "workspace",
+  "go.lintTool": "golangci-lint",
   "todo-tree.tree.scanMode": "current file"
 }
