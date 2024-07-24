@@ -423,6 +423,10 @@ issues:
   exclude-dirs-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+  fix: false
+  exclude:
+  ## gomodguard: dupe of gomoddirectives
+  - "import of package `(.+)` is blocked because the module has a local replace directive."
 severity:
   default-severity: error
   case-sensitive: false
