@@ -160,8 +160,7 @@ tasks:
       DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
       CONTEXT: '{{ .CONTEXT | default "." }}'
     cmd: >-
-      docker buildx build
-      --output=type=tar,dest={{ .DOCKERFILE }}-image.tar
+      docker buildx build --load
       -f {{ .DOCKERFILE | q }}
       -t {{ .CONTAINER_IMAGE | q }}
       --build-arg VERSION={{ .VERSION | q }}
@@ -172,17 +171,6 @@ tasks:
       {{ .CONTEXT | q }}
     sources:
     - '{{ .DOCKERFILE }}'
-    generates:
-    - '{{ .DOCKERFILE }}-image.tar'
-  docker:load:
-    aliases:
-    - docker
-    desc: Loads a built container image into the local runtime.
-    deps:
-    - docker:build
-    vars:
-      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
-    cmd: docker import '{{ .DOCKERFILE }}-image.tar' {{ .CONTAINER_IMAGE | q }}
   redis:cli:
     desc: Opens a Redis CLI instance towards the Redis proxy.
     interactive: true
