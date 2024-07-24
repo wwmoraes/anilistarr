@@ -114,11 +114,10 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v3
-    - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.1.0
+    - name: use nix
+      uses: aldoborrero/use-nix-action@v4
       with:
-        install-nix: true
-        cache-store: true
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
     - name: cache modules
