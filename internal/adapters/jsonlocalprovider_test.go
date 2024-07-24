@@ -11,19 +11,6 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/test"
 )
 
-var (
-	sampleData = `[
-		{"anilist_id": 1, "thetvdb_id": 91},
-		{"anilist_id": 2, "thetvdb_id": 92}
-	]`
-	testProvider adapters.JSONLocalProvider[memoryMetadata] = adapters.JSONLocalProvider[memoryMetadata]{
-		Fs: &test.MemoryFS{
-			"test.json": []byte(sampleData),
-		},
-		Name: "test.json",
-	}
-)
-
 //nolint:tagliatelle // JSON tags must match the upstream naming convention
 type memoryMetadata struct {
 	AnilistID uint64 `json:"anilist_id"`
@@ -47,7 +34,7 @@ func TestJSONLocalProvider(t *testing.T) {
 	}
 
 	mapper := &adapters.Mapper{
-		Provider: testProvider,
+		Provider: newJSONLocalProvider(t),
 		Store:    store,
 	}
 

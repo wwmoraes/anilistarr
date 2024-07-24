@@ -65,14 +65,12 @@ func TestMediaBridge(t *testing.T) {
 
 	wantedCustomList := test.SonarrCustomListFromIDs(t, "91", "92", "93", "95", "98", "913")
 
-	ctx := context.Background()
-
-	err = bridge.Refresh(ctx, &testClient)
+	err = bridge.Refresh(context.TODO(), usecases.HTTPGetterAsGetter(&testClient))
 	if err != nil {
 		t.Error("unexpected error on Refresh:", err)
 	}
 
-	customList, err := bridge.Generate(ctx, testUsername)
+	customList, err := bridge.Generate(context.TODO(), testUsername)
 	if err != nil {
 		t.Error("unexpected error on GetUserID:", err)
 	}
@@ -87,14 +85,14 @@ func TestMediaBridge(t *testing.T) {
 	}
 }
 
-func TestNewMediaListerNoTracker(t *testing.T) {
+func TestNewMediaLister_NoTracker(t *testing.T) {
 	_, err := usecases.NewMediaLister(nil, &adapters.Mapper{})
 	if !errors.Is(err, usecases.ErrNoTracker) {
 		t.Errorf("expected %q, got %q", usecases.ErrNoTracker, err)
 	}
 }
 
-func TestNewMediaListerNoMapper(t *testing.T) {
+func TestNewMediaLister_NoMapper(t *testing.T) {
 	_, err := usecases.NewMediaLister(&test.Tracker{}, nil)
 	if !errors.Is(err, usecases.ErrNoMapper) {
 		t.Errorf("expected %q, got %q", usecases.ErrNoMapper, err)
