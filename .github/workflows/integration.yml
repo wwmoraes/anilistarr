@@ -19,7 +19,6 @@ on:
     - Dockerfile
     - go.mod
     - go.sum
-    - sonar-project.properties
   pull_request:
     branches:
     - master
@@ -35,7 +34,7 @@ on:
     - Dockerfile
     - go.mod
     - go.sum
-    - sonar-project.properties
+    - shell.nix
 
 env:
   GOLANG_FLAGS: -race -mod=readonly

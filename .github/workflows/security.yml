@@ -6,15 +6,16 @@ on:
     branches:
     - master
     paths:
-    - .github/workflows/codeql.yml
-    - .golangci.yaml
-    - Dockerfile
     - .dockerignore
-    - go.mod
-    - go.sum
-    - '**.go'
     - .env
     - .envrc
+    - .github/workflows/codeql.yml
+    - .golangci.yaml
+    - '**.go'
+    - Dockerfile
+    - go.mod
+    - go.sum
+    - shell.nix
   pull_request:
     branches:
     - master
