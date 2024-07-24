@@ -47,6 +47,10 @@ env:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   metadata:
     runs-on: ubuntu-latest
