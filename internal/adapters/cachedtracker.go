@@ -6,7 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
+	telemetry "github.com/wwmoraes/gotell"
+
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -29,7 +30,7 @@ type CachedTrackerTTL struct {
 }
 
 func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (string, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	key := fmt.Sprintf(cacheKeyUserID, name)
@@ -65,7 +66,7 @@ func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (strin
 }
 
 func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userId string) ([]string, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	key := fmt.Sprintf(cacheKeyUserMedia, userId)

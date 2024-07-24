@@ -2,29 +2,38 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/denisbrodbeck/machineid"
 	"github.com/go-chi/chi/v5"
-	"github.com/riandyrn/otelchi"
+	"github.com/go-logr/logr"
+	telemetry "github.com/wwmoraes/gotell"
+	"github.com/wwmoraes/gotell/logging"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/resource"
 	_ "go.uber.org/automaxprocs"
 	"golang.org/x/time/rate"
 
 	"github.com/wwmoraes/anilistarr/internal/api"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
+	"github.com/wwmoraes/anilistarr/pkg/functional"
 	"github.com/wwmoraes/anilistarr/pkg/process"
 )
 
 const (
+	NAMESPACE = "github.com/wwmoraes/anilistarr"
+	NAME      = "oteller"
+
 	apiInboundRateBurst     = 1000
 	refreshInterval         = time.Hour * 24 * 7
 	gracefulShutdownTimeout = 5 * time.Second
 )
+
+var version = "0.2.0-8-g6002c65"
 
 //nolint:funlen // TODO tidy handler main fn
 func main() {
@@ -33,19 +42,20 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	log := telemetry.DefaultLogger()
+	log := logr.New(logging.NewStandardLogSink())
+	ctx = logr.NewContext(ctx, log)
 
-	shutdown, err := telemetry.InstrumentAll(ctx, os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
-	if errors.Is(err, telemetry.ErrNoEndpoint) {
-		log.Error(err, "skipping instrumentation")
-		err = nil
-	} else {
-		defer shutdown(context.Background())
+	err := telemetry.Initialize(ctx, resource.NewSchemaless(
+		attribute.String("service.name", NAME),
+		attribute.String("service.namespace", NAMESPACE),
+		attribute.String("service.version", version),
+		attribute.String("host.id", functional.Unwrap(machineid.ProtectedID(NAMESPACE+NAME))),
+	))
+	if err != nil {
+		log.Error(err, "failed to initialize telemetry")
 	}
 
-	process.Assert(err)
-
-	log.Info("staring up", "name", telemetry.NAME, "version", telemetry.VERSION)
+	log.Info("staring up", "name", NAME, "version", version)
 
 	host := os.Getenv("HOST")
 	if host == "" {
@@ -72,11 +82,8 @@ func main() {
 	)
 	process.Assert(err)
 
-	ctx = telemetry.ContextWithLogger(ctx)
-
 	r := chi.NewRouter()
-	r.Use(otelchi.Middleware(telemetry.NAME, otelchi.WithChiRoutes(r)))
-	r.Use(telemetry.NewHandlerMiddleware)
+	r.Use(telemetry.WithInstrumentationMiddleware)
 	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), apiInboundRateBurst)))
 
 	service, err := api.NewService(mediaLister)
@@ -103,7 +110,7 @@ func main() {
 }
 
 func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval time.Duration) {
-	log := telemetry.LoggerFromContext(ctx)
+	log := telemetry.Logr(ctx)
 
 	for {
 		log.Info("refreshing linker metadata")
@@ -125,7 +132,7 @@ func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval
 }
 
 func gracefulShutdown(server *http.Server) {
-	log := telemetry.DefaultLogger()
+	log := logr.New(logging.NewStandardLogSink())
 
 	log.Info("shutting down, press Ctrl+C again to force")
 

@@ -5,12 +5,13 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/go-logr/logr"
+	"github.com/wwmoraes/gotell/logging"
 	_ "go.uber.org/automaxprocs"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/process"
@@ -28,7 +29,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	log := telemetry.DefaultLogger()
+	log := logr.New(logging.NewStandardLogSink())
+
+	ctx = logr.NewContext(ctx, log)
 
 	var tracker usecases.Tracker = &test.Tracker{
 		UserIds: map[string]int{
@@ -41,13 +44,13 @@ func main() {
 
 	cache, err := caches.NewBadger("", &caches.BadgerOptions{
 		InMemory: true,
-		Logger:   &caches.BadgerLogr{Logger: telemetry.DefaultLogger()},
+		// Logger:   &caches.BadgerLogr{Logger: log},
 	})
 	process.Assert(err)
 
 	store, err := stores.NewBadger("", &stores.BadgerOptions{
 		InMemory: true,
-		Logger:   &stores.BadgerLogr{Logger: telemetry.DefaultLogger()},
+		// Logger:   &stores.BadgerLogr{Logger: log},
 	})
 	process.Assert(err)
 

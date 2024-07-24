@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	telemetry "github.com/wwmoraes/gotell"
 	"golang.org/x/time/rate"
-
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 func Limiter(limiter *rate.Limiter) func(next http.Handler) http.Handler {

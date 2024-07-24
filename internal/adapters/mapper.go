@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	telemetry "github.com/wwmoraes/gotell"
+
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -21,7 +22,7 @@ func (mapper *Mapper) Close() error {
 }
 
 func (mapper *Mapper) MapIDs(ctx context.Context, ids []entities.SourceID) ([]entities.TargetID, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	records, err := mapper.Store.GetMediaBulk(ctx, ids)
@@ -47,7 +48,7 @@ func (mapper *Mapper) MapIDs(ctx context.Context, ids []entities.SourceID) ([]en
 }
 
 func (mapper *Mapper) Refresh(ctx context.Context, client usecases.Getter) error {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	data, err := mapper.Provider.Fetch(ctx, client)

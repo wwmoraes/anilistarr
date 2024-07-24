@@ -6,7 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
+	telemetry "github.com/wwmoraes/gotell"
+
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -18,7 +19,7 @@ func (source JSONProvider[F]) String() string {
 }
 
 func (source JSONProvider[F]) Fetch(ctx context.Context, client usecases.Getter) ([]Metadata, error) {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	if client == nil {

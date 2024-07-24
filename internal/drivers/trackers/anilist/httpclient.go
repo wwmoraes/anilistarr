@@ -10,10 +10,9 @@ import (
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
+	telemetry "github.com/wwmoraes/gotell"
 	"go.opentelemetry.io/otel/semconv/v1.20.0/httpconv"
 	"golang.org/x/time/rate"
-
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 type ratedClient struct {
@@ -65,7 +64,7 @@ func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	span.SetAttributes(httpconv.ResponseHeader(telemetry.WantedRequestHeaders(
+	span.SetAttributes(httpconv.ResponseHeader(telemetry.FilterHeaders(
 		resp.Header,
 		"X-RateLimit-Remaining",
 		"X-RateLimit-Limit",

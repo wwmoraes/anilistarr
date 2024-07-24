@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
+	telemetry "github.com/wwmoraes/gotell"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -41,7 +43,7 @@ func NewGraphQLClient(anilistEndpoint string) graphql.Client {
 }
 
 func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	res, err := GetUserByName(ctx, tracker.Client, name)
@@ -53,10 +55,10 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 }
 
 func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]string, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
-	log := telemetry.LoggerFromContext(ctx)
+	log := telemetry.Logr(ctx)
 
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
@@ -65,7 +67,7 @@ func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]s
 
 	page := 1
 	anilistIds := make([]string, 0, tracker.PageSize)
-	telemetry.Int(span, "page.size", tracker.PageSize)
+	span.SetAttributes(attribute.Int("page.size", tracker.PageSize))
 
 	for {
 		if ctx.Err() != nil {
@@ -73,11 +75,11 @@ func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]s
 		}
 
 		log.Info("requesting media list", "page", page)
-		extCtx, extSpan := telemetry.Start(
+		extCtx, extSpan := telemetry.StartNamed(
 			ctx,
 			"anilist.GetWatching",
-			telemetry.WithSpanKindClient(),
-			telemetry.WithInt("page", page),
+			trace.WithSpanKind(trace.SpanKindClient),
+			trace.WithAttributes(attribute.Int("page", page)),
 		)
 		res, err := GetWatching(extCtx, tracker.Client, userIdInt, page, tracker.PageSize)
 		err = extSpan.Assert(err)

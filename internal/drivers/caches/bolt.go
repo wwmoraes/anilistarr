@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	telemetry "github.com/wwmoraes/gotell"
 	"go.etcd.io/bbolt"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 const bucketName = "anilistarr"
@@ -41,7 +41,7 @@ func NewBolt(path string, options *BoltOptions) (adapters.Cache, error) {
 }
 
 func (c *boltCache) GetString(ctx context.Context, key string) (string, error) {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	var value string
@@ -65,7 +65,7 @@ func (c *boltCache) GetString(ctx context.Context, key string) (string, error) {
 }
 
 func (c *boltCache) SetString(ctx context.Context, key, value string, options ...adapters.CacheOption) error {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	//// Bolt does not support TTL, so no need to parse options for now

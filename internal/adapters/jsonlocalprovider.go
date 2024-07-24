@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
+	telemetry "github.com/wwmoraes/gotell"
+
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -20,7 +21,7 @@ func (source JSONLocalProvider[F]) String() string {
 }
 
 func (source JSONLocalProvider[F]) Fetch(ctx context.Context, client usecases.Getter) ([]Metadata, error) {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	data, err := fs.ReadFile(source.Fs, source.String())

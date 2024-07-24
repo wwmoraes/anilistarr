@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/goccy/go-json"
+	telemetry "github.com/wwmoraes/gotell"
 
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 

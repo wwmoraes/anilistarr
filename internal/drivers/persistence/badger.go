@@ -7,10 +7,10 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/dgraph-io/badger/v4"
+	telemetry "github.com/wwmoraes/gotell"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 type BadgerOptions = badger.Options
@@ -38,7 +38,7 @@ func NewBadger(path string, options *BadgerOptions) (Persistence, error) {
 }
 
 func (c *badgerPersistence) GetString(ctx context.Context, key string) (string, error) {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	var value string
@@ -68,7 +68,7 @@ func (c *badgerPersistence) GetString(ctx context.Context, key string) (string, 
 }
 
 func (c *badgerPersistence) SetString(ctx context.Context, key, value string, options ...adapters.CacheOption) error {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	params, err := adapters.NewCacheParams(options...)
@@ -84,7 +84,7 @@ func (c *badgerPersistence) SetString(ctx context.Context, key, value string, op
 }
 
 func (db *badgerPersistence) GetMedia(ctx context.Context, id string) (*entities.Media, error) {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	var media *entities.Media
@@ -113,7 +113,7 @@ func (db *badgerPersistence) GetMedia(ctx context.Context, id string) (*entities
 }
 
 func (db *badgerPersistence) GetMediaBulk(ctx context.Context, ids []string) ([]*entities.Media, error) {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	medias := make([]*entities.Media, 0, len(ids))
@@ -157,7 +157,7 @@ func (db *badgerPersistence) GetMediaBulk(ctx context.Context, ids []string) ([]
 }
 
 func (db *badgerPersistence) PutMedia(ctx context.Context, media *entities.Media) error {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	return span.Assert(db.Update(func(txn *badger.Txn) error {
@@ -166,7 +166,7 @@ func (db *badgerPersistence) PutMedia(ctx context.Context, media *entities.Media
 }
 
 func (db *badgerPersistence) PutMediaBulk(ctx context.Context, medias []*entities.Media) error {
-	_, span := telemetry.StartFunction(ctx)
+	_, span := telemetry.Start(ctx)
 	defer span.End()
 
 	return span.Assert(db.Update(func(txn *badger.Txn) error {

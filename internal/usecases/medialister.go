@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
+	telemetry "github.com/wwmoraes/gotell"
+
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 var (
@@ -55,10 +56,10 @@ type mediaLister struct {
 // Generate fetches the user media list from the Tracker and transform the IDs
 // found to the target service through the Mapper
 func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
-	log := telemetry.LoggerFromContext(ctx).WithValues("username", name)
+	log := telemetry.Logr(ctx).WithValues("username", name)
 
 	log.Info("retrieving user ID")
 
@@ -103,7 +104,7 @@ func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.
 
 // GetUserID searches the Tracker for the user ID by their name/handle
 func (lister *mediaLister) GetUserID(ctx context.Context, name string) (string, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	res, err := lister.Tracker.GetUserID(ctx, name)
@@ -118,7 +119,7 @@ func (lister *mediaLister) Close() error {
 
 // Refresh requests the Mapper to update its mapping definitions
 func (lister *mediaLister) Refresh(ctx context.Context, client Getter) error {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	return span.Assert(lister.Mapper.Refresh(ctx, client))

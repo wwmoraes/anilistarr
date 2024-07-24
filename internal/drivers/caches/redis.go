@@ -6,9 +6,9 @@ import (
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+	telemetry "github.com/wwmoraes/gotell"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 type RedisOptions = redis.Options
@@ -35,7 +35,7 @@ func NewRedis(options *RedisOptions) (adapters.Cache, error) {
 }
 
 func (c *redisCache) GetString(ctx context.Context, key string) (string, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	res, err := c.Get(ctx, key).Result()
@@ -51,7 +51,7 @@ func (c *redisCache) GetString(ctx context.Context, key string) (string, error) 
 }
 
 func (c *redisCache) SetString(ctx context.Context, key, value string, options ...adapters.CacheOption) error {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	params, err := adapters.NewCacheParams(options...)

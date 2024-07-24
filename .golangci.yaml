@@ -148,6 +148,7 @@ linters-settings:
     replace-allow-list:
     - github.com/miladabc/gonfig
     - github.com/ugorji/go
+    - github.com/wwmoraes/gotell # TODO remove before pushing
   gomodguard:
     blocked:
       local_replace_directives: true
@@ -205,9 +206,8 @@ linters-settings:
     # avoids clashing with the main badger package
     - alias: badgerstore
       pkg: github.com/ostafen/clover/v2/store/badger
-    # TODO(william) rename package to match the folder name and drop this alias
-    - alias: vmwarevcenter
-      pkg: github.com/wwmoraes/anilistarr/internal/drivers/vcenter
+    - alias: telemetry
+      pkg: github.com/wwmoraes/gotell
   inamedparam: {}
   interfacebloat:
     max: 6 # TODO(william) fine tune the maximum methods per interface
@@ -219,13 +219,6 @@ linters-settings:
     - error
     - stdlib
     - generic
-    # Telemetry
-    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.HTTPSpan$"
-    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Span$"
-    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer$"
-    - "go\\.opentelemetry\\.io/otel/metric"
-    - "go\\.opentelemetry\\.io/otel/trace"
-    - "github\\.com/go-logr/logr\\.LogSink$"
   lll:
     line-length: 120
     tab-width: 2
@@ -326,14 +319,10 @@ linters-settings:
     - record-error
     - set-status
     extra-start-span-signatures:
-    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Start:opentelemetry"
-    - "github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.StartFunction:opentelemetry"
-    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer)\\.Start:opentelemetry"
-    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer)\\.StartFunction:opentelemetry"
-    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Tracer)\\.StartHTTPResponse:opentelemetry"
+    - "github\\.com/wwmoraes/gotell\\.Start:opentelemetry"
     ignore-check-signatures: # does not work sadly
-    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Span)\\.Assert"
-    - "(github\\.com/wwmoraes/anilistarr/pkg/telemetry\\.Span)\\.Errorf"
+    - "(github\\.com/wwmoraes/gotell\\.Span)\\.Assert"
+    - "(github\\.com/wwmoraes/gotell\\.Span)\\.Errorf"
   staticcheck:
     checks: [all]
     http_status_code_whitelist: []
@@ -383,18 +372,16 @@ linters-settings:
     - id
     - ok
   whitespace:
-    multi-func: true
-    multi-if: true
+    multi-func: false
+    multi-if: false
   wrapcheck:
     ignoreSigs:
-      - (github.com/wwmoraes/anilistarr/pkg/telemetry.Span).Assert(
-      - (github.com/wwmoraes/anilistarr/pkg/telemetry.Span).Errorf(
-      - errors.Join(
-      - errors.New(
-      - errors.Unwrap(
-      - fmt.Errorf(
-      - status.Error(
-      - status.Errorf(
+    - errors.Join(
+    - errors.New(
+    - errors.Unwrap(
+    - fmt.Errorf(
+    - status.Error(
+    - status.Errorf(
   wsl: {}
 linters:
   enable-all: true

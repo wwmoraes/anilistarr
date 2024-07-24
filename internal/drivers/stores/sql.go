@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 
+	telemetry "github.com/wwmoraes/gotell"
 	_ "modernc.org/sqlite"
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores/models"
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/telemetry"
 )
 
 type Sql struct {
@@ -29,7 +29,7 @@ func NewSQL(driverName, dataSourceName string) (*Sql, error) {
 }
 
 func (s *Sql) PutMedia(ctx context.Context, media *entities.Media) error {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	record := models.MappingFromMedia(media)
@@ -38,7 +38,7 @@ func (s *Sql) PutMedia(ctx context.Context, media *entities.Media) error {
 }
 
 func (s *Sql) PutMediaBulk(ctx context.Context, medias []*entities.Media) error {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	records := make(models.MappingList, len(medias))
@@ -53,7 +53,7 @@ func (s *Sql) PutMediaBulk(ctx context.Context, medias []*entities.Media) error 
 }
 
 func (s *Sql) GetMedia(ctx context.Context, id entities.SourceID) (*entities.Media, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	record, err := models.MappingBySourceID(ctx, s.db, id)
@@ -67,7 +67,7 @@ func (s *Sql) GetMedia(ctx context.Context, id entities.SourceID) (*entities.Med
 }
 
 func (s *Sql) GetMediaBulk(ctx context.Context, ids []entities.SourceID) ([]*entities.Media, error) {
-	ctx, span := telemetry.StartFunction(ctx)
+	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
 	sqlIds := make([]sql.NullString, len(ids))
