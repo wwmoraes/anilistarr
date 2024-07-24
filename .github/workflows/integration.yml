@@ -275,7 +275,7 @@ jobs:
     #       VERSION=${{ needs.metadata.outputs.version }}
     - name: build container image
       run: >-
-        task docker:build
+        task docker:build --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
         --build-arg GOLANG_VERSION=${{ env.GOLANG_VERSION }}
