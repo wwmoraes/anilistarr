@@ -47,11 +47,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: calculate version
-      uses: paulhatch/semantic-version@v5.0.3
+      uses: paulhatch/semantic-version@v5
       id: version
       with:
         branch: ${{ github.ref_name }}
@@ -68,7 +68,7 @@ jobs:
         version_format: ${major}.${minor}.${patch}-rc.${increment}
     - name: generate container meta
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         context: workflow
         images: ${{ github.repository }}
@@ -103,9 +103,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.1.0
+      uses: JRMurr/direnv-nix-action@v4
       with:
         install-nix: true
         cache-store: true
@@ -124,16 +124,16 @@ jobs:
     needs: metadata
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.1.0
+      uses: JRMurr/direnv-nix-action@v4
       with:
         install-nix: true
         cache-store: true
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v2
     - name: build cache
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3
       with:
         path: ${{ runner.temp }}/.buildx-cache
         # yamllint disable-line rule:line-length
@@ -170,7 +170,7 @@ jobs:
         rm -rf ${{ runner.temp }}/.buildx-cache
         mv ${{ runner.temp }}/.buildx-cache-new ${{ runner.temp }}/.buildx-cache
     - name: cache grype
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3
       with:
         path: ${{ runner.temp }}/${{ env.GRYPE_DB_CACHE_TEMP_PATH }}
         key: ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
@@ -178,13 +178,13 @@ jobs:
           ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
           ${{ runner.os }}-grype-
     - name: scan
-      uses: anchore/scan-action@v3
+      uses: anchore/scan-action@v4
       id: scan
       with:
         image: ${{ github.repository }}:scan
         fail-build: true
         severity-cutoff: critical
     - name: report
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}

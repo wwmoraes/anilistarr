@@ -22,11 +22,11 @@ jobs:
       && startsWith(github.ref, 'refs/tags/')
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: calculate version
-      uses: paulhatch/semantic-version@v5.0.3
+      uses: paulhatch/semantic-version@v5
       id: version
       with:
         branch: ${{ github.ref_name }}
@@ -43,7 +43,7 @@ jobs:
         version_format: ${major}.${minor}.${patch}-rc.${increment}
     - name: generate container meta
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         context: workflow
         images: ${{ github.repository }}
@@ -84,18 +84,18 @@ jobs:
       contents: write
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.1.0
+      uses: JRMurr/direnv-nix-action@v4
       with:
         install-nix: true
         cache-store: true
     - name: set golang environment variables
       uses: wwmoraes/actions/golang/env@master
     - name: cache modules
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3
       with:
         path: ${GOMODCACHE}
         key: ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
@@ -103,7 +103,7 @@ jobs:
           ${{ runner.os }}-modules-${{ hashFiles('go.sum') }}
           ${{ runner.os }}-modules-
     - name: cache build
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3
       with:
         path: ${GOCACHE}
         key: ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
@@ -122,9 +122,9 @@ jobs:
       && startsWith(github.ref, 'refs/tags/')
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.1.0
+      uses: JRMurr/direnv-nix-action@v4
       with:
         install-nix: true
         cache-store: true
@@ -133,7 +133,7 @@ jobs:
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v2
     - name: cache buildx
-      uses: pat-s/always-upload-cache@v2.1.5
+      uses: pat-s/always-upload-cache@v3
       with:
         path: ${{ runner.temp }}/.buildx-cache
         # yamllint disable-line rule:line-length
