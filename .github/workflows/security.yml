@@ -99,16 +99,17 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v3
-    - name: setup
-      uses: actions/setup-go@v3
+    - name: direnv nix
+      uses: JRMurr/direnv-nix-action@v4.1.0
       with:
-        go-version: ${{ env.GOLANG_VERSION }}
+        install-nix: true
+        cache-store: true
     - name: initialize
       uses: github/codeql-action/init@v2
       with:
         languages: go
     - name: build
-      uses: wwmoraes/actions/golang/build@master
+      run: task build
     - name: analysis
       uses: github/codeql-action/analyze@v2
       with:
@@ -119,6 +120,11 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v3
+    - name: direnv nix
+      uses: JRMurr/direnv-nix-action@v4.1.0
+      with:
+        install-nix: true
+        cache-store: true
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v2
     - name: build cache
