@@ -19,15 +19,15 @@ System(Sonarr, "Sonarr", $descr="", $tags="", $link="")
 System(Radarr, "Radarr", $descr="", $tags="", $link="")
 
 Container_Boundary("Anilistarr.anilistarr_boundary", "anilistarr", $tags="") {
-  AddBoundaryTag("adapters", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+  AddBoundaryTag("adapters", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
   Boundary(group_1, "adapters", $tags="adapters") {
-      AddBoundaryTag("adapters/cache", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      AddBoundaryTag("adapters/cache", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
       Boundary(group_2, "cache", $tags="adapters/cache") {
         Component(Anilistarr.anilistarr.Cache, "Cache", $techn="interface", $descr="", $tags="", $link="")
         Component(Anilistarr.anilistarr.CachedTracker, "CachedTracker", $techn="", $descr="", $tags="", $link="")
       }
 
-      AddBoundaryTag("adapters/mapper", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      AddBoundaryTag("adapters/mapper", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
       Boundary(group_3, "mapper", $tags="adapters/mapper") {
         Component(Anilistarr.anilistarr.JSONProvider, "JSON Provider", $techn="struct", $descr="", $tags="", $link="")
         Component(Anilistarr.anilistarr.Provider, "Provider", $techn="interface", $descr="", $tags="", $link="")
@@ -37,9 +37,9 @@ Container_Boundary("Anilistarr.anilistarr_boundary", "anilistarr", $tags="") {
 
   }
 
-  AddBoundaryTag("drivers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+  AddBoundaryTag("drivers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
   Boundary(group_4, "drivers", $tags="drivers") {
-      AddBoundaryTag("drivers/persistence", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      AddBoundaryTag("drivers/persistence", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
       Boundary(group_5, "persistence", $tags="drivers/persistence") {
         Component(Anilistarr.anilistarr.RedisDriver, "Redis Driver", $techn="", $descr="", $tags="", $link="")
         Component(Anilistarr.anilistarr.BoltDBDriver, "BoltDB Driver", $techn="", $descr="", $tags="", $link="")
@@ -47,19 +47,19 @@ Container_Boundary("Anilistarr.anilistarr_boundary", "anilistarr", $tags="") {
         Component(Anilistarr.anilistarr.SQLDriver, "SQL Driver", $techn="struct", $descr="", $tags="", $link="")
       }
 
-      AddBoundaryTag("drivers/providers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      AddBoundaryTag("drivers/providers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
       Boundary(group_6, "providers", $tags="drivers/providers") {
         Component(Anilistarr.anilistarr.AnilistFribbsProvider, "Anilist Fribbs Provider", $techn="struct", $descr="", $tags="", $link="")
       }
 
-      AddBoundaryTag("drivers/trackers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+      AddBoundaryTag("drivers/trackers", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
       Boundary(group_7, "trackers", $tags="drivers/trackers") {
         Component(Anilistarr.anilistarr.anilist, "anilist", $techn="struct", $descr="", $tags="", $link="")
       }
 
   }
 
-  AddBoundaryTag("usecases", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="Dashed", $borderThickness="1")
+  AddBoundaryTag("usecases", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
   Boundary(group_8, "usecases", $tags="usecases") {
     Component(Anilistarr.anilistarr.Tracker, "Tracker", $techn="interface", $descr="", $tags="", $link="")
     Component(Anilistarr.anilistarr.Mapper, "Mapper", $techn="interface", $descr="", $tags="", $link="")
