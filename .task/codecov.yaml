@@ -16,9 +16,9 @@ tasks:
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
     cmd: >-
-      codecov create-report
-      --nonZero
-      --feature {{ .FEATURES | q }}
+      codecov
+      --required
+      --disable gcov
       --file {{ .FILE | q }}
       {{ .CLI_ARGS }}
     sources:
@@ -35,10 +35,10 @@ tasks:
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
     cmd: >-
-      codecov create-report
-      --nonZero
-      --feature {{ .FEATURES | q }}
-      --flag {{ .FLAG | q }}
+      codecov
+      --required
+      --disable gcov
+      --flags {{ .FLAG | q }}
       --file {{ .FILE | q }}
       {{ .CLI_ARGS }}
     sources:

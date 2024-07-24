@@ -284,6 +284,7 @@ tasks:
       - CODECOV_TOKEN
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
+      CODECOV_NAME: unit
     cmd:
       task: codecov:report:flagged:unit:coverage/unit.txt
   coverage:upload:integration:
@@ -295,6 +296,7 @@ tasks:
       - CODECOV_TOKEN
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
+      CODECOV_NAME: integration
     cmd:
       task: codecov:report:flagged:integration:coverage/integration.txt
   test:
