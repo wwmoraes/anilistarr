@@ -18,9 +18,8 @@ vars:
   CONTAINER_IMAGE: wwmoraes/anilistarr
   VERSION:
     sh: >-
-      git describe --tags 2> /dev/null
-      | sed -e 's/^v//'
-      || echo "0.1.0-rc.0"
+      git tag --points-at HEAD | grep .
+      || svu prerelease --strip-prefix --pre-release alpha
   FIX: >-
     gci
     gofmt

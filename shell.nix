@@ -171,6 +171,7 @@ in with pkgs; mkShell {
     markdownlint-cli
     oapi-codegen
     python312Packages.codecov
+    svu
     typos
     unstable.container-structure-test
     unstable.go
