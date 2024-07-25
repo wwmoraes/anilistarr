@@ -152,8 +152,7 @@ tasks:
       ## https://github.com/moby/moby/issues/46129
       OTEL_EXPORTER_OTLP_ENDPOINT: null
     vars:
-      CREATED:
-        sh: date -u +"%Y-%m-%dT%TZ"
+      CREATED: '{{ dateInZone "2006-01-02T03:04:05Z" (now) "UTC" }}'
       REVISION:
         sh: git log -n 1 --format="%H"
       VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
