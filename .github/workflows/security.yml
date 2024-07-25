@@ -9,7 +9,7 @@ on:
     - .dockerignore
     - .env
     - .envrc
-    - .github/workflows/codeql.yml
+    - .github/workflows/security.yml
     - .golangci.yaml
     - .task/*.yaml
     - '**.go'
