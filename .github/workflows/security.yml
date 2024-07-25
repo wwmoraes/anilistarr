@@ -180,13 +180,8 @@ jobs:
     - name: update db
       run: grype db update || grype db delete && grype db update
     - name: scan
-      uses: anchore/scan-action@v4
-      id: scan
-      with:
-        image: ${{ github.repository }}:scan
-        fail-build: true
-        severity-cutoff: critical
+      run: grype -o sarif --fail-on critical ${{ github.repository }}:scan > grype.sarif
     - name: report
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: ${{ steps.scan.outputs.sarif }}
+        sarif_file: grype.sarif

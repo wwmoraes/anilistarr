@@ -165,6 +165,7 @@ in with pkgs; mkShell {
     git
     go-task
     goreleaser
+    grype
     hadolint
     jq
     lefthook
@@ -181,7 +182,8 @@ in with pkgs; mkShell {
     ## TODO github.com/wadey/gocovmerge
     ## TODO github.com/Khan/genqlient
     ## TODO github.com/xo/xo
-  ] ++ pkgs.lib.optionals (builtins.getEnv "CI" == "") [
+  ] ++ pkgs.lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
+  ] ++ pkgs.lib.optionals (builtins.getEnv "CI" == "") [ # local-only
     # fish
     flyctl
     plantuml
