@@ -15,6 +15,7 @@ vars:
   GOLANG_TEST_PACKAGES: >-
     internal/adapters
     internal/usecases
+  REPOSITORY: wwmoraes/anilistarr
   CONTAINER_IMAGE: wwmoraes/anilistarr
   VERSION:
     sh: >-
@@ -157,14 +158,19 @@ tasks:
       VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
       DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
       CONTEXT: '{{ .CONTEXT | default "." }}'
+      LABELS: >-
+        org.opencontainers.image.documentation=https://github.com/{{ .REPOSITORY }}/blob/master/README.md
+        org.opencontainers.image.source=https://github.com/{{ .REPOSITORY }}
+        org.opencontainers.image.url=https://hub.docker.com/r/{{ .REPOSITORY }}
     cmd: >-
-      docker buildx build --load
+      docker build --load
       -f {{ .DOCKERFILE | q }}
       -t {{ .CONTAINER_IMAGE | q }}
       --build-arg VERSION={{ .VERSION | q }}
       --label org.opencontainers.image.created={{ .CREATED | q }}
       --label org.opencontainers.image.revision={{ .REVISION | q }}
       --label org.opencontainers.image.version={{ .VERSION | q }}
+      {{ if .LABELS -}}--label {{ .LABELS | splitList " " | join " --label " }}{{- end }}
       {{ .CLI_ARGS }}
       {{ .CONTEXT | q }}
     sources:
