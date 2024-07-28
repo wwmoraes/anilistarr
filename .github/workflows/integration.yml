@@ -54,62 +54,6 @@ defaults:
     shell: bash
 
 jobs:
-  metadata:
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: calculate version
-      uses: paulhatch/semantic-version@v5.4.0
-      id: version
-      with:
-        branch: ${{ github.ref_name }}
-        bump_each_commit: false
-        change_path: >-
-          cmd/handler
-          internal
-          go.mod
-          go.sum
-        major_pattern: /^BREAKING CHANGE:|^[^()!:]+(?:\([^()!:]+\))?!:/
-        minor_pattern: /^feat(?:\([^()!:]+\))?:/
-        search_commit_body: true
-        user_format_type: csv
-        version_format: ${major}.${minor}.${patch}-rc.${increment}
-    - name: generate container meta
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        context: workflow
-        images: ${{ github.repository }}
-        flavor: |
-          latest=true
-        # yamllint disable rule:line-length
-        labels: |
-          org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/blob/master/README.md
-          org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          org.opencontainers.image.url=https://hub.docker.com/r/${{ github.repository }}
-          org.opencontainers.image.version=${{ steps.version.outputs.version }}
-        # yamllint enable rule:line-length
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=raw,value=${{ env.BRANCH }}
-          type=semver,pattern={{version}}
-        github-token: ${{ github.token }}
-    outputs:
-      major: ${{ steps.version.outputs.major }}
-      minor: ${{ steps.version.outputs.minor }}
-      patch: ${{ steps.version.outputs.patch }}
-      increment: ${{ steps.version.outputs.increment }}
-      version_type: ${{ steps.version.outputs.version_type }}
-      version: ${{ steps.version.outputs.version }}
-      tag: ${{ steps.version.outputs.version_tag }}
-      revision: ${{ steps.version.outputs.current_commit }}
-      authors:  ${{ steps.version.outputs.authors }}
-      container-labels: ${{ steps.meta.outputs.labels }}
-      container-tags: ${{ steps.meta.outputs.tags }}
   build:
     runs-on: ubuntu-latest
     needs: metadata
@@ -259,7 +203,6 @@ jobs:
         task docker:build --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
-        --build-arg GOLANG_VERSION=${{ env.GOLANG_VERSION }}
     # fix to prevent ever-growing caches
     # https://github.com/docker/build-push-action/issues/252
     # https://github.com/moby/buildkit/issues/1896
