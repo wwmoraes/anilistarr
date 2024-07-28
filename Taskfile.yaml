@@ -9,7 +9,7 @@ vars:
   GO: '{{ .GO | default "go" }}'
   GOLANG_PACKAGE:
     sh: go list
-  GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-race -mod=readonly" }}'
+  GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-mod=readonly" }}'
   GOLANG_BUILD_FLAGS: '{{ .GOLANG_BUILD_FLAGS | default "-trimpath" }}'
   GOLANG_TEST_FLAGS: '{{ .GOLANG_TEST_FLAGS | default "-v -shuffle on" }}'
   GOLANG_TEST_PACKAGES: >-
@@ -19,7 +19,7 @@ vars:
   CONTAINER_IMAGE: wwmoraes/anilistarr
   VERSION:
     sh: >-
-      git tag --points-at HEAD | grep .
+      git tag --points-at HEAD | cut -dv -f2  | grep .
       || svu prerelease --strip-prefix --pre-release alpha
   FIX: >-
     gci
@@ -146,35 +146,79 @@ tasks:
       vars:
       - CONTAINER_IMAGE
     env:
+      DOCKER_BUILDKIT: 1
       ## avoids mixing application debugging with buildkit
       GRPC_GO_LOG_VERBOSITY_LEVEL: null
       GRPC_GO_LOG_SEVERITY_LEVEL: null
       ## https://github.com/moby/moby/issues/46129
       OTEL_EXPORTER_OTLP_ENDPOINT: null
     vars:
+      ACTION: '{{ .ACTION | default "load" }}'
       CREATED: '{{ dateInZone "2006-01-02T03:04:05Z" (now) "UTC" }}'
       REVISION:
         sh: git log -n 1 --format="%H"
-      VERSION: '{{ .VERSION | default "0.0.0-unknown" }}'
+      BRANCH:
+        sh: git branch --show-current
+      VERSION: '{{ .VERSION | default "0.0.0-HEAD" }}'
       DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
       CONTEXT: '{{ .CONTEXT | default "." }}'
+      PLATFORMS: >-
+        linux/amd64
+        linux/arm/v7
+        linux/arm64
+      BUILD_ARGS: >-
+        VERSION={{ .VERSION | q }}
+        {{ with .ALPINE_VERSION -}}ALPINE_VERSION={{ . | q }}{{- end }}
+        {{ with .GOLANG_VERSION -}}GOLANG_VERSION={{ . | q }}{{- end }}
       LABELS: >-
+        org.opencontainers.image.created={{ .CREATED | q }}
+        org.opencontainers.image.revision={{ .REVISION | q }}
+        org.opencontainers.image.version={{ .VERSION | q }}
         org.opencontainers.image.documentation=https://github.com/{{ .REPOSITORY }}/blob/master/README.md
         org.opencontainers.image.source=https://github.com/{{ .REPOSITORY }}
         org.opencontainers.image.url=https://hub.docker.com/r/{{ .REPOSITORY }}
+      TAGS: >-
+        {{ if eq "load" .ACTION -}}
+        {{ .CONTAINER_IMAGE }}:edge
+        {{- else if eq "push" .ACTION -}}
+        {{ .CONTAINER_IMAGE }}:latest
+        {{- end }}
+        {{ .CONTAINER_IMAGE }}:{{ .BRANCH }}
+        {{ if not (contains "-" .VERSION) -}}
+        {{ .CONTAINER_IMAGE }}:{{ .VERSION | splitList "+" | first | splitList "-" | first | splitList "." | first }}
+        {{ .CONTAINER_IMAGE }}:{{ slice (.VERSION | splitList "+" | first | splitList "-" | first | splitList ".") 0 2 | join "." }}
+        {{- end }}
+        {{ .CONTAINER_IMAGE }}:{{ .VERSION }}
     cmd: >-
-      docker build --load
-      -f {{ .DOCKERFILE | q }}
-      -t {{ .CONTAINER_IMAGE | q }}
-      --build-arg VERSION={{ .VERSION | q }}
-      --label org.opencontainers.image.created={{ .CREATED | q }}
-      --label org.opencontainers.image.revision={{ .REVISION | q }}
-      --label org.opencontainers.image.version={{ .VERSION | q }}
-      {{ if .LABELS -}}--label {{ .LABELS | splitList " " | join " --label " }}{{- end }}
+      docker buildx build
+      {{ if eq "load" .ACTION -}}
+      --load
+      {{- else if eq "push" .ACTION -}}
+      --push
+      {{ with (.PLATFORMS | trim) -}}
+      --platform {{ . | splitList " " | compact | join "," }}
+      {{- end }}
+      {{- end }}
+      --file {{ .DOCKERFILE | q }}
+      {{ range $value := (.BUILD_ARGS | trim | splitList " " | compact) }}
+      --build-arg {{ $value }}
+      {{- end }}
+      {{ range $value := (.LABELS | trim | splitList " " | compact) }}
+      --label {{ $value }}
+      {{- end }}
+      {{ range $value := (.TAGS | trim | splitList " " | compact) }}
+      --tag {{ $value }}
+      {{- end }}
       {{ .CLI_ARGS }}
       {{ .CONTEXT | q }}
     sources:
     - '{{ .DOCKERFILE }}'
+  docker:push:
+    desc: Builds and pushes a multi-platform container image.
+    cmd:
+      task: docker:build
+      vars:
+        ACTION: push
   redis:cli:
     desc: Opens a Redis CLI instance towards the Redis proxy.
     interactive: true
