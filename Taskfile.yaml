@@ -379,7 +379,7 @@ tasks:
     cmd: >-
       container-structure-test test
       -c container-structure-test.yaml
-      -i wwmoraes/anilistarr
+      -i wwmoraes/anilistarr:edge
   lefthook:install:
     summary: Configures git hooks using lefthook.
     vars:
