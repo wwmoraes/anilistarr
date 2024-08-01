@@ -29,9 +29,9 @@ pre-commit:
         ARGS: ""
       exclude: .*\.(jpg|png)$
     ## TODO XML/HTML lint
-    gofumpt:
+    fix:
       priority: 1
-      run: gofumpt -l -w {staged_files}
+      run: task fix -- {staged_files}
       glob: "**/*.go"
       stage_fixed: true
     lint-markdown:
