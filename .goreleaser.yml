@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://github.com/wwmoraes/kaizen/raw/master/schemas/goreleaser.schema.json
 before:
   hooks:
   - go mod download
@@ -14,16 +15,16 @@ builds:
   - arm
   - arm64
   goarm:
-  - 7
+  - "7"
   ignore:
   - goos: darwin
     goarch: arm
   - goos: darwin
-    goarch: 386
+    goarch: "386"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-rc"
+  name_template: "{{- .Version -}}+{{ .FullCommit }}"
 changelog:
   sort: asc
   filters:
@@ -36,3 +37,5 @@ release:
     owner: wwmoraes
     name: anilistarr
   prerelease: auto
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
