@@ -24,6 +24,7 @@ type CustomList = []struct {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
 	// (GET /user/{name}/id)
 	GetUserID(w http.ResponseWriter, r *http.Request, name string)
 
@@ -58,6 +59,7 @@ type MiddlewareFunc func(http.Handler) http.Handler
 func (siw *ServerInterfaceWrapper) GetUserID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+
 	// ------------- Path parameter "name" -------------
 	var name string
 
@@ -77,6 +79,7 @@ func (siw *ServerInterfaceWrapper) GetUserID(w http.ResponseWriter, r *http.Requ
 // GetUserMedia operation middleware
 func (siw *ServerInterfaceWrapper) GetUserMedia(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
 
 	// ------------- Path parameter "name" -------------
 	var name string
@@ -219,6 +222,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
+
 	"H4sIAAAAAAAC/8xUy27bSgz9lQHvXV0IGie53WjVIE4LA0k3TVdNFrREW0w1j3IoO0Ggfy9mHNc1gj4W",
 	"LdCVqWM+z+HwCdrgYvDkNUHzBKntyWExL8akwV1x0vzFSq7AUUIkUabydbPplot5tvQxEjTgR7ckgWmq",
 	"9khY3lOrcABQBB9hyi70oCQeh3loS7qOUisclYOHBt6w70wY1bggZHCZTe3JRAklZQWjDNBArxoba9es",
