@@ -37,5 +37,6 @@
   ],
   "go.lintOnSave": "workspace",
   "go.lintTool": "golangci-lint",
-  "todo-tree.tree.scanMode": "current file"
+  "todo-tree.tree.scanMode": "current file",
+  "nixEnvSelector.nixFile": "${workspaceFolder}/shell.nix"
 }

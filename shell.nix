@@ -10,155 +10,18 @@ let
     url = "https://github.com/NixOS/nixpkgs/archive/a14c5d651cee9ed70f9cd9e83f323f1e531002db.tar.gz";
     sha256 = "1b2dwbqm5vdr7rmxbj5ngrxm7sj5r725rqy60vnlirbbwks6aahb";
   };
-  nur = fetchTarball {
-    url = "https://github.com/nix-community/NUR/archive/master.tar.gz";
-    sha256 = "08c7qaxw2mg4rj80w571smnrf152km1axw639dsl5idhhc9bgqhm";
+  kaizen-src = fetchTarball {
+    name = "kaizen-01fb203b0905ed33b45a562a2cb5e5b6330044a8";
+    url = "https://github.com/wwmoraes/kaizen/archive/01fb203b0905ed33b45a562a2cb5e5b6330044a8.tar.gz";
+    sha256 = "04207l8g0p94jix2brwyhky1cscnd9w6vjn5dzzpfyv71wc2g0qa";
   };
-in
-{
-  # pkgs ? import <nixpkgs> { }
-  pkgs ? import nixpkgs {
-    config.packageOverrides = pkgs: {
-      nur = import nur {
-        inherit pkgs;
-      };
-    };
-  },
-  unstable ? import nixpkgs-unstable {}
-}: let
-  commitlint = pkgs.buildGoModule rec {
-    pname = "commitlint";
-    version = "0.10.1";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "conventionalcommit";
-      repo = "commitlint";
-      rev = "v${version}";
-      hash = "sha256-OJCK6GEfs/pcorIcKjylBhdMt+lAzsBgBVUmdLfcJR0=";
-    };
-
-    # vendorHash = pkgs.lib.fakeHash;
-    vendorHash = "sha256-4fV75e1Wqxsib0g31+scwM4DYuOOrHpRgavCOGurjT8=";
-
-    meta = with pkgs.lib; {
-      description = "commitlint checks if your commit messages meets the conventional commit format";
-      homepage = "https://github.com/conventionalcommit/commitlint";
-      license = licenses.mit;
-      maintainers = with maintainers; [ wwmoraes ];
-    };
-  };
-  # container-structure-test = pkgs.buildGoModule rec {
-  #   pname = "container-structure-test";
-  #   version = "1.18.1";
-
-  #   src = pkgs.fetchFromGitHub {
-  #     owner = "GoogleContainerTools";
-  #     repo = "container-structure-test";
-  #     rev = "v${version}";
-  #     hash = "sha256-k6KP6XWeYqQhBL4Qc1CLntNCIcxS3VmGDaATCQBHO3E=";
-  #   };
-
-  #   vendorHash = "sha256-PplWNH4mtc3Vx6aGWQvUI6rcxbaTi/ovWGYDPsTyUXw=";
-
-  #   doCheck = false;
-
-  #   meta = with pkgs.lib; {
-  #     description = "validate the structure of your container images";
-  #     license = licenses.asl20;
-  #     maintainers = with maintainers; [ wwmoraes ];
-  #   };
-  # };
-  # golangci-lint = pkgs.buildGoModule rec {
-  #   pname = "golangci-lint";
-  #   version = "1.59.1";
-
-  #   src = pkgs.fetchFromGitHub {
-  #     owner = "golangci";
-  #     repo = "golangci-lint";
-  #     rev = "v${version}";
-  #     hash = "sha256-VFU/qGyKBMYr0wtHXyaMjS5fXKAHWe99wDZuSyH8opg=";
-  #   };
-
-  #   vendorHash = "sha256-yYwYISK1wM/mSlAcDSIwYRo8sRWgw2u+SsvgjH+Z/7M=";
-
-  #   subPackages = [
-  #     "cmd/golangci-lint"
-  #   ];
-
-  #   ldflags = [
-  #     "-s"
-  #     "-w"
-  #     "-X main.version=${version}"
-  #     "-X main.commit=v${version}"
-  #     "-X main.date=1970-01-01T00:00:00Z"
-  #   ];
-
-  #   CGO_ENABLED = 0;
-
-  #   meta = with pkgs.lib; {
-  #     description = "Fast linters runner for Go";
-  #     homepage = "https://github.com/golangci/golangci-lint";
-  #     license = licenses.gpl3Plus;
-  #     maintainers = with maintainers; [ wwmoraes ];
-  #   };
-  # };
-  # hadolint-sarif = pkgs.rustPlatform.buildRustPackage rec {
-  #   pname = "hadolint-sarif";
-  #   version = "0.4.2";
-
-  #   src = pkgs.fetchFromGitHub {
-  #     owner = "psastras";
-  #     repo = "sarif-rs";
-  #     rev = "hadolint-sarif-v${version}";
-  #     hash = "sha256-EzWzDeIeSJ11CVcVyAhMjYQJcKHnieRrFkULc5eXAno=";
-  #   };
-
-  #   cargoHash = "sha256-AMRL1XANyze8bJe3fdgZvBnl/NyuWP13jixixqiPmiw=";
-  #   cargoBuildFlags = [
-  #     "--package"
-  #     pname
-  #   ];
-  #   cargoTestFlags = cargoBuildFlags;
-
-  #   doCheck = false;
-
-  #   meta = with pkgs.lib; {
-  #     description = "CLI tool to convert hadolint diagnostics into SARIF.";
-  #     homepage = "https://github.com/psastras/sarif-rs";
-  #     license = licenses.mit;
-  #     maintainers = [];
-  #   };
-  # };
-  # sarif-fmt = pkgs.rustPlatform.buildRustPackage rec {
-  #   pname = "sarif-fmt";
-  #   version = "0.4.2";
-
-  #   src = pkgs.fetchFromGitHub {
-  #     owner = "psastras";
-  #     repo = "sarif-rs";
-  #     rev = "sarif-fmt-v${version}";
-  #     hash = "sha256-EzWzDeIeSJ11CVcVyAhMjYQJcKHnieRrFkULc5eXAno=";
-  #   };
-
-  #   cargoHash = "sha256-dHOxVLXtnqSHMX5r1wFxqogDf9QdnOZOjTyYFahru34=";
-  #   cargoBuildFlags = [
-  #     "--package"
-  #     pname
-  #   ];
-  #   cargoTestFlags = cargoBuildFlags;
-
-  #   doCheck = false;
-
-  #   meta = with pkgs.lib; {
-  #     description = "CLI tool to pretty print SARIF diagnostics.";
-  #     homepage = "https://github.com/psastras/sarif-rs";
-  #     license = licenses.mit;
-  #     maintainers = [];
-  #   };
-  # };
-in with pkgs; mkShell {
-  packages = [
-    commitlint
+  pkgs = import nixpkgs {};
+  unstable = import nixpkgs-unstable {};
+  kaizen = import kaizen-src { inherit pkgs; };
+  inherit (pkgs) lib mkShell;
+in mkShell {
+  packages = with pkgs; [
+    # TODO try commitlint-rs
     curl
     docker-client
     editorconfig-checker
@@ -168,6 +31,7 @@ in with pkgs; mkShell {
     grype
     hadolint
     jq
+    kaizen.go-commitlint
     lefthook
     markdownlint-cli
     oapi-codegen
@@ -182,17 +46,15 @@ in with pkgs; mkShell {
     ## TODO github.com/wadey/gocovmerge
     ## TODO github.com/Khan/genqlient
     ## TODO github.com/xo/xo
-  ] ++ pkgs.lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
-  ] ++ pkgs.lib.optionals (builtins.getEnv "CI" == "") [ # local-only
+  ] ++ lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
+  ] ++ lib.optionals (builtins.getEnv "CI" == "") [ # local-only
     # fish
-    flyctl
-    plantuml
     ## TODO pkgsite
+    flyctl
+    kaizen.structurizr-cli
+    kaizen.structurizr-site-generatr
+    plantuml
     redis
-    ## TODO structurizr-cli
+    unstable.gopls
   ];
-
-  # installPhase = ''
-  #   source $stdenv/setup
-  # '';
 }
