@@ -20,6 +20,8 @@
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/wwmoraes/anilistarr?label=image%20version)](https://hub.docker.com/r/wwmoraes/anilistarr)
 [![Docker Pulls](https://img.shields.io/docker/pulls/wwmoraes/anilistarr)](https://hub.docker.com/r/wwmoraes/anilistarr)
 
+[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
+
 ---
 
 ## 📝 Table of Contents
