@@ -9,11 +9,6 @@ on:
 permissions:
   contents: read
 
-env:
-  GOLANG_VERSION: "1.22"
-  GOLANG_FLAGS: -race -mod=readonly
-  WORK_DIR: /usr/src
-
 jobs:
   binaries:
     runs-on: ubuntu-latest

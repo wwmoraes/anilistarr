@@ -33,8 +33,6 @@ on:
   - cron: '0 9 * * 1'
 
 env:
-  GOLANG_VERSION: "1.22"
-  GOLANG_FLAGS: -race -mod=readonly
   GRYPE_DB_CACHE_TEMP_PATH: .cache/grype/db/
 
 permissions:

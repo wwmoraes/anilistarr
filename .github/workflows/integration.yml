@@ -41,13 +41,6 @@ on:
     - shell.nix
     - Taskfile.yaml
 
-env:
-  GOLANG_FLAGS: -race -mod=readonly
-  GOLANG_COVERAGE_PATH: coverage
-  GOLANG_RUN_REPORT_FILE: coverage/run-report.json
-  GOLANG_VERSION: "1.22"
-  WORK_DIR: /usr/src
-
 permissions:
   contents: read
   security-events: write
