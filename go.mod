@@ -21,7 +21,7 @@ require (
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/mod v0.19.0
 	golang.org/x/time v0.5.0
-	modernc.org/sqlite v1.31.1
+	modernc.org/sqlite v1.33.0
 )
 
 require (
@@ -80,7 +80,6 @@ require (
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20240722195230-4a140ff9c08e // indirect
-	modernc.org/libc v1.55.4 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/strutil v1.2.0 // indirect
