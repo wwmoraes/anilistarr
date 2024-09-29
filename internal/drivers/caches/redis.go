@@ -43,8 +43,11 @@ func (c *redisCache) GetString(ctx context.Context, key string) (string, error) 
 		return "", span.Assert(nil)
 	}
 
+	// TODO return a use-case error instead of fully handling it here
 	if err != nil {
-		return "", span.Assert(fmt.Errorf("failed to get string: %w", err))
+		span.RecordError(err)
+		// return "", span.Assert(fmt.Errorf("failed to get string: %w", err))
+		return "", span.Assert(nil)
 	}
 
 	return res, span.Assert(nil)
@@ -56,8 +59,14 @@ func (c *redisCache) SetString(ctx context.Context, key, value string, options .
 
 	params, err := adapters.NewCacheParams(options...)
 	if err != nil {
-		return err
+		return span.Assert(err)
 	}
 
-	return span.Assert(c.Set(ctx, key, value, params.TTL).Err())
+	// TODO return a use-case error instead of fully handling it here
+	err = c.Set(ctx, key, value, params.TTL).Err()
+	if err != nil {
+		span.RecordError(err)
+	}
+
+	return span.Assert(nil)
 }

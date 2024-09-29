@@ -18,7 +18,9 @@ import (
 	_ "go.uber.org/automaxprocs"
 	"golang.org/x/time/rate"
 
+	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/api"
+	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/functional"
 	"github.com/wwmoraes/anilistarr/pkg/process"
@@ -77,8 +79,26 @@ func main() {
 	store, err := NewStore(dataPath)
 	process.Assert(err)
 
-	cache, err := NewCache(dataPath)
+	REDIS_ADDRESS := os.Getenv("REDIS_ADDRESS")
+	REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+	REDIS_USERNAME := os.Getenv("REDIS_USERNAME")
+
+	redisCache, err := caches.NewRedis(&caches.RedisOptions{
+		Addr:       REDIS_ADDRESS,
+		ClientName: "anilistarr",
+		Password:   REDIS_PASSWORD,
+		Username:   REDIS_USERNAME,
+	})
 	process.Assert(err)
+
+	fileCache, err := NewCache(dataPath)
+	process.Assert(err)
+
+	cache := adapters.MultiCache{
+		redisCache,
+		fileCache,
+	}
+	defer cache.Close()
 
 	mediaLister, err := NewAnilistMediaLister(
 		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
