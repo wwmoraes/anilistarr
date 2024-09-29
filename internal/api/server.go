@@ -39,7 +39,6 @@ func (service *apiService) GetUserID(w http.ResponseWriter, r *http.Request, nam
 
 	w.Header().Add("X-Anilist-User-Name", name)
 	w.Header().Add("X-Anilist-User-Id", userId)
-	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, userId)
@@ -64,7 +63,6 @@ func (service *apiService) GetUserMedia(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(data)

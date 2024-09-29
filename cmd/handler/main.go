@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/textproto"
 	"os"
 	"os/signal"
 	"time"
@@ -109,6 +110,11 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(telemetry.WithInstrumentationMiddleware)
+	r.Use(setHeaders(http.Header{
+		"Cross-Origin-Resource-Policy": []string{"same-origin"},
+		"X-Content-Type-Options":       []string{"nosniff"},
+		"X-Frame-Options":              []string{"DENY"},
+	}))
 	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), apiInboundRateBurst)))
 
 	service, err := api.NewService(mediaLister)
@@ -165,4 +171,16 @@ func gracefulShutdown(server *http.Server) {
 	defer cancel()
 
 	process.Assert(server.Shutdown(ctx))
+}
+
+func setHeaders(headers http.Header) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for key, value := range headers {
+				w.Header()[textproto.CanonicalMIMEHeaderKey(key)] = value
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
