@@ -3,7 +3,7 @@ module github.com/wwmoraes/anilistarr
 go 1.22.5
 
 require (
-	dario.cat/mergo v1.0.0
+	dario.cat/mergo v1.0.1
 	github.com/Khan/genqlient v0.7.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dgraph-io/badger/v4 v4.2.0
