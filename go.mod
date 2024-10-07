@@ -7,7 +7,7 @@ require (
 	github.com/Khan/genqlient v0.7.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dgraph-io/badger/v4 v4.2.0
-	github.com/getkin/kin-openapi v0.126.0
+	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-logr/logr v1.4.2
 	github.com/goccy/go-json v0.10.3
