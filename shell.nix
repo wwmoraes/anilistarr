@@ -52,6 +52,9 @@ in mkShell {
     pkgs.flyctl
     pkgs.plantuml
     pkgs.redis
+    unstable.delve
+    unstable.golangci-lint-langserver
     unstable.gopls
+    unstable.gotools
   ];
 }
