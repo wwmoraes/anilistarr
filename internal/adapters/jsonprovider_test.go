@@ -86,3 +86,31 @@ func TestLocalProvider_notFound(t *testing.T) {
 		t.Errorf("got value %v, expected nil", gotValue)
 	}
 }
+
+func TestLocalProvider_invalid(t *testing.T) {
+	t.Parallel()
+
+	testURI := "mem://test"
+	testData := []byte("test")
+
+	provider := adapters.JSONProvider[memoryMetadata](testURI)
+
+	gotValue, gotErr := provider.Fetch(context.TODO(), usecases.HTTPGetterAsGetter(&memoryGetter{
+		testURI: &http.Response{
+			StatusCode: http.StatusOK,
+			Status:     http.StatusText(http.StatusOK),
+			Header: http.Header{
+				"Content-Type":   []string{"application/json"},
+				"Content-Length": []string{strconv.Itoa(len(testData))},
+			},
+			Body: io.NopCloser(bytes.NewReader(testData)),
+		},
+	}))
+	if gotErr == nil {
+		t.Error("got no error, expected some")
+	}
+
+	if gotValue != nil {
+		t.Errorf("got value %v, expected nil", gotValue)
+	}
+}

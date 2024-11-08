@@ -12,7 +12,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
-	"github.com/wwmoraes/anilistarr/internal/test"
+	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/process"
 )
@@ -33,7 +33,7 @@ func main() {
 
 	ctx = logr.NewContext(ctx, log)
 
-	var tracker usecases.Tracker = &test.Tracker{
+	var tracker usecases.Tracker = &testdata.Tracker{
 		UserIds: map[string]int{
 			coverageUsername: coverageUserId,
 		},
@@ -60,16 +60,16 @@ func main() {
 			Tracker: tracker,
 		},
 		&adapters.Mapper{
-			Provider: test.Provider,
+			Provider: testdata.Provider,
 			Store:    store,
 		},
 	)
 	process.Assert(err)
 	defer bridge.Close()
 
-	err = bridge.Refresh(ctx, usecases.HTTPGetterAsGetter(&test.HTTPClient{
+	err = bridge.Refresh(ctx, usecases.HTTPGetterAsGetter(&testdata.HTTPClient{
 		Data: map[string]string{
-			test.Provider.String(): `[
+			testdata.Provider.String(): `[
 				{"anilist_id": 1, "thetvdb_id": 101},
 				{"anilist_id": 2, "thetvdb_id": 102},
 				{"anilist_id": 3, "thetvdb_id": 103},

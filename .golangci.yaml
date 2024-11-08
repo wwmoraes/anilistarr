@@ -427,6 +427,10 @@ issues:
   exclude:
   ## gomodguard: dupe of gomoddirectives
   - "import of package `(.+)` is blocked because the module has a local replace directive."
+  exclude-rules:
+  - path: _test\.go
+    linters:
+    - funlen
 severity:
   default-severity: error
   case-sensitive: false

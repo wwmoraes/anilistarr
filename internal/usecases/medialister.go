@@ -12,10 +12,11 @@ import (
 )
 
 var (
-	ErrNoTracker = errors.New("no tracker set up")
-	ErrNoMapper  = errors.New("no mapper set up")
-	ErrNoCache   = errors.New("no cache set up")
-	ErrNotFound  = errors.New("not found")
+	ErrNoTracker  = errors.New("no tracker set up")
+	ErrNoMapper   = errors.New("no mapper set up")
+	ErrNoCache    = errors.New("no cache set up")
+	ErrNotFound   = errors.New("not found")
+	ErrBadRequest = errors.New("bad request")
 )
 
 type MediaLister interface {
@@ -42,22 +43,22 @@ func NewMediaLister(tracker Tracker, mapper Mapper) (MediaLister, error) {
 		return nil, ErrNoMapper
 	}
 
-	return &mediaLister{
+	return &SonarrMediaLister{
 		Tracker: tracker,
 		Mapper:  mapper,
 	}, nil
 }
 
-// mediaLister handles both a tracker to fetch user data and a mapper that can
+// SonarrMediaLister handles both a tracker to fetch user data and a mapper that can
 // transform the media IDs from the tracker to another service
-type mediaLister struct {
+type SonarrMediaLister struct {
 	Tracker Tracker
 	Mapper  Mapper
 }
 
 // Generate fetches the user media list from the Tracker and transform the IDs
 // found to the target service through the Mapper
-func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
+func (lister *SonarrMediaLister) Generate(ctx context.Context, name string) (entities.CustomList, error) {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
@@ -105,7 +106,7 @@ func (lister *mediaLister) Generate(ctx context.Context, name string) (entities.
 }
 
 // GetUserID searches the Tracker for the user ID by their name/handle
-func (lister *mediaLister) GetUserID(ctx context.Context, name string) (string, error) {
+func (lister *SonarrMediaLister) GetUserID(ctx context.Context, name string) (string, error) {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 
@@ -115,12 +116,12 @@ func (lister *mediaLister) GetUserID(ctx context.Context, name string) (string, 
 }
 
 // Close closes both the Tracker and Mapper
-func (lister *mediaLister) Close() error {
+func (lister *SonarrMediaLister) Close() error {
 	return errors.Join(lister.Tracker.Close(), lister.Mapper.Close())
 }
 
 // Refresh requests the Mapper to update its mapping definitions
-func (lister *mediaLister) Refresh(ctx context.Context, client Getter) error {
+func (lister *SonarrMediaLister) Refresh(ctx context.Context, client Getter) error {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 

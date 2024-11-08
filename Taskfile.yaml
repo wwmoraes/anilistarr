@@ -255,13 +255,13 @@ tasks:
     desc: Runs static analysis on the source code.
     vars:
       GOLANGCI_LINT_SARIF: '{{ .GOLANGCI_LINT_SARIF | default "golangci-lint.sarif" }}'
-    cmd: >-
-      golangci-lint run --show-stats=false --out-format sarif
-      | tee {{ .GOLANGCI_LINT_SARIF | q }}
-      | sarif-fmt
-      ; jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
+    cmds:
+    - golangci-lint run
+    - sarif-fmt -i {{ .GOLANGCI_LINT_SARIF | q }}
+    - jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
       {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
     sources:
+    - .golangci.yaml
     - cmd/**/*.go
     - internal/**/*.go
     - pkg/**/*.go
@@ -301,7 +301,6 @@ tasks:
     - coverage/coverage.html
   coverage:report:unit:
     desc: (Re)generates the unit coverage report.
-    run: once
     deps:
     - test:unit
     cmd: >-

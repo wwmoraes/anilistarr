@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 )
@@ -32,6 +33,18 @@ func TestNewCacheParams(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+		},
+		{
+			name: "with TTL",
+			args: args{
+				options: []adapters.CacheOption{
+					adapters.WithTTL(time.Hour),
+				},
+			},
+			want: &adapters.CacheParams{
+				TTL: time.Hour,
+			},
+			wantErr: false,
 		},
 	}
 

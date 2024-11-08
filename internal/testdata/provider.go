@@ -1,12 +1,10 @@
-package test
+package testdata
 
 import (
 	"strconv"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 )
-
-// type Provider[T adapters.Metadata] []T
 
 const Provider adapters.JSONProvider[Metadata] = `memory:///test`
 

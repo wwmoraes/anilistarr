@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
+	"github.com/wwmoraes/anilistarr/internal/drivers/memory"
 )
 
-func NewMemCache(tb testing.TB, mutations ...func(adapters.Cache) error) caches.Memory {
+func NewMemCache(tb testing.TB, mutations ...func(adapters.Cache) error) memory.Memory {
 	tb.Helper()
 
-	mem := caches.NewMemory()
+	mem := memory.New()
 
 	var err error
 	for _, mutation := range mutations {

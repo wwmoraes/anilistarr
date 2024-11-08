@@ -1,8 +1,9 @@
-package test
+package testdata
 
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/wwmoraes/anilistarr/internal/entities"
@@ -15,6 +16,10 @@ type Tracker struct {
 }
 
 func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, error) {
+	if tracker.UserIds == nil {
+		return "", fmt.Errorf(http.StatusText(http.StatusBadGateway))
+	}
+
 	id, ok := tracker.UserIds[name]
 	if !ok {
 		return "", fmt.Errorf(usecases.FailedGetUserErrorTemplate, fmt.Errorf("user id not found"))
@@ -24,6 +29,10 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 }
 
 func (tracker *Tracker) GetMediaListIDs(ctx context.Context, userId string) ([]entities.SourceID, error) {
+	if tracker.MediaLists == nil {
+		return nil, fmt.Errorf(http.StatusText(http.StatusBadGateway))
+	}
+
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
 		return nil, fmt.Errorf(usecases.ConvertUserIDErrorTemplate, err)

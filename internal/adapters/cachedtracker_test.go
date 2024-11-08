@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/test"
+	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -33,7 +33,6 @@ var (
 	}
 )
 
-//nolint:funlen // yeah, tests are long...
 func TestCachedTracker_GetUserID(t *testing.T) {
 	t.Parallel()
 
@@ -58,8 +57,8 @@ func TestCachedTracker_GetUserID(t *testing.T) {
 		{
 			name: "cache error",
 			fields: fields{
-				Cache: (*test.Cache)(nil),
-				Tracker: &test.Tracker{
+				Cache: (*testdata.Cache)(nil),
+				Tracker: &testdata.Tracker{
 					UserIds: map[string]int{
 						testCacheKeyUserID: testUserID,
 					},
@@ -77,12 +76,12 @@ func TestCachedTracker_GetUserID(t *testing.T) {
 		{
 			name: "cache hit",
 			fields: fields{
-				Cache: &test.Cache{
+				Cache: &testdata.Cache{
 					Data: map[string]string{
 						testCacheKeyUserID: testUserIDStr,
 					},
 				},
-				Tracker: &test.Tracker{
+				Tracker: &testdata.Tracker{
 					UserIds: map[string]int{
 						testUsername: testUserID,
 					},
@@ -100,12 +99,12 @@ func TestCachedTracker_GetUserID(t *testing.T) {
 		{
 			name: "cache miss, tracker hit",
 			fields: fields{
-				Cache: &test.Cache{
+				Cache: &testdata.Cache{
 					Data: map[string]string{
 						testUsername + "qux": fmt.Sprint(testUserID + 1),
 					},
 				},
-				Tracker: &test.Tracker{
+				Tracker: &testdata.Tracker{
 					UserIds: map[string]int{
 						testUsername: testUserID,
 					},
@@ -123,10 +122,10 @@ func TestCachedTracker_GetUserID(t *testing.T) {
 		{
 			name: "cache miss, tracker error",
 			fields: fields{
-				Cache: &test.Cache{
+				Cache: &testdata.Cache{
 					Data: make(map[string]string),
 				},
-				Tracker: &test.Tracker{},
+				Tracker: &testdata.Tracker{},
 				TTL:     testTTL,
 			},
 			args: args{
@@ -147,6 +146,7 @@ func TestCachedTracker_GetUserID(t *testing.T) {
 				Tracker: tt.fields.Tracker,
 				TTL:     tt.fields.TTL,
 			}
+			defer wrapper.Close()
 
 			got, err := wrapper.GetUserID(tt.args.ctx, tt.args.name)
 			if (err != nil) != tt.wantErr {
@@ -162,7 +162,6 @@ func TestCachedTracker_GetUserID(t *testing.T) {
 	}
 }
 
-//nolint:funlen // yeah, tests are long...
 func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 	t.Parallel()
 
@@ -187,8 +186,8 @@ func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 		{
 			name: "cache error",
 			fields: fields{
-				Cache:   (*test.Cache)(nil),
-				Tracker: &test.Tracker{},
+				Cache:   (*testdata.Cache)(nil),
+				Tracker: &testdata.Tracker{},
 				TTL:     testTTL,
 			},
 			args: args{
@@ -201,13 +200,13 @@ func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 		{
 			name: "cache hit",
 			fields: fields{
-				Cache: &test.Cache{
+				Cache: &testdata.Cache{
 					Data: map[string]string{
 						testCacheKeyUserID:    testUserIDStr,
 						testCacheKeyUserMedia: strings.Join(testMedia, "|"),
 					},
 				},
-				Tracker: &test.Tracker{},
+				Tracker: &testdata.Tracker{},
 				TTL:     testTTL,
 			},
 			args: args{
@@ -220,12 +219,12 @@ func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 		{
 			name: "cache miss, tracker hit",
 			fields: fields{
-				Cache: &test.Cache{
+				Cache: &testdata.Cache{
 					Data: map[string]string{
 						testCacheKeyUserID: testUserIDStr,
 					},
 				},
-				Tracker: &test.Tracker{
+				Tracker: &testdata.Tracker{
 					MediaLists: map[int][]string{
 						testUserID: testMedia,
 					},
@@ -242,10 +241,10 @@ func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 		{
 			name: "cache miss, tracker error",
 			fields: fields{
-				Cache: &test.Cache{
+				Cache: &testdata.Cache{
 					Data: make(map[string]string),
 				},
-				Tracker: &test.Tracker{
+				Tracker: &testdata.Tracker{
 					MediaLists: make(map[int][]string),
 				},
 				TTL: testTTL,
@@ -268,6 +267,7 @@ func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 				Tracker: tt.fields.Tracker,
 				TTL:     tt.fields.TTL,
 			}
+			defer wrapper.Close()
 
 			got, err := wrapper.GetMediaListIDs(tt.args.ctx, tt.args.userId)
 			if (err != nil) != tt.wantErr {
@@ -283,17 +283,16 @@ func TestCachedTracker_GetMediaListIDs(t *testing.T) {
 	}
 }
 
-//nolint:funlen // yeah, tests are long...
 func TestCachedTracker_Cache(t *testing.T) {
 	t.Parallel()
 
-	cache := &test.Cache{
+	cache := &testdata.Cache{
 		Data: map[string]string{},
 	}
 
 	tracker := adapters.CachedTracker{
 		Cache: cache,
-		Tracker: &test.Tracker{
+		Tracker: &testdata.Tracker{
 			UserIds: map[string]int{
 				testUsername: testUserID,
 			},

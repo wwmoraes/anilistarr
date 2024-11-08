@@ -1,4 +1,4 @@
-package test
+package testdata
 
 import (
 	"strconv"
@@ -7,7 +7,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/entities"
 )
 
-func SonarrCustomListFromIDs(tb testing.TB, ids ...string) entities.CustomList {
+func CustomListFromIDs(tb testing.TB, ids ...string) entities.CustomList {
 	tb.Helper()
 
 	customList := make(entities.CustomList, len(ids))

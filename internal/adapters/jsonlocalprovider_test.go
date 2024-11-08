@@ -8,13 +8,19 @@ import (
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
-	"github.com/wwmoraes/anilistarr/internal/test"
+	"github.com/wwmoraes/anilistarr/internal/testdata"
 )
 
 //nolint:tagliatelle // JSON tags must match the upstream naming convention
 type memoryMetadata struct {
-	AnilistID uint64 `json:"anilist_id"`
-	TheTvdbID uint64 `json:"thetvdb_id"`
+	AnilistID uint64 `json:"anilist_id,omitempty"`
+	TheTvdbID uint64 `json:"thetvdb_id,omitempty"`
+}
+
+//nolint:tagliatelle // JSON tags must match the upstream naming convention
+type memoryRawMetadata struct {
+	AnilistID string `json:"anilist_id,omitempty"`
+	TheTvdbID string `json:"thetvdb_id,omitempty"`
 }
 
 func (entry memoryMetadata) GetSourceID() string {
@@ -23,6 +29,14 @@ func (entry memoryMetadata) GetSourceID() string {
 
 func (entry memoryMetadata) GetTargetID() string {
 	return strconv.FormatUint(entry.TheTvdbID, 10)
+}
+
+func (entry memoryRawMetadata) GetSourceID() string {
+	return entry.AnilistID
+}
+
+func (entry memoryRawMetadata) GetTargetID() string {
+	return entry.TheTvdbID
 }
 
 func TestJSONLocalProvider(t *testing.T) {
@@ -63,7 +77,7 @@ func TestJSONLocalProvider_error(t *testing.T) {
 	t.Parallel()
 
 	provider := adapters.JSONLocalProvider[memoryMetadata]{
-		Fs:   test.MemoryFS{},
+		Fs:   testdata.MemoryFS{},
 		Name: "test.json",
 	}
 

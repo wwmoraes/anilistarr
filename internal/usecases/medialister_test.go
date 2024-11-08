@@ -2,205 +2,384 @@ package usecases_test
 
 import (
 	"context"
-	"errors"
 	"reflect"
 	"testing"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
-	"github.com/wwmoraes/anilistarr/internal/test"
+	"github.com/wwmoraes/anilistarr/internal/drivers/memory"
+	"github.com/wwmoraes/anilistarr/internal/entities"
+	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-const (
-	testUsername = "test"
-	testUserId   = 1234
-)
-
-var (
-	testSourceIds = []string{"1", "2", "3", "5", "8", "13"}
-	testTargetIds = []string{"91", "92", "93", "95", "98", "913"}
-
-	// drivers
-
-	testClient = test.HTTPClient{
-		Data: map[string]string{
-			test.Provider.String(): `[
-				{"anilist_id": 1, "thetvdb_id": 91},
-				{"anilist_id": 2, "thetvdb_id": 92},
-				{"anilist_id": 3, "thetvdb_id": 93},
-				{"anilist_id": 5, "thetvdb_id": 95},
-				{"anilist_id": 8, "thetvdb_id": 98},
-				{"anilist_id": 13, "thetvdb_id": 913}
-			]`,
-		},
-	}
-	testTracker = &test.Tracker{
-		UserIds: map[string]int{
-			testUsername: testUserId,
-		},
-		MediaLists: map[int][]string{
-			testUserId: testSourceIds,
-		},
-	}
-)
-
-func TestMediaBridge(t *testing.T) {
+func TestNewMediaLister(t *testing.T) {
 	t.Parallel()
 
-	store, err := stores.NewBadger("", &stores.BadgerOptions{
-		InMemory: true,
-	})
-	if err != nil {
-		t.Fatal(err)
+	type args struct {
+		tracker usecases.Tracker
+		mapper  usecases.Mapper
 	}
 
-	bridge, err := usecases.NewMediaLister(testTracker,
-		&adapters.Mapper{
-			Provider: test.Provider,
-			Store:    store,
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		wantNil bool
+	}{
+		{
+			name: "success",
+			args: args{
+				tracker: &testdata.Tracker{},
+				mapper:  &adapters.Mapper{},
+			},
+			wantErr: false,
+			wantNil: false,
 		},
-	)
-	if err != nil {
-		t.Error("unexpected error when creating MediaLister:", err)
+		{
+			name: "nil tracker",
+			args: args{
+				tracker: nil,
+				mapper:  &adapters.Mapper{},
+			},
+			wantErr: true,
+			wantNil: true,
+		},
+		{
+			name: "nil mapper",
+			args: args{
+				tracker: &testdata.Tracker{},
+				mapper:  nil,
+			},
+			wantErr: true,
+			wantNil: true,
+		},
 	}
 
-	wantedCustomList := test.SonarrCustomListFromIDs(t, "91", "92", "93", "95", "98", "913")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	err = bridge.Refresh(context.TODO(), usecases.HTTPGetterAsGetter(&testClient))
-	if err != nil {
-		t.Error("unexpected error on Refresh:", err)
-	}
+			got, err := usecases.NewMediaLister(tt.args.tracker, tt.args.mapper)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewMediaLister() error = %v, wantErr %v", err, tt.wantErr)
 
-	customList, err := bridge.Generate(context.TODO(), testUsername)
-	if err != nil {
-		t.Error("unexpected error on GetUserID:", err)
-	}
+				return
+			}
 
-	if !reflect.DeepEqual(customList, wantedCustomList) {
-		t.Errorf("custom list does not match: got '%v', expected '%v'", customList, wantedCustomList)
-	}
-
-	err = bridge.Close()
-	if err != nil {
-		t.Error("unexpected error on Close:", err)
+			if (got == nil) != tt.wantNil {
+				t.Errorf("NewMediaLister() = %v, wantNil %v", got, tt.wantNil)
+			}
+		})
 	}
 }
 
-func TestNewMediaLister_NoTracker(t *testing.T) {
+func TestSonarrMediaLister_Generate(t *testing.T) {
 	t.Parallel()
 
-	_, err := usecases.NewMediaLister(nil, &adapters.Mapper{})
-	if !errors.Is(err, usecases.ErrNoTracker) {
-		t.Errorf("expected %q, got %q", usecases.ErrNoTracker, err)
+	type fields struct {
+		Tracker usecases.Tracker
+		Mapper  usecases.Mapper
+	}
+
+	type args struct {
+		ctx  context.Context
+		name string
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    entities.CustomList
+		wantErr bool
+	}{
+		{
+			name: "success",
+			fields: fields{
+				Tracker: testdata.SampleTracker,
+				Mapper: &adapters.Mapper{
+					Provider: testdata.Provider,
+					Store:    testdata.SampleStore,
+				},
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    testdata.CustomListFromIDs(t, testdata.TargetIDs...),
+			wantErr: false,
+		},
+		{
+			name: "user not found",
+			fields: fields{
+				Tracker: &testdata.Tracker{},
+				Mapper:  nil,
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "user id tracker error",
+			fields: fields{
+				Tracker: &testdata.Tracker{
+					MediaLists: map[int][]string{},
+				},
+				Mapper: nil,
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "media list tracker error",
+			fields: fields{
+				Tracker: &testdata.Tracker{
+					UserIds: map[string]int{
+						testdata.Username: testdata.UserID,
+					},
+					MediaLists: nil,
+				},
+				Mapper: nil,
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "map IDs error",
+			fields: fields{
+				Tracker: testdata.SampleTracker,
+				Mapper: &adapters.Mapper{
+					Provider: nil,
+					Store:    (memory.Memory)(nil),
+				},
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty target ID",
+			fields: fields{
+				Tracker: testdata.SampleTracker,
+				Mapper: &adapters.Mapper{
+					Provider: nil,
+					Store: memory.Memory{
+						"1": "",
+					},
+				},
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    entities.CustomList{},
+			wantErr: false,
+		},
+		{
+			name: "invalid target ID",
+			fields: fields{
+				Tracker: testdata.SampleTracker,
+				Mapper: &adapters.Mapper{
+					Provider: nil,
+					Store: memory.Memory{
+						"1": "a",
+					},
+				},
+			},
+			args: args{
+				ctx:  context.TODO(),
+				name: testdata.Username,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			lister := &usecases.SonarrMediaLister{
+				Tracker: tt.fields.Tracker,
+				Mapper:  tt.fields.Mapper,
+			}
+
+			got, err := lister.Generate(tt.args.ctx, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SonarrMediaLister.Generate() error = %v, wantErr %v", err, tt.wantErr)
+
+				return
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SonarrMediaLister.Generate() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
-func TestNewMediaLister_NoMapper(t *testing.T) {
+func TestSonarrMediaLister_GetUserID(t *testing.T) {
 	t.Parallel()
 
-	_, err := usecases.NewMediaLister(&test.Tracker{}, nil)
-	if !errors.Is(err, usecases.ErrNoMapper) {
-		t.Errorf("expected %q, got %q", usecases.ErrNoMapper, err)
+	type fields struct {
+		Tracker usecases.Tracker
+		Mapper  usecases.Mapper
+	}
+
+	type args struct {
+		ctx  context.Context
+		name string
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			lister := &usecases.SonarrMediaLister{
+				Tracker: tt.fields.Tracker,
+				Mapper:  tt.fields.Mapper,
+			}
+
+			got, err := lister.GetUserID(tt.args.ctx, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SonarrMediaLister.GetUserID() error = %v, wantErr %v", err, tt.wantErr)
+
+				return
+			}
+
+			if got != tt.want {
+				t.Errorf("SonarrMediaLister.GetUserID() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
-// func TestMediaBridge_GetUserID(t *testing.T) {
-// 	tracker := &test.Tracker{
-// 		UserIds: map[string]int{
-// 			testUsername: testUserId,
-// 		},
-// 		MediaLists: map[int][]string{
-// 			testUserId: testSourceIds,
-// 		},
-// 	}
+func TestSonarrMediaLister_Close(t *testing.T) {
+	t.Parallel()
 
-// 	bridge := usecases.MediaBridge{
-// 		Tracker: tracker,
-// 		Mapper: &adapters.Mapper{
-// 			Provider: testProvider,
-// 			Store:    &test.Store{},
-// 		},
-// 	}
+	type fields struct {
+		Tracker usecases.Tracker
+		Mapper  usecases.Mapper
+	}
 
-// 	ctx := context.Background()
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "success",
+			fields: fields{
+				Tracker: &testdata.Tracker{},
+				Mapper: &adapters.Mapper{
+					Store: memory.New(),
+				},
+			},
+		},
+	}
 
-// 	userId, err := bridge.GetUserID(ctx, "test")
-// 	if err != nil {
-// 		t.Error("unexpected error:", err)
-// 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// 	if userId != strconv.Itoa(testUserId) {
-// 		t.Errorf("user id does not match: got '%s', expected '%d'", userId, testUserId)
-// 	}
-// }
+			lister := &usecases.SonarrMediaLister{
+				Tracker: tt.fields.Tracker,
+				Mapper:  tt.fields.Mapper,
+			}
 
-// func TestMediaBridge_GenerateCustomList(t *testing.T) {
-// 	wantedIds := test.SonarrCustomListFromIDs(t, testTargetIds...)
+			if err := lister.Close(); (err != nil) != tt.wantErr {
+				t.Errorf("SonarrMediaLister.Close() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
 
-// 	bridge := usecases.MediaBridge{
-// 		Tracker: &test.Tracker{
-// 			UserIds: map[string]int{
-// 				testUsername: testUserId,
-// 			},
-// 			MediaLists: map[int][]string{
-// 				testUserId: testSourceIds,
-// 			},
-// 		},
-// 		Mapper: &adapters.Mapper{
-// 			Provider: test.Provider[test.Metadata]{
-// 				test.Metadata{
-// 					SourceID: "1",
-// 					TargetID: "91",
-// 				},
-// 				test.Metadata{
-// 					SourceID: "13",
-// 					TargetID: "913",
-// 				},
-// 			},
-// 			Store: &test.Store{},
-// 		},
-// 	}
+func TestSonarrMediaLister_Refresh(t *testing.T) {
+	t.Parallel()
 
-// 	ctx := context.Background()
+	type fields struct {
+		Tracker usecases.Tracker
+		Mapper  usecases.Mapper
+	}
 
-// 	mediaIds, err := bridge.GenerateCustomList(ctx, testUsername)
-// 	if err != nil {
-// 		t.Error("unexpected error:", err)
-// 	}
+	type args struct {
+		ctx    context.Context
+		client usecases.Getter
+	}
 
-// 	if !reflect.DeepEqual(mediaIds, wantedIds) {
-// 		t.Errorf("generated list does not match: got '%v', expected '%v'", mediaIds, wantedIds)
-// 	}
-// }
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "success",
+			fields: fields{
+				Tracker: nil,
+				Mapper: &adapters.Mapper{
+					Provider: testdata.Provider,
+					Store:    memory.New(),
+				},
+			},
+			args: args{
+				ctx:    context.TODO(),
+				client: usecases.HTTPGetterAsGetter(&testdata.SampleClient),
+			},
+			wantErr: false,
+		},
+		{
+			name: "no client",
+			fields: fields{
+				Tracker: nil,
+				Mapper: &adapters.Mapper{
+					Provider: testdata.Provider,
+				},
+			},
+			args: args{
+				ctx:    context.TODO(),
+				client: nil,
+			},
+			wantErr: true,
+		},
+	}
 
-// func TestMediaBridge_Close(t *testing.T) {
-// 	bridge := usecases.MediaBridge{
-// 		Tracker: &test.Tracker{},
-// 		Mapper: &adapters.Mapper{
-// 			Provider: testProvider,
-// 			Store:    &test.Store{},
-// 		},
-// 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// 	err := bridge.Close()
-// 	if err != nil {
-// 		t.Error("unexpected error:", err)
-// 	}
-// }
+			lister := &usecases.SonarrMediaLister{
+				Tracker: tt.fields.Tracker,
+				Mapper:  tt.fields.Mapper,
+			}
 
-// func TestMediaBridge_Refresh(t *testing.T) {
-// 	bridge := usecases.MediaBridge{
-// 		Tracker: &test.Tracker{},
-// 		Mapper: &adapters.Mapper{
-// 			Provider: testProvider,
-// 			Store:    &test.Store{},
-// 		},
-// 	}
-
-// 	ctx := context.Background()
-// 	err := bridge.Refresh(ctx)
-// 	if err != nil {
-// 		t.Error("unexpected error:", err)
-// 	}
-// }
+			if err := lister.Refresh(tt.args.ctx, tt.args.client); (err != nil) != tt.wantErr {
+				t.Errorf("SonarrMediaLister.Refresh() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

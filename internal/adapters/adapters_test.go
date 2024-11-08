@@ -11,7 +11,7 @@ import (
 	"github.com/goccy/go-json"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/test"
+	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/pkg/functional"
 )
 
@@ -51,17 +51,17 @@ func newJSONLocalProvider(tb testing.TB) *adapters.JSONLocalProvider[memoryMetad
 	tb.Helper()
 
 	return &adapters.JSONLocalProvider[memoryMetadata]{
-		Fs: &test.MemoryFS{
+		Fs: &testdata.MemoryFS{
 			testLocalName: functional.Unwrap(json.Marshal(testMetadata)),
 		},
 		Name: testLocalName,
 	}
 }
 
-func newMemoryGetter(tb testing.TB) *memoryGetter {
+func newMemoryGetter(tb testing.TB, metadata []adapters.Metadata) *memoryGetter {
 	tb.Helper()
 
-	testData, err := json.Marshal(testMetadata)
+	testData, err := json.Marshal(metadata)
 	if err != nil {
 		tb.Fatal(err)
 	}
