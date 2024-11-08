@@ -353,6 +353,8 @@ tasks:
     - >-
       {{ .GO }} test {{ .GOLANG_FLAGS }} {{ .GOLANG_TEST_FLAGS }} -coverprofile=coverage/unit.txt
       ./{{ .GOLANG_TEST_PACKAGES | splitList " " | join "/... ./" }}/...
+    - >-
+      {{ .GO }} tool cover -func=coverage/unit.txt
     sources:
     - '**/*.go'
     generates:
