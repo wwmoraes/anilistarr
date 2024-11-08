@@ -55,6 +55,8 @@ func TestMapper(t *testing.T) {
 }
 
 func TestMapper_MapIDs(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		Provider adapters.Provider[adapters.Metadata]
 		Store    adapters.Store
@@ -76,6 +78,8 @@ func TestMapper_MapIDs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mapper := &adapters.Mapper{
 				Provider: tt.fields.Provider,
 				Store:    tt.fields.Store,

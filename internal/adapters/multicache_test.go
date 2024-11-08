@@ -30,6 +30,8 @@ func NewFileCache(tb testing.TB) adapters.Cache {
 }
 
 func TestMultiCache_Close(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		chain   adapters.MultiCache
@@ -59,6 +61,8 @@ func TestMultiCache_Close(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if err := tt.chain.Close(); (err != nil) != tt.wantErr {
 				t.Errorf("MultiCache.Close() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -67,6 +71,8 @@ func TestMultiCache_Close(t *testing.T) {
 }
 
 func TestMultiCache_GetString(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 		key string
@@ -118,6 +124,8 @@ func TestMultiCache_GetString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := tt.chain.GetString(tt.args.ctx, tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MultiCache.GetString() error = %v, wantErr %v", err, tt.wantErr)
@@ -131,6 +139,8 @@ func TestMultiCache_GetString(t *testing.T) {
 }
 
 func TestMultiCache_SetString(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx     context.Context
 		key     string
@@ -192,6 +202,8 @@ func TestMultiCache_SetString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if err := tt.chain.SetString(tt.args.ctx, tt.args.key, tt.args.value, tt.args.options...); (err != nil) != tt.wantErr {
 				t.Errorf("MultiCache.SetString() error = %v, wantErr %v", err, tt.wantErr)
 			}

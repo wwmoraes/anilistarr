@@ -26,6 +26,8 @@ func (entry memoryMetadata) GetTargetID() string {
 }
 
 func TestJSONLocalProvider(t *testing.T) {
+	t.Parallel()
+
 	store, err := stores.NewBadger("", &stores.BadgerOptions{
 		InMemory: true,
 	})
@@ -58,6 +60,8 @@ func TestJSONLocalProvider(t *testing.T) {
 }
 
 func TestJSONLocalProvider_error(t *testing.T) {
+	t.Parallel()
+
 	provider := adapters.JSONLocalProvider[memoryMetadata]{
 		Fs:   test.MemoryFS{},
 		Name: "test.json",

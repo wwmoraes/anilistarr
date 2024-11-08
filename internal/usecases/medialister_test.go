@@ -46,6 +46,8 @@ var (
 )
 
 func TestMediaBridge(t *testing.T) {
+	t.Parallel()
+
 	store, err := stores.NewBadger("", &stores.BadgerOptions{
 		InMemory: true,
 	})
@@ -86,6 +88,8 @@ func TestMediaBridge(t *testing.T) {
 }
 
 func TestNewMediaLister_NoTracker(t *testing.T) {
+	t.Parallel()
+
 	_, err := usecases.NewMediaLister(nil, &adapters.Mapper{})
 	if !errors.Is(err, usecases.ErrNoTracker) {
 		t.Errorf("expected %q, got %q", usecases.ErrNoTracker, err)
@@ -93,6 +97,8 @@ func TestNewMediaLister_NoTracker(t *testing.T) {
 }
 
 func TestNewMediaLister_NoMapper(t *testing.T) {
+	t.Parallel()
+
 	_, err := usecases.NewMediaLister(&test.Tracker{}, nil)
 	if !errors.Is(err, usecases.ErrNoMapper) {
 		t.Errorf("expected %q, got %q", usecases.ErrNoMapper, err)
