@@ -2,31 +2,27 @@ package adapters_test
 
 import (
 	"context"
-	"fmt"
-	"path"
 	"testing"
 	"time"
 
-	"github.com/wwmoraes/gotell"
-
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
-	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
 )
 
-func NewFileCache(tb testing.TB) adapters.Cache {
+func NewMemCache(tb testing.TB, mutations ...func(adapters.Cache) error) caches.Memory {
 	tb.Helper()
 
-	filePath := path.Join(tb.TempDir(), tb.Name(), fmt.Sprint(time.Now().UnixNano()))
+	mem := caches.NewMemory()
 
-	store, err := stores.NewBadger(filePath, &stores.BadgerOptions{
-		Logger: &caches.BadgerLogr{Logger: gotell.Logr(context.TODO())},
-	})
-	if err != nil {
-		tb.Fatal(err)
+	var err error
+	for _, mutation := range mutations {
+		err = mutation(mem)
+		if err != nil {
+			tb.Fatal(err)
+		}
 	}
 
-	return store
+	return mem
 }
 
 func TestMultiCache_Close(t *testing.T) {
@@ -45,15 +41,15 @@ func TestMultiCache_Close(t *testing.T) {
 		{
 			name: "single",
 			chain: adapters.MultiCache{
-				NewFileCache(t),
+				NewMemCache(t),
 			},
 			wantErr: false,
 		},
 		{
 			name: "multi",
 			chain: adapters.MultiCache{
-				NewFileCache(t),
-				NewFileCache(t),
+				NewMemCache(t),
+				NewMemCache(t),
 			},
 			wantErr: false,
 		},
@@ -86,38 +82,67 @@ func TestMultiCache_GetString(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:  "empty",
+			name:  "no providers",
 			chain: adapters.MultiCache{},
 			args: args{
 				ctx: context.TODO(),
 				key: "foo",
 			},
 			want:    "",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
-			name: "single",
+			name: "single empty",
 			chain: adapters.MultiCache{
-				NewFileCache(t),
+				NewMemCache(t),
 			},
 			args: args{
 				ctx: context.TODO(),
 				key: "foo",
 			},
 			want:    "",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
-			name: "multi",
+			name: "multi empty",
 			chain: adapters.MultiCache{
-				NewFileCache(t),
-				NewFileCache(t),
+				NewMemCache(t),
+				NewMemCache(t),
 			},
 			args: args{
 				ctx: context.TODO(),
 				key: "foo",
 			},
 			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "single match",
+			chain: adapters.MultiCache{
+				NewMemCache(t, func(c adapters.Cache) error {
+					return c.SetString(context.TODO(), "foo", "bar")
+				}),
+			},
+			args: args{
+				ctx: context.TODO(),
+				key: "foo",
+			},
+			want:    "bar",
+			wantErr: false,
+		},
+		{
+			name: "multi match second",
+			chain: adapters.MultiCache{
+				NewMemCache(t),
+				NewMemCache(t, func(c adapters.Cache) error {
+					return c.SetString(context.TODO(), "foo", "bar")
+				}),
+			},
+			args: args{
+				ctx: context.TODO(),
+				key: "foo",
+			},
+			want:    "bar",
 			wantErr: false,
 		},
 	}
@@ -129,8 +154,10 @@ func TestMultiCache_GetString(t *testing.T) {
 			got, err := tt.chain.GetString(tt.args.ctx, tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MultiCache.GetString() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			if got != tt.want {
 				t.Errorf("MultiCache.GetString() = %v, want %v", got, tt.want)
 			}
@@ -170,7 +197,7 @@ func TestMultiCache_SetString(t *testing.T) {
 		{
 			name: "single",
 			chain: adapters.MultiCache{
-				NewFileCache(t),
+				NewMemCache(t),
 			},
 			args: args{
 				ctx:   context.TODO(),
@@ -185,8 +212,8 @@ func TestMultiCache_SetString(t *testing.T) {
 		{
 			name: "multi",
 			chain: adapters.MultiCache{
-				NewFileCache(t),
-				NewFileCache(t),
+				NewMemCache(t),
+				NewMemCache(t),
 			},
 			args: args{
 				ctx:   context.TODO(),
