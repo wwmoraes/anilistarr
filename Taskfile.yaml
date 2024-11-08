@@ -299,6 +299,28 @@ tasks:
     - coverage/merged.txt
     generates:
     - coverage/coverage.html
+  coverage:report:unit:
+    desc: (Re)generates the unit coverage report.
+    run: once
+    deps:
+    - test:unit
+    cmd: >-
+      {{ .GO }} tool cover -html=coverage/unit.txt -o coverage/coverage-unit.html
+    sources:
+    - coverage/unit.txt
+    generates:
+    - coverage/coverage-unit.html
+  coverage:report:integration:
+    desc: (Re)generates the integration coverage report.
+    run: once
+    deps:
+    - test:integration
+    cmd: >-
+      {{ .GO }} tool cover -html=coverage/integration.txt -o coverage/coverage-integration.html
+    sources:
+    - coverage/integration.txt
+    generates:
+    - coverage/coverage-integration.html
   coverage:open:
     desc: Opens the HTML coverage report on the default browser.
     deps:
