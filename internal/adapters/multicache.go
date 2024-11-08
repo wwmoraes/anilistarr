@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"errors"
 
 	"golang.org/x/sync/errgroup"
 
@@ -23,12 +24,16 @@ func (chain MultiCache) Close() error {
 func (chain MultiCache) GetString(ctx context.Context, key string) (string, error) {
 	for _, cache := range chain {
 		value, err := cache.GetString(ctx, key)
+		if errors.Is(err, usecases.ErrNotFound) {
+			continue
+		}
+
 		if err != nil || value != "" {
 			return value, err
 		}
 	}
 
-	return "", nil
+	return "", usecases.ErrNotFound
 }
 
 func (chain MultiCache) SetString(ctx context.Context, key, value string, options ...CacheOption) error {

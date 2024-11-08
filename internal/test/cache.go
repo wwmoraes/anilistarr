@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
 type Cache struct {
@@ -28,7 +29,7 @@ func (cache *Cache) GetString(ctx context.Context, key string) (string, error) {
 
 	value, ok := cache.Data[key]
 	if !ok {
-		return "", nil
+		return "", usecases.ErrNotFound
 	}
 
 	return value, nil

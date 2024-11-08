@@ -11,6 +11,7 @@ import (
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
 	"github.com/wwmoraes/anilistarr/internal/entities"
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
 type BadgerOptions = badger.Options
@@ -46,7 +47,7 @@ func (c *badgerPersistence) GetString(ctx context.Context, key string) (string, 
 	err := c.View(func(txn *badger.Txn) error {
 		data, err := txn.Get([]byte(key))
 		if errors.Is(err, badger.ErrKeyNotFound) {
-			return nil
+			return usecases.ErrNotFound
 		}
 
 		if err != nil {

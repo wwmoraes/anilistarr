@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -38,7 +39,7 @@ func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (strin
 	span.AddEvent("try cache")
 
 	userId, err := wrapper.Cache.GetString(ctx, key)
-	if err != nil {
+	if err != nil && !errors.Is(err, usecases.ErrNotFound) {
 		return "", span.Assert(fmt.Errorf("failed to get user ID: %w", err))
 	}
 
@@ -74,7 +75,7 @@ func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userId string
 	span.AddEvent("try cache")
 
 	cachedIds, err := wrapper.Cache.GetString(ctx, key)
-	if err != nil {
+	if err != nil && !errors.Is(err, usecases.ErrNotFound) {
 		return nil, span.Assert(fmt.Errorf("failed to get media list: %w", err))
 	}
 

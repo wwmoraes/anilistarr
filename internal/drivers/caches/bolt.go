@@ -8,6 +8,7 @@ import (
 	"go.etcd.io/bbolt"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
 const bucketName = "anilistarr"
@@ -53,6 +54,10 @@ func (c *boltCache) GetString(ctx context.Context, key string) (string, error) {
 		}
 
 		data := bucket.Get([]byte(key))
+		if data == nil {
+			return usecases.ErrNotFound
+		}
+
 		value = string(data)
 
 		return nil

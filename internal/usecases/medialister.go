@@ -15,6 +15,7 @@ var (
 	ErrNoTracker = errors.New("no tracker set up")
 	ErrNoMapper  = errors.New("no mapper set up")
 	ErrNoCache   = errors.New("no cache set up")
+	ErrNotFound  = errors.New("not found")
 )
 
 type MediaLister interface {
