@@ -15,9 +15,9 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/wwmoraes/gotell v0.4.0
 	go.etcd.io/bbolt v1.3.11
-	go.opentelemetry.io/otel v1.31.0
+	go.opentelemetry.io/otel v1.32.0
 	go.opentelemetry.io/otel/sdk v1.31.0
-	go.opentelemetry.io/otel/trace v1.31.0
+	go.opentelemetry.io/otel/trace v1.32.0
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/mod v0.21.0
 	golang.org/x/sync v0.8.0
@@ -64,7 +64,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.31.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.31.0 // indirect
 	go.opentelemetry.io/otel/log v0.7.0 // indirect
-	go.opentelemetry.io/otel/metric v1.31.0 // indirect
+	go.opentelemetry.io/otel/metric v1.32.0 // indirect
 	go.opentelemetry.io/otel/sdk/log v0.7.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.31.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
