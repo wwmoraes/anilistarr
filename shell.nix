@@ -6,7 +6,10 @@
 	}) {
 		inherit system;
 		config.packageOverrides = pkgs: {
-			nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") { inherit pkgs; };
+			nur = import (builtins.fetchTarball {
+				url = "https://github.com/nix-community/NUR/archive/master.tar.gz";
+				# sha256 = "0s9is965rv1knq17axd9s1y4l4h81d7dw6s0zsy5j6qwyb0kh703";
+			}) { inherit pkgs; };
 			unstable = import (fetchTarball {
 				name = "nixos-unstable-a14c5d651cee9ed70f9cd9e83f323f1e531002db";
 				url = "https://github.com/NixOS/nixpkgs/archive/a14c5d651cee9ed70f9cd9e83f323f1e531002db.tar.gz";
@@ -19,7 +22,6 @@ in mkShell {
 	packages = [
 	## TODO github.com/Khan/genqlient
 	## TODO github.com/wadey/gocovmerge
-	## TODO github.com/xo/xo
 	## TODO try commitlint-rs
 	pkgs.editorconfig-checker
 	pkgs.git
@@ -31,17 +33,19 @@ in mkShell {
 	pkgs.lefthook
 	pkgs.markdownlint-cli
 	pkgs.oapi-codegen
-	pkgs.python312Packages.codecov
 	pkgs.svu
 	pkgs.typos
 	pkgs.unstable.container-structure-test
 	pkgs.unstable.go
+	pkgs.unstable.go-junit-report
 	pkgs.unstable.golangci-lint
 	pkgs.unstable.hadolint-sarif
 	pkgs.unstable.sarif-fmt
+	pkgs.nur.repos.wwmoraes.codecov-cli-bin
 	] ++ lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
 	] ++ lib.optionals (builtins.getEnv "CI" == "") [ # local-only
 	## TODO pkgsite
+	## TODO https://github.com/xo/xo
 	pkgs.eclint
 	pkgs.curl
 	pkgs.docker-client

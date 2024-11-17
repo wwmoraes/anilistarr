@@ -16,9 +16,8 @@ tasks:
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
     cmd: >-
-      codecov
-      --required
-      --disable gcov
+      codecov do-upload
+      --disable-search
       --file {{ .FILE | q }}
       {{ .CLI_ARGS }}
     sources:
@@ -35,11 +34,26 @@ tasks:
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
     cmd: >-
-      codecov
-      --required
-      --disable gcov
-      --flags {{ .FLAG | q }}
+      codecov do-upload
+      --disable-search
+      --flag {{ .FLAG | q }}
       --file {{ .FILE | q }}
       {{ .CLI_ARGS }}
     sources:
     - '{{ .FILE }}'
+  report:tests:*:*:
+    desc: Reports test results.
+    label: codecov:report:tests:{{ .FILE }}
+    requires:
+      vars:
+      - CODECOV_TOKEN
+    vars:
+      FLAG: '{{ index .MATCH 0 }}'
+      FILE: '{{ index .MATCH 1 }}'
+    cmd: >-
+      codecov do-upload
+      --disable-search
+      --report-type test_results
+      --flag {{ .FLAG | q }}
+      --file {{ .FILE | q }}
+      {{ .CLI_ARGS }}

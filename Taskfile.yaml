@@ -342,8 +342,9 @@ tasks:
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
       CODECOV_NAME: unit
-    cmd:
-      task: codecov:report:flagged:unit:coverage/unit.txt
+    cmds:
+    - task: codecov:report:flagged:unit:coverage/unit.txt
+    - task: codecov:report:tests:unit:coverage/unit.junit.xml
   coverage:upload:integration:
     summary: Uploads the integration test coverage data to Codecov.
     deps:
@@ -354,8 +355,9 @@ tasks:
     env:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
       CODECOV_NAME: integration
-    cmd:
-      task: codecov:report:flagged:integration:coverage/integration.txt
+    cmds:
+    - task: codecov:report:flagged:integration:coverage/integration.txt
+    - task: codecov:report:tests:integration:coverage/integration.junit.xml
   test:
     aliases:
     - coverage
@@ -374,12 +376,14 @@ tasks:
     - >-
       {{ .GO }} test {{ .GOLANG_FLAGS }} {{ .GOLANG_TEST_FLAGS }} -coverprofile=coverage/unit.txt
       ./{{ .GOLANG_TEST_PACKAGES | splitList " " | join "/... ./" }}/...
+      | go-junit-report -set-exit-code > coverage/unit.junit.xml
     - >-
       {{ .GO }} tool cover -func=coverage/unit.txt
     sources:
     - '**/*.go'
     generates:
     - coverage/unit.txt
+    - coverage/unit.junit.xml
   test:integration:
     desc: Runs instrumented tests.
     env:
@@ -395,11 +399,13 @@ tasks:
       -i="${GOCOVERDIR}"
       -o="coverage/integration.txt"
       -pkg="{{ .GOLANG_PACKAGE }}/{{ .GOLANG_TEST_PACKAGES | splitList " " | join (print "," .GOLANG_PACKAGE "/") }}"
+    - go-junit-report -in coverage/integration.txt -out coverage/integration.junit.xml
     sources:
     - '**/*.go'
     - exclude: '**/*_test.go'
     generates:
     - coverage/integration.txt
+    - coverage/integration.junit.xml
   test:container:
     desc: Tests the generated container image structure.
     cmd: >-
