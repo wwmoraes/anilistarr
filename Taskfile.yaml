@@ -90,12 +90,13 @@ tasks:
   diagrams:
     desc: Generates system diagrams based on the domain model.
     cmds:
-    - structurizr-cli export -f plantuml/c4plantuml -w workspace.dsl -o docs
+    - structurizr-cli export -f plantuml/c4plantuml -w docs/workspace.dsl -o docs
     - plantuml docs/*.puml
     sources:
-    - workspace.dsl
+    - docs/workspace.dsl
+    - docs/components.puml
     generates:
-    - docs/*.puml
+    - docs/structurizr-*.puml
     - docs/*.png
   lint:
     desc: Runs static analysis on the code base.
