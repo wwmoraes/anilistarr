@@ -1,5 +1,7 @@
 package anilist
 
+//go:generate go run github.com/Khan/genqlient@latest
+
 import (
 	"context"
 	"fmt"

@@ -6,67 +6,48 @@ dotenv:
 - .env
 
 vars:
-  GO: '{{ .GO | default "go" }}'
-  GOLANG_PACKAGE:
-    sh: go list
-  GOLANG_FLAGS: '{{ .GOLANG_FLAGS | default "-mod=readonly" }}'
-  GOLANG_BUILD_FLAGS: '{{ .GOLANG_BUILD_FLAGS | default "-trimpath" }}'
-  GOLANG_TEST_FLAGS: '{{ .GOLANG_TEST_FLAGS | default "-v -shuffle on" }}'
-  GOLANG_TEST_PACKAGES: >-
-    internal/adapters
-    internal/usecases
-  REPOSITORY: wwmoraes/anilistarr
-  CONTAINER_IMAGE: wwmoraes/anilistarr
   VERSION:
     sh: >-
       git tag --points-at HEAD | cut -dv -f2  | grep .
       || svu prerelease --strip-prefix --pre-release alpha
-  FIX: >-
-    gci
-    gofmt
-    gofumpt
-    tagalign
 
 includes:
   codecov:
     taskfile: .task/codecov.yaml
     internal: true
+  image:
+    taskfile: .task/docker.yaml
+    vars:
+      IMAGE_NAME: wwmoraes/anilistarr
+      REPOSITORY: wwmoraes/anilistarr
+  golang:
+    taskfile: .task/golang.yaml
+    internal: true
+    vars:
+      TEST_IGNORE_PATTERNS: >-
+        .gen.go:
+        .pb.go:
+        .pb.gw.go:
+        .sql.go:
+        .xo.go:
+      TEST_PACKAGES: >-
+        internal/adapters
+        internal/api
+        internal/drivers
+        internal/entities
+        internal/usecases
+        pkg
 
 tasks:
-  handler:get-user:
-    desc: Retrieves user ID through the handler API.
-    vars:
-      USERNAME: '{{ .CLI_ARGS | default "algwyn" }}'
-    cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/id"
-  handler:get-media:
-    desc: Retrieves user media through the handler API.
-    vars:
-      USERNAME: '{{ .CLI_ARGS | default "algwyn" }}'
-    cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/media"
   build:
+    aliases:
+    - default
     desc: Builds the server binary.
-    deps:
-    - api
-    - qlient:anilist
-    - go:tidy
-    vars:
-      GOLANG_BUILD_FLAGS: >-
-        {{ .GOLANG_BUILD_FLAGS }}
-        -ldflags="-X 'main.version={{ .VERSION }}'"
-    cmds:
-    - >-
-      {{ .GO }} generate ./...
-    - >-
-      {{ .GO }} build
-      {{ .GOLANG_FLAGS }}
-      {{ .GOLANG_BUILD_FLAGS }}
-      -o ./bin/
-      ./...
-    sources:
-    - '**/*.go'
-    - exclude: '**/*_test.go'
-    generates:
-    - bin/*
+    cmd:
+      task: golang:build
+      vars:
+        FLAGS: -mod=readonly -trimpath -ldflags="-s -w -X 'main.version={{ .VERSION }}'"
+        PACKAGE: ./cmd/handler/...
   clean:
     desc: Cleans up generated artifacts.
     vars:
@@ -87,245 +68,49 @@ tasks:
     desc: Configures the repository and project for work.
     deps:
     - lefthook:install
-  diagrams:
-    desc: Generates system diagrams based on the domain model.
-    cmds:
-    - structurizr-cli export -f plantuml/c4plantuml -w docs/workspace.dsl -o docs
-    - plantuml docs/*.puml
-    sources:
-    - docs/workspace.dsl
-    - docs/components.puml
-    generates:
-    - docs/structurizr-*.puml
-    - docs/*.png
-  lint:
-    desc: Runs static analysis on the code base.
+  coverage:
+    desc: Shows test coverage from a test profile.
     deps:
-    - task: lint:code
-    - task: lint:container
-  api:
-    desc: Generates the OpenAPI code from the specification.
-    cmds:
-    - mkdir -p internal/api
-    - >-
-      oapi-codegen
-      -generate types,chi-server,spec
-      -package api
-      -o internal/api/api.gen.go
-      swagger.yaml
-    - sed -i'' '/var err error/d' internal/api/api.gen.go
-    sources:
-    - swagger.yaml
-    generates:
-    - internal/api/api.gen.go
-  docs:
-    desc: Starts a local Golang package documentation server.
-    silent: true
-    ignore_error: true
-    cmd: pkgsite -open
-  fix:
-    desc: Runs linters that support fixing found issues.
-    cmd: >-
-      golangci-lint run
-      --fix
-      --out-format colored-line-number
-      --enable-only {{ .FIX | splitList " " | join "," | q }}
-  docker:run:
-    desc: Runs a container version of the solution.
-    deps:
-    - docker:build
-    interactive: true
-    ignore_error: true
-    cmd: >-
-      docker run --rm
-      -e DATA_PATH=/var/handler
-      -it {{ .CONTAINER_IMAGE | q }}
-      {{ .CLI_ARGS }}
-  docker:build:
-    desc: Builds the container image.
-    requires:
-      vars:
-      - CONTAINER_IMAGE
-    env:
-      DOCKER_BUILDKIT: 1
-      ## avoids mixing application debugging with buildkit
-      GRPC_GO_LOG_VERBOSITY_LEVEL: null
-      GRPC_GO_LOG_SEVERITY_LEVEL: null
-      ## https://github.com/moby/moby/issues/46129
-      OTEL_EXPORTER_OTLP_ENDPOINT: null
-    vars:
-      ACTION: '{{ .ACTION | default "load" }}'
-      CREATED: '{{ dateInZone "2006-01-02T03:04:05Z" (now) "UTC" }}'
-      REVISION:
-        sh: git log -n 1 --format="%H"
-      BRANCH:
-        sh: git branch --show-current
-      VERSION: '{{ .VERSION | default "0.0.0-HEAD" }}'
-      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
-      CONTEXT: '{{ .CONTEXT | default "." }}'
-      PLATFORMS: >-
-        linux/amd64
-        linux/arm/v7
-        linux/arm64
-      BUILD_ARGS: >-
-        VERSION={{ .VERSION | q }}
-        {{ with .ALPINE_VERSION -}}ALPINE_VERSION={{ . | q }}{{- end }}
-        {{ with .GOLANG_VERSION -}}GOLANG_VERSION={{ . | q }}{{- end }}
-      LABELS: >-
-        org.opencontainers.image.created={{ .CREATED | q }}
-        org.opencontainers.image.revision={{ .REVISION | q }}
-        org.opencontainers.image.version={{ .VERSION | q }}
-        org.opencontainers.image.documentation=https://github.com/{{ .REPOSITORY }}/blob/master/README.md
-        org.opencontainers.image.source=https://github.com/{{ .REPOSITORY }}
-        org.opencontainers.image.url=https://hub.docker.com/r/{{ .REPOSITORY }}
-      TAGS: >-
-        {{ if eq "load" .ACTION -}}
-        {{ .CONTAINER_IMAGE }}:edge
-        {{- else if eq "push" .ACTION -}}
-        {{ .CONTAINER_IMAGE }}:latest
-        {{- end }}
-        {{ .CONTAINER_IMAGE }}:{{ .BRANCH }}
-        {{ if not (contains "-" .VERSION) -}}
-        {{ .CONTAINER_IMAGE }}:{{ .VERSION | splitList "+" | first | splitList "-" | first | splitList "." | first }}
-        {{ .CONTAINER_IMAGE }}:{{ slice (.VERSION | splitList "+" | first | splitList "-" | first | splitList ".") 0 2 | join "." }}
-        {{- end }}
-        {{ .CONTAINER_IMAGE }}:{{ .VERSION }}
-    cmd: >-
-      docker buildx build
-      {{ if eq "load" .ACTION -}}
-      --load
-      {{- else if eq "push" .ACTION -}}
-      --push
-      {{ with (.PLATFORMS | trim) -}}
-      --platform {{ . | splitList " " | compact | join "," }}
-      {{- end }}
-      {{- end }}
-      --file {{ .DOCKERFILE | q }}
-      {{ range $value := (.BUILD_ARGS | trim | splitList " " | compact) }}
-      --build-arg {{ $value }}
-      {{- end }}
-      {{ range $value := (.LABELS | trim | splitList " " | compact) }}
-      --label {{ $value }}
-      {{- end }}
-      {{ range $value := (.TAGS | trim | splitList " " | compact) }}
-      --tag {{ $value }}
-      {{- end }}
-      {{ .CLI_ARGS }}
-      {{ .CONTEXT | q }}
-    sources:
-    - '{{ .DOCKERFILE }}'
-  docker:push:
-    desc: Builds and pushes a multi-platform container image.
+    - test
     cmd:
-      task: docker:build
-      vars:
-        ACTION: push
-  redis:cli:
-    desc: Opens a Redis CLI instance towards the Redis proxy.
-    interactive: true
-    ignore_error: true
-    cmd: redis-cli -p 16379
-  redis:proxy:
-    desc: Starts a local Redis proxy to the upstream instance on Fly.
-    interactive: true
-    ignore_error: true
-    cmd: flyctl redis proxy
-  qlient:anilist:
-    desc: Generates the GraphQL client for the Anilist service.
-    dir: internal/drivers/trackers/anilist
-    cmd: >-
-      {{ .GO }} run github.com/Khan/genqlient@latest
-    sources:
-    - genqclient.yaml
-    - '*.graphql'
-    generates:
-    - generated.go
-  run:handler:
-    desc: Runs the API handler.
-    interactive: true
-    ignore_error: true
+      task: golang:coverage:show:all
+  coverage:unit:
+    desc: Shows test coverage from the unit test profile.
     deps:
-    - build
-    cmd: ./bin/handler
-  release:snapshot:
-    desc: Creates a snapshot release of the solution.
+    - test:unit
+    cmd:
+      task: golang:coverage:show:unit.part
+  coverage:integration:
+    desc: Shows test coverage from the integration test profile.
     deps:
-    - build
-    cmd: goreleaser release --clean --skip-publish --skip-announce --snapshot
-  lint:code:
-    desc: Runs static analysis on the source code.
-    vars:
-      GOLANGCI_LINT_SARIF: '{{ .GOLANGCI_LINT_SARIF | default "golangci-lint.sarif" }}'
-    cmds:
-    - golangci-lint run
-    - sarif-fmt -i {{ .GOLANGCI_LINT_SARIF | q }}
-    - jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
-      {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
-    sources:
-    - .golangci.yaml
-    - cmd/**/*.go
-    - internal/**/*.go
-    - pkg/**/*.go
-    generates:
-    - '{{ .GOLANGCI_LINT_SARIF }}'
-  lint:container:
-    desc: Runs static analysis on the container image source.
-    vars:
-      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
-      HADOLINT_SARIF: '{{ .HADOLINT_SARIF | default "hadolint.sarif" }}'
-    cmd: >-
-      hadolint -f json {{ .DOCKERFILE | q }}
-      | hadolint-sarif
-      | tee {{ .HADOLINT_SARIF | q }}
-      | sarif-fmt
-      ; jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
-      {{ .HADOLINT_SARIF | q }} > /dev/null
-    sources:
-    - '{{ .DOCKERFILE }}'
-    generates:
-    - '{{ .HADOLINT_SARIF }}'
-  lint:markdown:
-    summary: Lints markdown files.
-    cmd: markdownlint .
-    sources:
-    - "**/*.md"
+    - test:integration
+    cmd:
+      task: golang:coverage:show:integration.part
   coverage:report:
     desc: (Re)generates the coverage report.
-    run: once
     deps:
-    - test:merge
-    cmd: >-
-      {{ .GO }} tool cover -html=coverage/merged.txt -o coverage/coverage.html
-    sources:
-    - coverage/merged.txt
-    generates:
-    - coverage/coverage.html
+    - test
+    cmd:
+      task: golang:coverage:report:all
+      vars:
+        OUTPUT: coverage/all.html
   coverage:report:unit:
     desc: (Re)generates the unit coverage report.
     deps:
     - test:unit
-    cmd: >-
-      {{ .GO }} tool cover -html=coverage/unit.txt -o coverage/coverage-unit.html
-    sources:
-    - coverage/unit.txt
-    generates:
-    - coverage/coverage-unit.html
+    cmd:
+      task: golang:coverage:report:unit.part
+      vars:
+        OUTPUT: coverage/unit.part.html
   coverage:report:integration:
     desc: (Re)generates the integration coverage report.
     run: once
     deps:
     - test:integration
-    cmd: >-
-      {{ .GO }} tool cover -html=coverage/integration.txt -o coverage/coverage-integration.html
-    sources:
-    - coverage/integration.txt
-    generates:
-    - coverage/coverage-integration.html
-  coverage:open:
-    desc: Opens the HTML coverage report on the default browser.
-    deps:
-    - coverage:report
-    cmd: open coverage/coverage.html
+    cmd:
+      task: golang:coverage:report:integration.part
+      vars:
+        OUTPUT: coverage/integration.part.html
   coverage:upload:
     summary: Uploads all coverage data to Codecov.
     silent: true
@@ -344,7 +129,8 @@ tasks:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
       CODECOV_NAME: unit
     cmds:
-    - task: codecov:report:flagged:unit:coverage/unit.txt
+    - task: golang:test:junit:unit
+    - task: codecov:report:flagged:unit:coverage/unit.part.txt
     - task: codecov:report:tests:unit:coverage/unit.junit.xml
   coverage:upload:integration:
     summary: Uploads the integration test coverage data to Codecov.
@@ -357,62 +143,56 @@ tasks:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
       CODECOV_NAME: integration
     cmds:
-    - task: codecov:report:flagged:integration:coverage/integration.txt
+    - task: golang:test:junit:integration
+    - task: codecov:report:flagged:integration:coverage/integration.part.txt
     - task: codecov:report:tests:integration:coverage/integration.junit.xml
-  test:
-    aliases:
-    - coverage
-    desc: Runs all tests and shows current coverage percentage.
-    deps:
-    - test:merge
+  db:
+    desc: Creates a blank SQLite database file from the schema.
+    cmd: sqlite3 anilist-tvdb.db < db/schema.sqlite.sql
+    sources:
+    - db/schema.sqlite.sql
+    generates:
+    - anilist-tvdb.db
+  docs:
+    desc: Starts a local Golang package documentation server.
     silent: true
-    cmd: >-
-      {{ .GO }} tool cover -func="coverage/merged.txt"
-  test:unit:
-    desc: Runs unit tests.
-    env:
-      CGO_ENABLED: 1
+    ignore_error: true
+    cmd: pkgsite -open
+  fix:
+    desc: Applies linter lixes to code when supported.
+    deps:
+    - task: golang:fix
+  generate:diagrams:
+    desc: Generates system diagrams based on the domain model.
     cmds:
-    - mkdir -p coverage
-    - >-
-      {{ .GO }} test {{ .GOLANG_FLAGS }} {{ .GOLANG_TEST_FLAGS }} -coverprofile=coverage/unit.txt
-      ./{{ .GOLANG_TEST_PACKAGES | splitList " " | join "/... ./" }}/...
-      | go-junit-report -set-exit-code > coverage/unit.junit.xml
-    - >-
-      {{ .GO }} tool cover -func=coverage/unit.txt
+    - structurizr-cli export -f plantuml/c4plantuml -w docs/workspace.dsl -o docs
+    - plantuml docs/*.puml
     sources:
-    - '**/*.go'
+    - docs/workspace.dsl
+    - docs/components.puml
     generates:
-    - coverage/unit.txt
-    - coverage/unit.junit.xml
-  test:integration:
-    desc: Runs instrumented tests.
-    env:
-      GOCOVERDIR: coverage/integration
-      CGO_ENABLED: 1
-    cmds:
-    - mkdir -p ${GOCOVERDIR}
-    - rm -rf ${GOCOVERDIR}/* 2>/dev/null || true
-    - >-
-      {{ .GO }} run -cover {{ .GOLANG_FLAGS }} ./cmd/internal/integration/...
-    - >-
-      {{ .GO }} tool covdata textfmt
-      -i="${GOCOVERDIR}"
-      -o="coverage/integration.txt"
-      -pkg="{{ .GOLANG_PACKAGE }}/{{ .GOLANG_TEST_PACKAGES | splitList " " | join (print "," .GOLANG_PACKAGE "/") }}"
-    - go-junit-report -in coverage/integration.txt -out coverage/integration.junit.xml
+    - docs/structurizr-*.puml
+    - docs/*.png
+  git:hook:clean:
+    internal: true
+    summary: Removes git hooks from the local repository.
+    vars:
+      GIT_CORE_HOOKSPATH: '{{ .GIT_CORE_HOOKSPATH | default ".git/hooks" }}'
+    deps:
+    - for: sources
+      task: gnu:rm:file:{{ .ITEM }}
     sources:
-    - '**/*.go'
-    - exclude: '**/*_test.go'
-    generates:
-    - coverage/integration.txt
-    - coverage/integration.junit.xml
-  test:container:
-    desc: Tests the generated container image structure.
-    cmd: >-
-      container-structure-test test
-      -c container-structure-test.yaml
-      -i wwmoraes/anilistarr:edge
+    - '{{ .GIT_CORE_HOOKSPATH }}/*'
+  invoke:get-user:
+    desc: Retrieves user ID through the handler API.
+    vars:
+      USERNAME: '{{ .CLI_ARGS | default "algwyn" }}'
+    cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/id"
+  invoke:get-media:
+    desc: Retrieves user media through the handler API.
+    vars:
+      USERNAME: '{{ .CLI_ARGS | default "algwyn" }}'
+    cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/media"
   lefthook:install:
     summary: Configures git hooks using lefthook.
     vars:
@@ -427,55 +207,94 @@ tasks:
     - .lefthook-local.yaml
     generates:
     - '{{ .GIT_CORE_HOOKSPATH }}/*'
-  git:hook:clean:
-    summary: Removes git hooks from the local repository.
-    vars:
-      GIT_CORE_HOOKSPATH: '{{ .GIT_CORE_HOOKSPATH | default ".git/hooks" }}'
+  lint:
+    desc: Runs static analysis on the code base.
     deps:
-    - for: sources
-      task: gnu:rm:file:{{ .ITEM }}
+    - task: lint:code
+    - task: lint:container
+    - task: lint:markdown
+  lint:code:
+    summary: Runs static analysis on the source code.
+    vars:
+      GOLANGCI_LINT_SARIF: '{{ .GOLANGCI_LINT_SARIF | default "golangci-lint.sarif" }}'
+    cmds:
+    - golangci-lint run
+    - sarif-fmt -i {{ .GOLANGCI_LINT_SARIF | q }}
+    - jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
+      {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
     sources:
-    - '{{ .GIT_CORE_HOOKSPATH }}/*'
-  go:tidy:
-    summary: Updates Golang dependency references.
-    cmd: go mod tidy
-    sources:
-    - go.mod
-    - '**/*.go'
+    - .golangci.yaml
+    - cmd/**/*.go
+    - internal/**/*.go
+    - pkg/**/*.go
     generates:
-    - go.sum
-  ## internals
-  test:merge:
-    internal: true
-    run: once
+    - '{{ .GOLANGCI_LINT_SARIF }}'
+  lint:markdown:
+    summary: Lints markdown files.
+    cmd: markdownlint .
+    sources:
+    - "**/*.md"
+  redis:cli:
+    desc: Opens a Redis CLI instance towards the Redis proxy.
+    interactive: true
+    ignore_error: true
+    cmd: redis-cli -p 16379
+  redis:proxy:
+    desc: Starts a local Redis proxy to the upstream instance on Fly.
+    interactive: true
+    ignore_error: true
+    cmd: flyctl redis proxy
+  run:handler:
+    desc: Runs the API handler.
+    interactive: true
+    ignore_error: true
+    deps:
+    - build
+    cmd: ./bin/handler
+  release:snapshot:
+    desc: Creates a snapshot release of the solution.
+    deps:
+    - build
+    cmd: goreleaser release --clean --skip-publish --skip-announce --snapshot
+  test:
+    desc: Runs all tests.
     deps:
     - test:unit
     - test:integration
+    cmd:
+      task: golang:test:merge:all
+      vars:
+        SOURCES: '*.part'
+  test:container:
+    desc: Tests the generated container image structure.
     cmd: >-
-      {{ .GO }} run github.com/wadey/gocovmerge@latest
-      coverage/unit.txt
-      coverage/integration.txt
-      > coverage/merged.txt
-    sources:
-    - coverage/unit.txt
-    - coverage/integration.txt
-    generates:
-    - coverage/merged.txt
-  gnu:rm:dir:*:
-    internal: true
-    silent: true
-    label: gnu:rm:dir:{{ .TARGET }}
+      container-structure-test test
+      -c container-structure-test.yaml
+      -i wwmoraes/anilistarr:edge
+  test:integration:
+    desc: Runs instrumented tests.
+    cmd:
+      task: golang:test:instrumented:integration.part
+      vars:
+        CLI_ARGS: -covermode atomic -race
+        GOCOVERDIR: coverage/integration
+        PACKAGE: ./cmd/internal/integration/...
+  test:unit:
+    desc: Runs unit tests.
     vars:
-      TARGET: '{{ index .MATCH 0 }}'
-    cmd: rm -rf {{ .TARGET | q }}
-    status:
-    - test ! -d {{ .TARGET | q }}
-  gnu:rm:file:*:
-    internal: true
-    silent: true
-    label: gnu:rm:file:{{ .TARGET }}
-    vars:
-      TARGET: '{{ index .MATCH 0 }}'
-    cmd: rm -f {{ .TARGET | q }}
-    status:
-    - test ! -f {{ .TARGET | q }}
+      CLI_ARGS: -v -shuffle on -covermode atomic -race {{ .CLI_ARGS }}
+    deps:
+    - task: golang:test:unit:impure.unit
+      vars:
+        CLI_ARGS: '{{ .CLI_ARGS }}'
+    - task: golang:test:unit:pure.unit
+      vars:
+        CLI_ARGS: -tags=pure {{ .CLI_ARGS }}
+    cmds:
+    - task: golang:test:merge:unit.part
+      vars:
+        SOURCES: '*.unit'
+  tidy:
+    desc: Installs golang dependencies.
+    cmd:
+      task: golang:tidy

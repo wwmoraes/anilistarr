@@ -1,0 +1,176 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: 3
+
+includes:
+  gnu: gnu.yaml
+
+vars:
+  COVERAGE_DIR: '{{ .COVERAGE_DIR | default "coverage" }}'
+  GO: '{{ env "GO" | default .GO | default "go" }}'
+  TEST_PACKAGES: '{{ .TEST_PACKAGES | default "internal pkg" }}'
+  TEST_IGNORE_PATTERNS: '{{ .TEST_IGNORE_PATTERNS | default ".gen.go: .pb.go: .pb.gw.go:" }}'
+
+tasks:
+  build:
+    desc: Builds the server binary.
+    vars:
+      FLAGS: '{{ .FLAGS | default "-trimpath" }}'
+      PACKAGE: '{{ .PACKAGE | default "./..." }}'
+      OUTPUT: '{{ .OUTPUT | default "./bin/" }}'
+    deps:
+    - tidy
+    - generate
+    cmd: >-
+      {{ .GO }} build {{ .FLAGS }} -o {{ .OUTPUT | q }} {{ .PACKAGE | q }}
+    sources:
+    - '**/*.go'
+    - exclude: '**/*_test.go'
+    - go.sum
+    generates:
+    - '{{ .OUTPUT }}{{ if hasSuffix "/" .OUTPUT }}/*{{ end }}'
+  coverage:show:*:
+    label: golang:coverage:{{ .NAME }}
+    desc: Shows code coverage from a test profile.
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+    cmd: >-
+      {{ .GO }} tool cover -func={{ .COVERPROFILE | q }}
+  coverage:report:*:
+    label: golang:coverage:report:{{ .NAME }}
+    desc: Generates a HTML coverage report from a test profile.
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+    requires:
+      vars:
+      - OUTPUT
+    deps:
+    - gnu:mkdir:{{ .OUTPUT | dir }}
+    cmd: >-
+      {{ .GO }} tool cover
+      -html={{ .COVERPROFILE | q }}
+      -o {{ .OUTPUT | q }}
+    sources:
+    - '{{ .COVERPROFILE }}'
+    generates:
+    - '{{ .OUTPUT }}'
+  generate:
+    summary: Generates code from annotations.
+    run: when_changed
+    deps:
+    - tidy
+    cmd: >-
+      {{ .GO }} generate ./...
+    sources:
+    - '**/*.go'
+    - go.sum
+    - exclude: '**/*_test.go'
+  fix:
+    desc: Runs linters that support fixing found issues.
+    vars:
+      LINTERS: '{{ .LINTERS | default "gci gofmt gofumpt tagalign" }}'
+    cmd: >-
+      golangci-lint run
+      --fix
+      --enable-only {{ .LINTERS | splitList " " | join "," | q }}
+  test:instrumented:*:
+    label: golang:test:instrumented:{{ .NAME }}
+    desc: Runs an instrumented binary to collect coverage data.
+    requires:
+      vars:
+      - GOCOVERDIR
+      - PACKAGE
+    env:
+      CGO_ENABLED: 1
+      GOCOVERDIR: '{{ .GOCOVERDIR }}'
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+      MODULE:
+        sh: >-
+          {{ .GO }} list -m
+    deps:
+    - gnu:mkdir:{{ .COVERPROFILE | dir }}
+    - gnu:mkdir:{{ .GOCOVERDIR }}
+    - generate
+    cmds:
+    ## needed to avoid stale data and errors on conversion
+    - rm -rf {{ .GOCOVERDIR | q }}/* 2>/dev/null || true
+    - >-
+      {{ .GO }} run -cover {{ .CLI_ARGS }} {{ .PACKAGE }}
+    - >-
+      {{ .GO }} tool covdata textfmt
+      -i={{ .GOCOVERDIR | q }}
+      -o={{ .COVERPROFILE | q }}
+      -pkg="{{ .MODULE }}/{{ .TEST_PACKAGES | splitList " " | join (print "," .MODULE "/") }}"
+    sources:
+    - '**/*.go'
+    - exclude: '**/*_test.go'
+    generates:
+    - '{{ .COVERPROFILE }}'
+    - '{{ joinPath .GOCOVERDIR "**" "*" }}'
+  test:junit:*:
+    label: golang:test:junit:{{ .NAME }}
+    summary: Converts a gocov profile to JUnit format.
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      INPUT: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+      OUTPUT: '{{ .INPUT | trimSuffix ".txt" }}.junit.xml'
+    cmd: >-
+      go-junit-report -in {{ .INPUT | q }} -out {{ .OUTPUT | q }} {{ .CLI_ARGS }}
+    sources:
+    - '{{ .INPUT }}'
+    generates:
+    - '{{ .OUTPUT }}'
+  test:unit:*:
+    label: golang:test:unit:{{ .NAME }}
+    desc: Runs unit tests.
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+    env:
+      ## needed for -race
+      CGO_ENABLED: '{{ env "CGO_ENABLED" | default .CGO_ENABLED | default 1 }}'
+    deps:
+    - gnu:mkdir:{{ .COVERPROFILE | dir }}
+    - generate
+    cmds:
+    - >-
+      {{ .GO }} test -coverprofile={{ .COVERPROFILE | q }}
+      {{ .CLI_ARGS }}
+      ./{{ .TEST_PACKAGES | splitList " " | join "/... ./" }}/...
+    - sed -i'' '#{{ .TEST_IGNORE_PATTERNS | trim | replace "." "\\." | splitList " " | join "|" }}#d' {{ .COVERPROFILE | q }}
+    sources:
+    - '**/*.go'
+    - go.sum
+    generates:
+    - '{{ .COVERPROFILE }}'
+  test:merge:*:
+    label: golang:test:merge:{{ .NAME }}
+    summary: Merges multiple go cover profiles.
+    requires:
+      vars:
+      - SOURCES
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+      SOURCES: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .SOURCES) }}'
+    cmd: >-
+      {{ .GO }} run github.com/wadey/gocovmerge@latest {{ .SOURCES }}
+      | grep -v '{{ .TEST_IGNORE_PATTERNS | trim | splitList " " | join "\\|" }}'
+      > {{ .COVERPROFILE | q }}
+    sources:
+    - '{{ .SOURCES }}'
+    generates:
+    - '{{ .COVERPROFILE }}'
+  tidy:
+    summary: Updates Golang dependency references.
+    run: when_changed
+    cmd: >-
+      {{ .GO }} mod tidy
+    sources:
+    - '**/*.go'
+    - go.mod
+    generates:
+    - go.sum

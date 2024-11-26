@@ -7,7 +7,7 @@ vars:
 tasks:
   report:unflagged:*:
     desc: Reports unflagged coverage data.
-    label: codecov:report:unflagged:{{ .FILE }}
+    label: codecov:report:unflagged:{{ .FILE | base }}
     requires:
       vars:
       - CODECOV_TOKEN
@@ -24,7 +24,7 @@ tasks:
     - '{{ .FILE }}'
   report:flagged:*:*:
     desc: Reports flagged coverage data.
-    label: codecov:report:flagged:{{ .FLAG }}:{{ .FILE }}
+    label: codecov:report:flagged:{{ .FLAG }}:{{ .FILE | base }}
     requires:
       vars:
       - CODECOV_TOKEN
@@ -43,7 +43,7 @@ tasks:
     - '{{ .FILE }}'
   report:tests:*:*:
     desc: Reports test results.
-    label: codecov:report:tests:{{ .FILE }}
+    label: codecov:report:tests:{{ .FILE | base }}
     requires:
       vars:
       - CODECOV_TOKEN

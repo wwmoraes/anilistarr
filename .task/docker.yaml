@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: 3
+
+tasks:
+  build:
+    desc: Builds the container image.
+    requires:
+      vars:
+      - IMAGE_NAME
+    env:
+      DOCKER_BUILDKIT: 1
+      ## avoids mixing application debugging with buildkit
+      GRPC_GO_LOG_VERBOSITY_LEVEL: null
+      GRPC_GO_LOG_SEVERITY_LEVEL: null
+      ## https://github.com/moby/moby/issues/46129
+      OTEL_EXPORTER_OTLP_ENDPOINT: null
+    vars:
+      ACTION: '{{ .ACTION | default "load" }}'
+      CREATED: '{{ dateInZone "2006-01-02T03:04:05Z" (now) "UTC" }}'
+      REVISION:
+        sh: git log -n 1 --format="%H"
+      BRANCH:
+        sh: git branch --show-current
+      VERSION: '{{ .VERSION | default "0.0.0-HEAD" }}'
+      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
+      CONTEXT: '{{ .CONTEXT | default "." }}'
+      PLATFORMS: >-
+        linux/amd64
+        linux/arm/v7
+        linux/arm64
+      BUILD_ARGS: >-
+        VERSION={{ .VERSION | q }}
+        {{ with .ALPINE_VERSION -}}ALPINE_VERSION={{ . | q }}{{- end }}
+        {{ with .GOLANG_VERSION -}}GOLANG_VERSION={{ . | q }}{{- end }}
+      LABELS: >-
+        org.opencontainers.image.created={{ .CREATED | q }}
+        org.opencontainers.image.revision={{ .REVISION | q }}
+        org.opencontainers.image.version={{ .VERSION | q }}
+        org.opencontainers.image.documentation=https://github.com/{{ .REPOSITORY }}/blob/master/README.md
+        org.opencontainers.image.source=https://github.com/{{ .REPOSITORY }}
+        org.opencontainers.image.url=https://hub.docker.com/r/{{ .REPOSITORY }}
+      TAGS: >-
+        {{ if eq "load" .ACTION -}}
+        {{ .IMAGE_NAME }}:edge
+        {{- else if eq "push" .ACTION -}}
+        {{ .IMAGE_NAME }}:latest
+        {{- end }}
+        {{ .IMAGE_NAME }}:{{ .BRANCH }}
+        {{ if not (contains "-" .VERSION) -}}
+        {{ .IMAGE_NAME }}:{{ .VERSION | splitList "+" | first | splitList "-" | first | splitList "." | first }}
+        {{ .IMAGE_NAME }}:{{ slice (.VERSION | splitList "+" | first | splitList "-" | first | splitList ".") 0 2 | join "." }}
+        {{- end }}
+        {{ .IMAGE_NAME }}:{{ .VERSION }}
+    cmd: >-
+      docker buildx build
+      {{ if eq "load" .ACTION -}}
+      --load
+      {{- else if eq "push" .ACTION -}}
+      --push
+      {{ with (.PLATFORMS | trim) -}}
+      --platform {{ . | splitList " " | compact | join "," }}
+      {{- end }}
+      {{- end }}
+      --file {{ .DOCKERFILE | q }}
+      {{ range $value := (.BUILD_ARGS | trim | splitList " " | compact) }}
+      --build-arg {{ $value }}
+      {{- end }}
+      {{ range $value := (.LABELS | trim | splitList " " | compact) }}
+      --label {{ $value }}
+      {{- end }}
+      {{ range $value := (.TAGS | trim | splitList " " | compact) }}
+      --tag {{ $value }}
+      {{- end }}
+      {{ .CLI_ARGS }}
+      {{ .CONTEXT | q }}
+    sources:
+    - '{{ .DOCKERFILE }}'
+  lint:
+    summary: Runs static analysis on the container image source.
+    vars:
+      DOCKERFILE: '{{ .DOCKERFILE | default "Dockerfile" }}'
+      HADOLINT_SARIF: '{{ .HADOLINT_SARIF | default "hadolint.sarif" }}'
+    cmd: >-
+      hadolint -f json {{ .DOCKERFILE | q }}
+      | hadolint-sarif
+      | tee {{ .HADOLINT_SARIF | q }}
+      | sarif-fmt
+      ; jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
+      {{ .HADOLINT_SARIF | q }} > /dev/null
+    sources:
+    - '{{ .DOCKERFILE }}'
+    generates:
+    - '{{ .HADOLINT_SARIF }}'
+  push:
+    desc: Builds and pushes a multi-platform container image.
+    cmd:
+      task: docker:build
+      vars:
+        ACTION: push
+  run:
+    desc: Runs a container version of the solution.
+    deps:
+    - docker:build
+    interactive: true
+    ignore_error: true
+    cmd: >-
+      docker run --rm
+      -e DATA_PATH=/var/handler
+      -it {{ .IMAGE_NAME | q }}
+      {{ .CLI_ARGS }}
