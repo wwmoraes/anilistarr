@@ -92,16 +92,12 @@ tasks:
     - test
     cmd:
       task: golang:coverage:report:all
-      vars:
-        OUTPUT: coverage/all.html
   coverage:report:unit:
     desc: (Re)generates the unit coverage report.
     deps:
     - test:unit
     cmd:
       task: golang:coverage:report:unit.part
-      vars:
-        OUTPUT: coverage/unit.part.html
   coverage:report:integration:
     desc: (Re)generates the integration coverage report.
     run: once
@@ -109,8 +105,6 @@ tasks:
     - test:integration
     cmd:
       task: golang:coverage:report:integration.part
-      vars:
-        OUTPUT: coverage/integration.part.html
   coverage:upload:
     summary: Uploads all coverage data to Codecov.
     silent: true

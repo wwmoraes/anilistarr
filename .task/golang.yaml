@@ -42,9 +42,7 @@ tasks:
     vars:
       NAME: '{{ index .MATCH 0 }}'
       COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
-    requires:
-      vars:
-      - OUTPUT
+      OUTPUT: '{{ joinPath .COVERAGE_DIR (printf "%s.html" .NAME) }}'
     deps:
     - gnu:mkdir:{{ .OUTPUT | dir }}
     cmd: >-
