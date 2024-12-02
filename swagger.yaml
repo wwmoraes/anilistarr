@@ -31,6 +31,11 @@ paths:
       responses:
         200:
           description: user found
+          headers:
+            X-Anilist-User-Id:
+              $ref: '#/components/headers/X-Anilist-User-Id'
+            X-Anilist-User-Name:
+              $ref: '#/components/headers/X-Anilist-User-Name'
           content:
             text/plain:
               example: 1234
@@ -53,6 +58,11 @@ paths:
       responses:
         200:
           description: media list for the given user
+          headers:
+            X-Anilist-User-Id:
+              $ref: '#/components/headers/X-Anilist-User-Id'
+            X-Anilist-User-Name:
+              $ref: '#/components/headers/X-Anilist-User-Name'
           content:
             application/json:
               schema:
@@ -64,6 +74,15 @@ paths:
               example: |-
                 failed to get user ID: ...
 components:
+  headers:
+    X-Anilist-User-Id:
+      description: Anilist user identifier
+      schema:
+        type: string
+    X-Anilist-User-Name:
+      description: Anilist user name/handler
+      schema:
+        type: string
   schemas:
     CustomList:
       type: array
