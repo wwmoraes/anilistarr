@@ -1,17 +1,22 @@
+/*
+Integration is a self-contained system test program. It runs both client and
+server code to simulate the entire solution and its use-cases.
+*/
 package main
 
 import (
 	"context"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/wwmoraes/gotell/logging"
 	_ "go.uber.org/automaxprocs"
 
-	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
-	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
+	"github.com/wwmoraes/anilistarr/internal/adapters/cachedtracker"
+	"github.com/wwmoraes/anilistarr/internal/adapters/sources"
+	"github.com/wwmoraes/anilistarr/internal/drivers/badger"
 	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/process"
@@ -19,7 +24,7 @@ import (
 
 const (
 	coverageUsername = "coverage"
-	coverageUserId   = 9000
+	coverageUserID   = 9000
 )
 
 //nolint:funlen // TODO refactor integration main func
@@ -33,60 +38,73 @@ func main() {
 
 	ctx = logr.NewContext(ctx, log)
 
-	var tracker usecases.Tracker = &testdata.Tracker{
-		UserIds: map[string]int{
-			coverageUsername: coverageUserId,
+	tracker := memoryTracker{
+		UserIDs: map[string]int{
+			coverageUsername: coverageUserID,
 		},
 		MediaLists: map[int][]string{
-			coverageUserId: {"1", "2", "3", "5", "8", "13"},
+			coverageUserID: {"1", "2", "3", "5", "8", "13"},
 		},
 	}
 
-	cache, err := caches.NewBadger("", &caches.BadgerOptions{
-		InMemory: true,
-		// Logger:   &caches.BadgerLogr{Logger: log},
-	})
-	process.Assert(err)
+	cachePath, err := os.MkdirTemp("", "anilistarr-integration-badger-cache-*")
+	process.AssertWith(err, "failed to create temporary directory")
+	defer os.RemoveAll(cachePath)
 
-	store, err := stores.NewBadger("", &stores.BadgerOptions{
-		InMemory: true,
-		// Logger:   &stores.BadgerLogr{Logger: log},
-	})
-	process.Assert(err)
+	cache, err := badger.New(
+		cachePath,
+		badger.WithInMemory(true),
+		// badger.WithLogger(&badger.Logr{Logger: log}),
+	)
+	process.AssertWith(err, "failed to create badger driver")
 
-	bridge, err := usecases.NewMediaLister(
-		&adapters.CachedTracker{
-			Cache:   cache,
-			Tracker: tracker,
-		},
-		&adapters.Mapper{
-			Provider: testdata.Provider,
-			Store:    store,
-		},
+	storePath, err := os.MkdirTemp("", "anilistarr-integration-badger-store-*")
+	process.AssertWith(err, "failed to create temporary directory")
+	defer os.RemoveAll(storePath)
+
+	store, err := badger.New(
+		storePath,
+		badger.WithInMemory(true),
+		// badger.WithLogger(&badger.Logr{Logger: log}),
 	)
 	process.Assert(err)
-	defer bridge.Close()
 
-	err = bridge.Refresh(ctx, usecases.HTTPGetterAsGetter(&testdata.HTTPClient{
+	cachedTracker := cachedtracker.CachedTracker{
+		Cache:   cache,
+		Tracker: &tracker,
+		TTL: cachedtracker.TTLs{
+			UserID:       time.Hour,
+			MediaListIDs: time.Hour,
+		},
+	}
+
+	mediaLister := usecases.MediaList{
+		Tracker: &cachedTracker,
+		Source:  sources.JSON[testdata.Metadata](`memory:///test`),
+		Store:   store,
+	}
+	defer process.AssertClose(&mediaLister, "failed to close media lister")
+
+	err = mediaLister.Refresh(ctx, usecases.HTTPGetter(&httpClient{
 		Data: map[string]string{
-			testdata.Provider.String(): `[
-				{"anilist_id": 1, "thetvdb_id": 101},
-				{"anilist_id": 2, "thetvdb_id": 102},
-				{"anilist_id": 3, "thetvdb_id": 103},
-				{"anilist_id": 5, "thetvdb_id": 105},
-				{"anilist_id": 8, "thetvdb_id": 108},
-				{"anilist_id": 13, "thetvdb_id": 113}
+			"memory:///test": `[
+				{"source_id": "1", "target_id": "101"},
+				{"source_id": "2", "target_id": "102"},
+				{"source_id": "3", "target_id": "103"},
+				{"source_id": "5", "target_id": "105"},
+				{"source_id": "8", "target_id": "108"},
+				{"source_id": "13", "target_id": "113"}
 			]`,
 		},
 	}))
 	process.Assert(err)
 
-	userId, err := bridge.GetUserID(ctx, coverageUsername)
+	userID, err := mediaLister.GetUserID(ctx, coverageUsername)
 	process.Assert(err)
 
-	log.Info("GetUserID", "username", coverageUsername, "userID", userId)
+	log.Info("GetUserID", "username", coverageUsername, "userID", userID)
 
-	customList, err := bridge.Generate(ctx, coverageUsername)
+	customList, err := mediaLister.Generate(ctx, coverageUsername)
 	process.Assert(err)
 
 	log.Info("GenerateCustomList", "username", coverageUsername, "list", customList)

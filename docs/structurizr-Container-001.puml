@@ -11,10 +11,10 @@ top to bottom direction
 System(Anilistarr, "Anilistarr", $descr="converts anime sources for *arr services", $tags="", $link="")
 
 System_Boundary("Anilist_boundary", "Anilist", $tags="") {
-  Container(Anilist.GraphQLAPI, "GraphQL API", $techn="", $descr="", $tags="", $link="")
+  Container(Anilist.API, "API", $techn="GraphQL", $descr="", $tags="", $link="")
 }
 
-Rel(Anilistarr, Anilist.GraphQLAPI, "Uses", $techn="HTTP/GraphQL", $tags="", $link="")
+Rel(Anilistarr, Anilist.API, "Uses", $techn="HTTP/GraphQL", $tags="", $link="")
 
 SHOW_LEGEND(true)
 @enduml

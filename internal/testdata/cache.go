@@ -2,47 +2,31 @@ package testdata
 
 import (
 	"context"
-	"errors"
-	"sync"
 
-	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/stretchr/testify/mock"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-type Cache struct {
-	mu sync.RWMutex
+var _ usecases.Cache = (*MockCache)(nil)
 
-	Data map[string]string
+type MockCache struct {
+	mock.Mock
 }
 
-func (cache *Cache) Close() error {
-	return nil
+func (cache *MockCache) Close() error {
+	args := cache.Called()
+
+	return args.Error(0)
 }
 
-func (cache *Cache) GetString(ctx context.Context, key string) (string, error) {
-	if cache == nil || cache.Data == nil {
-		return "", errors.New("cache data is nil")
-	}
+func (cache *MockCache) GetString(ctx context.Context, key string) (string, error) {
+	args := cache.Called(ctx, key)
 
-	cache.mu.RLock()
-	defer cache.mu.RUnlock()
-
-	value, ok := cache.Data[key]
-	if !ok {
-		return "", usecases.ErrNotFound
-	}
-
-	return value, nil
+	return args.String(0), args.Error(1)
 }
 
-func (cache *Cache) SetString(ctx context.Context, key, value string, options ...adapters.CacheOption) error {
-	if cache == nil || cache.Data == nil {
-		return errors.New("cache data is nil")
-	}
+func (cache *MockCache) SetString(ctx context.Context, key, value string, options ...usecases.CacheOption) error {
+	args := cache.Called(ctx, key, value, options)
 
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
-	cache.Data[key] = value
-
-	return nil
+	return args.Error(0)
 }

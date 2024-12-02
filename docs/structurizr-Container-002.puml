@@ -9,24 +9,24 @@ top to bottom direction
 !include <C4/C4_Container>
 
 System(Anilist, "Anilist", $descr="", $tags="", $link="")
-System(Github, "Github", $descr="", $tags="", $link="")
+System(GitHub, "GitHub", $descr="", $tags="", $link="")
 System(Sonarr, "Sonarr", $descr="", $tags="", $link="")
 System(Radarr, "Radarr", $descr="", $tags="", $link="")
 
 System_Boundary("Anilistarr_boundary", "Anilistarr", $tags="") {
   Container(Anilistarr.anilistarr, "anilistarr", $techn="", $descr="", $tags="", $link="")
-  Container(Anilistarr.Redis, "Redis", $techn="", $descr="", $tags="", $link="")
-  Container(Anilistarr.BoltDB, "BoltDB", $techn="", $descr="", $tags="", $link="")
-  Container(Anilistarr.BadgerDB, "BadgerDB", $techn="", $descr="", $tags="", $link="")
-  Container(Anilistarr.PostgreSQL, "PostgreSQL", $techn="", $descr="", $tags="", $link="")
+  ContainerDb(Anilistarr.Redis, "Redis", $techn="", $descr="", $tags="", $link="")
+  ContainerDb(Anilistarr.BoltDB, "BoltDB", $techn="", $descr="", $tags="", $link="")
+  ContainerDb(Anilistarr.BadgerDB, "BadgerDB", $techn="", $descr="", $tags="", $link="")
+  ContainerDb(Anilistarr.SQLite, "SQLite", $techn="", $descr="", $tags="", $link="")
 }
 
 Rel(Anilistarr.anilistarr, Anilist, "Uses", $techn="HTTP/GraphQL", $tags="", $link="")
-Rel(Anilistarr.anilistarr, Anilistarr.Redis, "uses", $techn="", $tags="", $link="")
-Rel(Anilistarr.anilistarr, Anilistarr.BoltDB, "uses", $techn="", $tags="", $link="")
-Rel(Anilistarr.anilistarr, Anilistarr.BadgerDB, "Uses", $techn="", $tags="", $link="")
-Rel(Anilistarr.anilistarr, Anilistarr.PostgreSQL, "Uses", $techn="", $tags="", $link="")
-Rel(Anilistarr.anilistarr, Github, "Uses", $techn="HTTP", $tags="", $link="")
+Rel(Anilistarr.anilistarr, Anilistarr.BadgerDB, "Uses", $techn="IPC", $tags="", $link="")
+Rel(Anilistarr.anilistarr, Anilistarr.BoltDB, "uses", $techn="IPC", $tags="", $link="")
+Rel(Anilistarr.anilistarr, Anilistarr.Redis, "uses", $techn="HTTP", $tags="", $link="")
+Rel(Anilistarr.anilistarr, Anilistarr.SQLite, "Uses", $techn="IPC", $tags="", $link="")
+Rel(Anilistarr.anilistarr, GitHub, "Uses", $techn="HTTP/REST", $tags="", $link="")
 Rel(Sonarr, Anilistarr.anilistarr, "Uses", $techn="HTTP/REST", $tags="", $link="")
 Rel(Radarr, Anilistarr.anilistarr, "Uses", $techn="HTTP/REST", $tags="", $link="")
 

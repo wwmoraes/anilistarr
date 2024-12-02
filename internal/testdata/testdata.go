@@ -1,41 +1,153 @@
 package testdata
 
-import "github.com/wwmoraes/anilistarr/internal/drivers/memory"
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"runtime"
+	"strings"
+	"testing"
 
-const (
-	Username = "test"
-	UserID   = 1234
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
-var (
-	SourceIDs    = []string{"1", "2", "3", "5", "8", "13"}
-	TargetIDs    = []string{"91", "92", "93", "95", "98", "913"}
-	SampleClient = HTTPClient{
-		Data: map[string]string{
-			Provider.String(): `[
-				{"anilist_id": 1, "thetvdb_id": 91},
-				{"anilist_id": 2, "thetvdb_id": 92},
-				{"anilist_id": 3, "thetvdb_id": 93},
-				{"anilist_id": 5, "thetvdb_id": 95},
-				{"anilist_id": 8, "thetvdb_id": 98},
-				{"anilist_id": 13, "thetvdb_id": 913}
-			]`,
-		},
+type Constructor[T any] func(testing.TB) T
+type Functor[T any] func(testing.TB, T) T
+
+func Compose[T any](tb testing.TB, value T, functors ...Functor[T]) T {
+	tb.Helper()
+
+	for _, decorate := range functors {
+		value = decorate(tb, value)
 	}
-	SampleTracker = &Tracker{
-		UserIds: map[string]int{
-			Username: UserID,
-		},
-		MediaLists: map[int][]string{
-			UserID: SourceIDs,
-		},
+
+	return value
+}
+
+func Close(tb testing.TB, closer io.Closer) {
+	tb.Helper()
+
+	err := closer.Close()
+	require.NoError(tb, err)
+}
+
+func Implements[T any](tb testing.TB) any {
+	tb.Helper()
+
+	return implements[T]()
+}
+
+func implements[T any]() any {
+	return mock.MatchedBy(func(value any) bool {
+		_, ok := value.(T)
+
+		return ok
+	})
+}
+
+func HTTPRequestWithJSONBody(tb testing.TB, body any) any {
+	tb.Helper()
+
+	want, err := json.Marshal(body)
+	if err != nil {
+		tb.Fatal(err)
 	}
-	SampleStore = &memory.Memory{
-		"1":  "91",
-		"2":  "92",
-		"3":  "93",
-		"5":  "95",
-		"8":  "98",
-		"13": "913",
+
+	return httpRequestWithBody(want)
+}
+
+func httpRequestWithBody(want []byte) any {
+	return mock.MatchedBy(func(req *http.Request) bool {
+		var body io.ReadCloser
+		var data bytes.Buffer
+
+		body, req.Body = req.Body, io.NopCloser(&data)
+
+		_, err := io.Copy(&data, body)
+		if err != nil {
+			panic(err)
+		}
+
+		err = body.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		return bytes.Equal(data.Bytes(), want)
+	})
+}
+
+func HTTPResponseWithJSONBody(tb testing.TB, body any) *http.Response {
+	w := httptest.NewRecorder()
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		tb.Fatal(err)
 	}
-)
+
+	_, err = w.Write(data)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	return w.Result()
+}
+
+func RESP(elements ...string) string {
+	return RESPCommand(elements).String()
+}
+
+type RESPCommand []string
+
+func NewRESPCommand(elements ...string) RESPCommand {
+	return RESPCommand(elements)
+}
+
+func (cmd RESPCommand) String() string {
+	return strings.Join(cmd, "\r\n") + "\r\n"
+}
+
+func CallerInfoLogger(tb testing.TB) {
+	tb.Helper()
+
+	calledPc, _, _, ok := runtime.Caller(4)
+	if !ok {
+		tb.Fatal("failed to retrieve caller program counter")
+	}
+
+	calledFuncInfo := runtime.FuncForPC(calledPc)
+	if calledFuncInfo == nil {
+		tb.Fatal("failed to retrieve caller function info")
+	}
+
+	pc, file, line, ok := runtime.Caller(5)
+	if !ok {
+		tb.Fatal("failed to retrieve caller program counter")
+	}
+
+	funcInfo := runtime.FuncForPC(pc)
+	if funcInfo == nil {
+		tb.Fatal("failed to retrieve caller function info")
+	}
+
+	tb.Logf("%s:%d:\ncaller: %s\ncalled: %s", file, line, funcInfo.Name(), calledFuncInfo.Name())
+}
+
+func CallerMatches(tb testing.TB, target string) bool {
+	tb.Helper()
+
+	pc, _, _, ok := runtime.Caller(5)
+	if !ok {
+		tb.Fatal("failed to retrieve caller program counter")
+	}
+
+	funcInfo := runtime.FuncForPC(pc)
+	if funcInfo == nil {
+		tb.Fatal("failed to retrieve caller function info")
+	}
+
+	return funcInfo.Name() == target
+}

@@ -1,98 +1,136 @@
 package anilist
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"io"
+	"maps"
 	"math"
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
 	telemetry "github.com/wwmoraes/gotell"
 	"go.opentelemetry.io/otel/semconv/v1.20.0/httpconv"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/time/rate"
+
+	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-type ratedClient struct {
-	client *http.Client
-	rater  *rate.Limiter
-}
+var _ graphql.Doer = (*RatedClient)(nil)
 
-// NewRatedClient creates a GraphQL-compatible HTTP client with rate-limiting
-// restrictions. Useful to avoid blacklisting on upstream services.
-func NewRatedClient(interval time.Duration, requests int, base *http.Client) graphql.Doer {
-	if base == nil {
-		base = http.DefaultClient
-	}
-
-	return &ratedClient{
-		client: base,
-		rater:  rate.NewLimiter(rate.Every(interval), requests),
-	}
+// RatedClient is a rate-limited HTTP client. This allows consuming upstream
+// resources with usage limits in a friendly way.
+type RatedClient struct {
+	usecases.Doer
+	Limiter *rate.Limiter
 }
 
 // Do executes a HTTP request right away if its within the limits. Otherwise it
 // returns a 429 + Retry-After header with the seconds to wait for
-func (c *ratedClient) Do(req *http.Request) (*http.Response, error) {
+func (client *RatedClient) Do(req *http.Request) (*http.Response, error) {
 	span := telemetry.SpanFromContext(req.Context())
 
-	re := c.rater.Reserve()
-	if !re.OK() {
-		err := fmt.Errorf("misconfigured rate limiter on the API, cannot act")
-		span.RecordError(err)
-
-		return nil, err
+	reservation := client.Limiter.Reserve()
+	if !reservation.OK() {
+		return nil, span.Assert(usecases.ErrStatusInternal)
 	}
 
-	if re.Delay() > 0 {
-		re.Cancel()
+	if reservation.Delay() > 0 {
+		reservation.Cancel()
 
-		return &http.Response{
-			Status:     http.StatusText(http.StatusTooManyRequests),
-			StatusCode: http.StatusTooManyRequests,
-			Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
-			Header: http.Header{
-				"Retry-After": []string{strconv.FormatFloat(math.Ceil(re.Delay().Seconds()), 'f', 0, 64)},
-			},
-		}, nil
+		res := newResponseFor(req, http.StatusTooManyRequests, nil, http.Header{
+			"Retry-After": []string{strconv.FormatFloat(math.Ceil(reservation.Delay().Seconds()), 'f', 0, 64)},
+		})
+
+		return res, nil
 	}
 
-	resp, err := c.client.Do(req)
+	resp, err := client.Doer.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", usecases.ErrStatusUnknown, err)
 	}
 
 	span.SetAttributes(httpconv.ResponseHeader(telemetry.FilterHeaders(
 		resp.Header,
-		"X-RateLimit-Remaining",
-		"X-RateLimit-Limit",
 		"Retry-After",
+		"X-Ratelimit-Limit",
+		"X-Ratelimit-Remaining",
+		"X-Ratelimit-Reset",
 	))...)
 
-	if resp.StatusCode != http.StatusTooManyRequests {
-		return resp, nil
+	if resp.StatusCode == http.StatusTooManyRequests {
+		tryUpdateLimiterBurstFromHeaders(req.Context(), client.Limiter, resp.Header)
+		tryUpdateLimiterBurstAtFromHeaders(req.Context(), client.Limiter, resp.Header)
 	}
 
-	remaining, err := strconv.Atoi(resp.Header.Get("X-RateLimit-Remaining"))
+	return resp, span.Assert(nil)
+}
+
+func newResponseFor(req *http.Request, status int, data []byte, headers http.Header) *http.Response {
+	span := telemetry.SpanFromContext(req.Context())
+
+	writer := httptest.NewRecorder()
+	maps.Copy(writer.Header(), headers)
+	writer.WriteHeader(status)
+
+	_, err := writer.Write(data)
 	if err != nil {
-		return nil, err
+		span.RecordError(err, trace.WithStackTrace(true))
 	}
 
-	c.rater.SetBurst(remaining)
+	res := writer.Result()
+	res.Request = req
 
-	burst, err := strconv.Atoi(resp.Header.Get("X-RateLimit-Limit"))
+	return res
+}
+
+func tryUpdateLimiterBurstFromHeaders(ctx context.Context, limiter *rate.Limiter, headers http.Header) {
+	span := telemetry.SpanFromContext(ctx)
+
+	value := headers.Get("X-Ratelimit-Remaining")
+	if value == "" {
+		return
+	}
+
+	remaining, err := strconv.Atoi(value)
 	if err != nil {
-		return nil, err
+		span.RecordError(fmt.Errorf("failed to parse remaining limit: %w", err))
+
+		return
 	}
 
-	reset, err := strconv.ParseInt(resp.Header.Get("X-RateLimit-Reset"), 10, 0)
+	limiter.SetBurst(remaining)
+}
+
+func tryUpdateLimiterBurstAtFromHeaders(ctx context.Context, limiter *rate.Limiter, headers http.Header) {
+	span := telemetry.SpanFromContext(ctx)
+
+	burstValue := headers.Get("X-Ratelimit-Limit")
+	if burstValue == "" {
+		return
+	}
+
+	resetValue := headers.Get("X-Ratelimit-Reset")
+	if resetValue == "" {
+		return
+	}
+
+	burst, err := strconv.Atoi(burstValue)
 	if err != nil {
-		return nil, err
+		span.RecordError(fmt.Errorf("failed to parse rate limit burst: %w", err))
+
+		return
 	}
 
-	c.rater.SetBurstAt(time.Unix(reset, 0), burst)
+	reset, err := strconv.ParseInt(resetValue, 10, 0)
+	if err != nil {
+		span.RecordError(fmt.Errorf("failed to parse rate limit reset time: %w", err))
 
-	return resp, nil
+		return
+	}
+
+	limiter.SetBurstAt(time.Unix(reset, 0), burst)
 }

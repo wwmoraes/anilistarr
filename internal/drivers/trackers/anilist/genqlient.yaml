@@ -3,4 +3,4 @@
 schema: schema.graphql
 operations:
 - queries.graphql
-generated: generated.go
+generated: graphql.gen.go

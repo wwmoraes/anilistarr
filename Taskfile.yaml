@@ -15,7 +15,7 @@ includes:
   codecov:
     taskfile: .task/codecov.yaml
     internal: true
-  image:
+  docker:
     taskfile: .task/docker.yaml
     vars:
       IMAGE_NAME: wwmoraes/anilistarr
@@ -184,6 +184,18 @@ tasks:
     - task: golang:fix
   generate:diagrams:
     desc: Generates system diagrams based on the domain model.
+    vars:
+      STRUCTURIZR_SITE_GENERATR_OPTS: >-
+        -Dapple.awt.headless=true
+        -Djava.awt.headless=true
+        {{ .STRUCTURIZR_SITE_GENERATR_OPTS }}
+      VMARGS: >-
+        -Dapple.awt.headless=true
+        -Djava.awt.headless=true
+        {{ .VMARGS }}
+    env:
+      STRUCTURIZR_SITE_GENERATR_OPTS: '{{ .STRUCTURIZR_SITE_GENERATR_OPTS }}'
+      VMARGS: '{{ .VMARGS }}'
     cmds:
     - structurizr-cli export -f plantuml/c4plantuml -w docs/workspace.dsl -o docs
     - plantuml docs/*.puml
@@ -230,18 +242,20 @@ tasks:
   lint:
     desc: Runs static analysis on the code base.
     deps:
+    - task: docker:lint
     - task: lint:code
-    - task: image:lint
     - task: lint:markdown
+    - task: lint:style
+    - task: lint:typos
   lint:code:
     summary: Runs static analysis on the source code.
+    silent: true
     vars:
       GOLANGCI_LINT_SARIF: '{{ .GOLANGCI_LINT_SARIF | default "golangci-lint.sarif" }}'
     cmds:
-    - golangci-lint run
+    - golangci-lint run {{ .CLI_ARGS }}
     - sarif-fmt -i {{ .GOLANGCI_LINT_SARIF | q }}
-    - jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0'
-      {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
+    - jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
     sources:
     - .golangci.yaml
     - cmd/**/*.go
@@ -267,6 +281,10 @@ tasks:
     cmd: markdownlint .
     sources:
     - "**/*.md"
+  lint:style:
+    cmd: editorconfig-checker
+  lint:typos:
+    cmd: typos --force-exclude
   redis:cli:
     desc: Opens a Redis CLI instance towards the Redis proxy.
     interactive: true
@@ -298,6 +316,7 @@ tasks:
       task: golang:test:merge:all
       vars:
         SOURCES: '*.part'
+  ## TODO move to .task/docker.yaml
   test:container:
     desc: Tests the generated container image structure.
     cmd: >-
@@ -315,7 +334,7 @@ tasks:
   test:unit:
     desc: Runs unit tests.
     vars:
-      CLI_ARGS: -shuffle on -covermode atomic -race {{ .CLI_ARGS }}
+      CLI_ARGS: -shuffle on -covermode atomic -race -short {{ .CLI_ARGS }}
     deps:
     - task: golang:test:unit:impure.unit
       vars:
@@ -331,3 +350,19 @@ tasks:
     desc: Installs golang dependencies.
     cmd:
       task: golang:tidy
+  run:gotests:
+    desc: Generates tests for individual source files.
+    cmd: >-
+      gotests -w -exported -parallel
+      -template_dir {{ joinPath .ROOT_DIR ".meta/gotests/templates" | q }}
+      {{ .CLI_ARGS }}
+  run:coverage:
+    deps:
+    - coverage:report:unit
+    - coverage:treemap:unit
+    cmds:
+    - clear
+    - >-
+      task -s coverage:unit
+      | grcat conf.golang
+      | grep -v 100.0%

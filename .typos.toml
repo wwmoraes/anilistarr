@@ -1,5 +1,9 @@
 [default]
 binary = false
 
+[default.extend-identifiers]
+## as per upstream github.com/redis/go-redis/v9.Options
+DisableIndentity = "DisableIndentity"
+
 [files]
 extend-exclude = [".golangci.yaml", "**/*.gen.go", ".vscode/*.schema.json"]

@@ -1,3 +1,8 @@
+/*
+Handler processes requests to map media list IDs to specific services and formats.
+
+The sample implementation maps Anilist IDs to TVDB ones and formats the result as a Sonarr Custom List.
+*/
 package main
 
 import (
@@ -18,27 +23,33 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	_ "go.uber.org/automaxprocs"
 	"golang.org/x/time/rate"
+	_ "modernc.org/sqlite"
 
-	"github.com/wwmoraes/anilistarr/internal/adapters"
+	"github.com/wwmoraes/anilistarr/internal/adapters/cachedtracker"
+	"github.com/wwmoraes/anilistarr/internal/adapters/chaincache"
+	"github.com/wwmoraes/anilistarr/internal/adapters/sources"
 	"github.com/wwmoraes/anilistarr/internal/api"
-	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
+	"github.com/wwmoraes/anilistarr/internal/drivers/animelists"
+	"github.com/wwmoraes/anilistarr/internal/drivers/redis"
+	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
-	"github.com/wwmoraes/anilistarr/pkg/functional"
 	"github.com/wwmoraes/anilistarr/pkg/process"
 )
 
 const (
-	NAMESPACE = "github.com/wwmoraes/anilistarr"
-	NAME      = "anilistarr"
+	serviceNamespace = "github.com/wwmoraes/anilistarr"
+	serviceName      = "anilistarr"
 
-	apiInboundRateBurst     = 1000
-	refreshInterval         = time.Hour * 24 * 7
-	gracefulShutdownTimeout = 5 * time.Second
+	apiInboundRateBurst      = 1000
+	apiInboundRateInterval   = time.Minute
+	refreshInterval          = time.Hour * 24 * 7
+	gracefulShutdownTimeout  = 5 * time.Second
+	requestReadHeaderTimeout = 5 * time.Second
 )
 
 var version = "0.2.0-8-g6002c65"
 
-//nolint:funlen // TODO tidy handler main fn
+//nolint:funlen,maintidx // TODO tidy handler main fn
 func main() {
 	defer process.HandleExit()
 
@@ -48,10 +59,10 @@ func main() {
 	ctx = logr.NewContext(ctx, log)
 
 	err := telemetry.Initialize(ctx, resource.NewSchemaless(
-		attribute.String("service.name", NAME),
-		attribute.String("service.namespace", NAMESPACE),
+		attribute.String("service.name", serviceName),
+		attribute.String("service.namespace", serviceNamespace),
 		attribute.String("service.version", version),
-		attribute.String("host.id", functional.Unwrap(machineid.ProtectedID(NAMESPACE+NAME))),
+		attribute.String("host.id", getHostID(ctx)),
 	))
 	if err != nil {
 		log.Error(err, "failed to initialize telemetry")
@@ -63,7 +74,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	log.Info("staring up", "name", NAME, "version", version)
+	log.Info("staring up", "name", serviceName, "version", version)
 
 	host := os.Getenv("HOST")
 	if host == "" {
@@ -77,58 +88,79 @@ func main() {
 
 	dataPath := os.Getenv("DATA_PATH")
 
-	store, err := NewStore(dataPath)
+	store, err := newStore(dataPath)
 	process.Assert(err)
 
-	REDIS_ADDRESS := os.Getenv("REDIS_ADDRESS")
-	REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
-	REDIS_USERNAME := os.Getenv("REDIS_USERNAME")
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	redisUsername := os.Getenv("REDIS_USERNAME")
 
-	redisCache, err := caches.NewRedis(&caches.RedisOptions{
-		Addr:       REDIS_ADDRESS,
-		ClientName: "anilistarr",
-		Password:   REDIS_PASSWORD,
-		Username:   REDIS_USERNAME,
+	redisCache, err := redis.New(&redis.Options{
+		Addr:       redisAddress,
+		ClientName: serviceName,
+		Password:   redisPassword,
+		Username:   redisUsername,
 	})
 	process.Assert(err)
 
-	fileCache, err := NewCache(dataPath)
+	fileCache, err := newCache(dataPath)
 	process.Assert(err)
 
-	cache := adapters.MultiCache{
+	cache := chaincache.ChainCache{
 		redisCache,
 		fileCache,
 	}
-	defer cache.Close()
+	defer process.AssertClose(cache, "failed to close cache")
 
-	mediaLister, err := NewAnilistMediaLister(
-		os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
-		store,
-		cache,
+	tracker := cachedtracker.CachedTracker{
+		Cache: cache,
+		Tracker: anilist.New(
+			os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
+			anilist.WithPageSize(anilistPageSize),
+		),
+		TTL: cachedtracker.TTLs{
+			UserID:       cacheUserTTL,
+			MediaListIDs: cacheMediaListTTL,
+		},
+	}
+	defer process.AssertClose(&tracker, "failed to close tracker")
+
+	source := sources.JSON[animelists.Anilist2TVDBMetadata](
+		"https://github.com/Fribb/anime-lists/raw/master/anime-list-full.json",
 	)
-	process.Assert(err)
 
-	r := chi.NewRouter()
-	r.Use(telemetry.WithInstrumentationMiddleware)
-	r.Use(setHeaders(http.Header{
+	mediaLister := usecases.MediaList{
+		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+	}
+
+	router := chi.NewRouter()
+	router.Use(telemetry.WithInstrumentationMiddleware)
+	router.Use(setHeaders(http.Header{
 		"Cross-Origin-Resource-Policy": []string{"same-origin"},
 		"X-Content-Type-Options":       []string{"nosniff"},
 		"X-Frame-Options":              []string{"DENY"},
 	}))
-	r.Use(Limiter(rate.NewLimiter(rate.Every(time.Minute), apiInboundRateBurst)))
+	router.Use(Limiter(rate.NewLimiter(
+		rate.Every(apiInboundRateInterval),
+		apiInboundRateBurst,
+	)))
 
-	service, err := api.NewService(mediaLister)
-	process.Assert(err)
+	service := api.Service{
+		MediaLister: &mediaLister,
+	}
 
-	api.HandlerFromMux(service, r)
+	api.HandlerFromMux(&service, router)
 
 	server := http.Server{
-		Addr:    fmt.Sprintf("%s:%s", host, port),
-		Handler: r,
+		Addr:              fmt.Sprintf("%s:%s", host, port),
+		Handler:           router,
+		ReadHeaderTimeout: requestReadHeaderTimeout,
 	}
 
 	// update mapping every week
-	go scheduledRefresh(ctx, mediaLister, refreshInterval)
+	go scheduledRefresh(ctx, &mediaLister, refreshInterval)
 	//nolint:errcheck // ignore listen errors
 	go server.ListenAndServe()
 
@@ -146,7 +178,7 @@ func scheduledRefresh(ctx context.Context, linker usecases.MediaLister, interval
 	for {
 		log.Info("refreshing linker metadata")
 
-		err := linker.Refresh(ctx, usecases.HTTPGetterAsGetter(http.DefaultClient))
+		err := linker.Refresh(ctx, usecases.HTTPGetter(http.DefaultClient))
 		process.Assert(err)
 
 		log.Info("linker metadata refreshed")
@@ -183,4 +215,15 @@ func setHeaders(headers http.Header) func(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func getHostID(ctx context.Context) string {
+	log := telemetry.Logr(ctx)
+
+	id, err := machineid.ProtectedID(serviceNamespace + serviceName)
+	if err != nil {
+		log.Error(err, "failed to generate host ID")
+	}
+
+	return id
 }

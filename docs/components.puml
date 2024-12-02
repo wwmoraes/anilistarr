@@ -16,54 +16,48 @@ package entities {
 }
 
 package usecases {
-  interface "Mapper" as IMapper {
+  interface MediaLister {
+    +Close() error
+    +Generate(name string) CustomList
+    +GetUserID(name string) string
     +MapIDs([]string) []string
-    +MapID(string) string
     +Refresh()
   }
 
   interface Tracker {
-    +GetUserID(name string) string
     +GetMediaList(userId string) []Media
+    +GetUserID(name string) string
   }
 
-  class MediaLister {
-    +Generate(name string) CustomList
-    +GetUserID(name string) string
+  interface Store {
+    GetMedia(Context, string) (Media, error)
+    GetMediaBulk(Context, []string) ([]Media, error)
+    PutMedia(Context, media Media) error
+    PutMediaBulk(Context, medias []Media) error
   }
+
+  interface Provider {
+    Fetch(Context, Getter) ([]Metadata, error)
+    String() string
+  }
+
+  interface Metadata {
+    GetSourceID() string
+    GetTargetID() string
+  }
+
+  interface Cache {
+    GetString(ctx, key) string
+    SetString(ctx, key, value)
+  }
+
+  class MediaList
 }
 
 package adapters {
-  package mapper <<Frame>> {
-    interface Provider {
-      Fetch()
-    }
-
-    interface Metadata {
-      GetSourceID() string
-      GetTargetID() string
-    }
-
-    interface Store {
-      GetMedia(Context, string) (Media, error)
-      GetMediaBulk(Context, []string) ([]Media, error)
-      PutMedia(Context, media Media) error
-      PutMediaBulk(Context, medias []Media) error
-    }
-
-    class JSONLocalProvider
-    class JSONProvider
-    class Mapper
-  }
-
-  package cache <<Frame>> {
-    interface Cache {
-      GetString(ctx, key) string
-      SetString(ctx, key, value)
-    }
-
-    class CachedTracker
-  }
+  class CachedTracker
+  class JSONProvider
+  class ChainCache
 }
 
 package drivers {
@@ -72,18 +66,15 @@ package drivers {
     entity AnilistFribbsProvider
   }
 
-  package stores <<Frame>> {
-    class Sql
-  }
-
-  package caches <<Frame>> {
-    class Redis
-    class Bolt
-  }
-
   package trackers <<Frame>> {
     class Anilist
   }
+
+  class Redis
+  class Bolt
+  class Badger
+  class SQLite
+  class Memory
 }
 
 package cmd {
@@ -104,33 +95,43 @@ drivers -[hidden] cmd
 
 '' entities
 CustomEntry --* CustomList
+
 '' use-cases
-Media <-- MediaLister
-CustomList <-- MediaLister
-MediaLister o--> IMapper
-MediaLister o--> Tracker
-'' adapters/mapper
-IMapper <|-[dashed]- Mapper
+CustomList <-- MediaList
+MediaLister <-- MediaList
 Provider -> Metadata
-Mapper o--> Provider
-Mapper o--> Store
-Provider <|-[dashed]- JSONLocalProvider
+
+MediaList o--> Tracker
+MediaList o--> Provider
+MediaList o--> Store
 Provider <|-[dashed]- JSONProvider
-'' adapters/cache
+
+'' adapters
 Tracker <|-[dashed]- CachedTracker
+Cache <|-[dashed]- ChainCache
+
 CachedTracker o--> Cache
 CachedTracker o--> Tracker
-'' drivers/providers
-AnilistFribbsMetadata -* AnilistFribbsProvider
-JSONProvider <|-- AnilistFribbsProvider
+
+'' drivers
 Metadata <|-[dashed]- AnilistFribbsMetadata
-'' drivers/stores
-Store <|-[dashed]- Sql
-'' drivers/caches
+JSONProvider <|-- FribbsProvider
+
+AnilistFribbsMetadata -* FribbsProvider
+
+'' drivers
+Cache <|-[dashed]- Badger
 Cache <|-[dashed]- Bolt
+Cache <|-[dashed]- Memory
 Cache <|-[dashed]- Redis
-'' drivers/trackers
+Cache <|-[dashed]- SQLite
+
+Store <|-[dashed]- Badger
+Store <|-[dashed]- Memory
+Store <|-[dashed]- SQLite
+
 Tracker <|-[dashed]- Anilist
+
 '' cmd
 MediaLister <--o RestAPI
 

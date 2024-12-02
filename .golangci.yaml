@@ -1,8 +1,8 @@
-# yaml-language-server: $schema=https://github.com/wwmoraes/kaizen/raw/master/schemas/golangci.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/golangci/golangci-lint/refs/tags/v1.63.4/jsonschema/golangci.jsonschema.json
 run:
-  modules-download-mode: readonly
   allow-parallel-runners: true
   allow-serial-runners: true
+  modules-download-mode: readonly
 output:
   show-stats: true
   sort-order:
@@ -18,7 +18,7 @@ linters-settings:
   asasalint: {}
   bidichk: {}
   copyloopvar:
-    ignore-alias: false
+    check-alias: true
   cyclop:
     max-complexity: 10 # http://www.mccabe.com/pdf/mccabe-nist235r.pdf chapter 2.5
     package-average: 5
@@ -29,10 +29,14 @@ linters-settings:
     - var
     - type
     - func
+    disable-const-dec-num-check: false
+    disable-dec-num-check: false
     disable-dec-order-check: false
     disable-init-func-first-check: false
-    disable-dec-num-check: false
+    ## allows multiple type keywords; its usually more idiomatic than grouping
     disable-type-dec-num-check: true
+    disable-var-dec-num-check: false
+    ignore-underscore-vars: false
   depguard:
     rules:
       json:
@@ -51,9 +55,22 @@ linters-settings:
     check-type-assertions: true
     disable-default-exclusions: true
     exclude-functions:
+    - (*database/sql.Tx).Rollback
+    - (*os.File).Close
     - (*strings.Builder).WriteString
-    exclude: ""
-    ignore: ""
+    - (io.ReadCloser).Close
+    - fmt.Fprint
+    - fmt.Fprintf
+    - fmt.Fprintln
+    - fmt.Print
+    - fmt.Printf
+    - fmt.Println
+    - github.com/goccy/go-json.Marshal
+    - github.com/goccy/go-json.MarshalIndent
+    - github.com/wwmoraes/gotell.ForceFlush
+    - github.com/wwmoraes/gotell.Shutdown
+    - json.Marshal
+    - json.MarshalIndent
   errchkjson:
     check-error-free-encoding: true
     report-no-exported: true
@@ -66,7 +83,13 @@ linters-settings:
     explicit-exhaustive-switch: true
     ignore-enum-members: ".+_UNSPECIFIED"
   exhaustruct:
-    exclude: [] # TODO(william) exclude known value objects
+    exclude:
+    - '^github\.com/dgraph-io/badger/v4\.Options$'
+    - '^github\.com/redis/go-redis/v9\.Options$'
+    - '^github\.com/wwmoraes/anilistarr/internal/adapters\.CacheParams$'
+    - '^github\.com/wwmoraes/anilistarr/internal/api\.Service$'
+    - '^net/http\.Response$'
+    - '^net/http\.Server$'
   forbidigo:
     exclude-godoc-examples: true
     analyze-types: true
@@ -97,6 +120,11 @@ linters-settings:
       msg: >-
         Do not use the standard logger.
         Use the telemetry logger instead.
+    - p: \berrors\.ErrUnsupported\b
+      pkg: errors
+      msg: >-
+        Use a local error instead to better explain something that's unsupported
+        or unimplemented.
   funlen:
     ignore-comments: true
   gci:
@@ -111,6 +139,7 @@ linters-settings:
     min-complexity: 10
   goconst:
     ignore-calls: false
+    ignore-tests: true
     min-len: 2
     min-occurrences: 3
     numbers: true
@@ -120,8 +149,8 @@ linters-settings:
     min-complexity: 10 # http://www.mccabe.com/pdf/mccabe-nist235r.pdf chapter 2.5
   godot:
     capital: false
-    check-all: false
     period: false
+    scope: all
   godox:
     keywords:
     - "TODO"
@@ -140,7 +169,7 @@ linters-settings:
     extra-rules: true
     module-path: github.com/wwmoraes/anilistarr
   goheader:
-    template-path: .vscode/header.txt
+    template-path: .vscode/header.txt # TODO try goheader again...
   goimports:
     local-prefixes: github.com/wwmoraes/anilistarr
   gomoddirectives:
@@ -148,7 +177,6 @@ linters-settings:
     replace-allow-list:
     - github.com/miladabc/gonfig
     - github.com/ugorji/go
-    - github.com/wwmoraes/gotell # TODO remove before pushing
   gomodguard:
     blocked:
       local_replace_directives: true
@@ -176,10 +204,11 @@ linters-settings:
     allow-time-local: false
     ignore-tests: false
   govet:
+    disable:
+    ## shadow warns about shadowed err variables, which is a common practice
+    - shadow
     enable-all: true
-    settings:
-      shadow:
-        strict: true
+    settings: {}
   grouper:
     const-require-grouping: false
     const-require-single-const: true
@@ -211,7 +240,6 @@ linters-settings:
   inamedparam: {}
   interfacebloat:
     max: 6 # TODO(william) fine tune the maximum methods per interface
-  # intrange: {}
   ireturn:
     allow:
     - anon
@@ -219,6 +247,7 @@ linters-settings:
     - error
     - stdlib
     - generic
+    - Option$
   lll:
     line-length: 120
     tab-width: 2
@@ -231,12 +260,18 @@ linters-settings:
     zap: false
   maintidx:
     # https://learn.microsoft.com/en-us/visualstudio/code-quality/code-metrics-maintainability-index-range-and-meaning?view=vs-2022
-    under: 57 # TODO(william) fine-tune maintainability index [target 85?]
+    under: 35 # 20% of 171
   makezero:
     always: true
   misspell:
     locale: US
     mode: restricted
+    ignore-words:
+    - cancelled
+    extra-words:
+    ## convention even though double L is en-GB
+    - correction: cancelled
+      typo: canceled
   mnd:
     ignored-functions:
     - '^bbolt\.Open$'
@@ -247,8 +282,8 @@ linters-settings:
     - '^os\.OpenFile$'
     - '^os\.WriteFile$'
     ignored-numbers:
-    - 1
-    - 2
+    - "1"
+    - "2"
   musttag:
     functions:
     - name: (*github.com/miladabc/gonfig.Config).Into
@@ -296,6 +331,8 @@ linters-settings:
     # undesired checks
     - name: add-constant # duplicate of mnd
       disabled: true
+    - name: cyclomatic # duplicate of cyclop and gocyclo
+      disabled: true
     - name: cognitive-complexity # duplicate of gocyclo
       disabled: true
     - name: confusing-naming # drivers implement the same interface methods
@@ -325,7 +362,6 @@ linters-settings:
     - "(github\\.com/wwmoraes/gotell\\.Span)\\.Errorf"
   staticcheck:
     checks: [all]
-    http_status_code_whitelist: []
   stylecheck:
     checks: [all]
     initialisms: []
@@ -368,160 +404,116 @@ linters-settings:
     - w http.ResponseWriter
     - r *http.Request
     ignore-names:
-    - fd
+    - db # database handler/client
+    - fd # file descriptor/handler
     - id
     - ok
+    - tt # table test
+    - tx # database transaction
+    - wg # WaitGroup
   whitespace:
     multi-func: false
-    multi-if: false
+    multi-if: true
   wrapcheck:
     ignoreSigs:
+    - (github.com/wwmoraes/gotell.Span).Assert(
+    - (github.com/wwmoraes/gotell.Span).Errorf(
     - errors.Join(
     - errors.New(
     - errors.Unwrap(
     - fmt.Errorf(
+    - github.com/wwmoraes/anilistarr/internal/usecases.ErrorJoinIf(
     - status.Error(
     - status.Errorf(
   wsl: {}
 linters:
-  enable-all: true
-  fast: true
   disable:
-  - cyclop # Checks function and package cyclomatic complexity.
-  - decorder # Check declaration order and count of types, constants, variables and functions.
-  - dupl # Tool for code clone detection.
-  - err113 # Checks errors handling expressions.
-  - exhaustive # Check exhaustiveness of enum switch statements.
-  - exhaustruct # Checks if all structure fields are initialized.
-  - gocognit # Computes and checks the cognitive complexity of functions.
-  - goconst # Finds repeated strings that could be replaced by a constant.
-  - gocritic # Checks for bugs, performance and style issues.
-  - gocyclo # Computes and checks the cyclomatic complexity of functions.
   - godox # Checks FIXME, TODO and other comment keywords.
-  - govet # Vet examines Go source code and reports suspicious constructs.
-  - grouper # Analyze expression groups.
-  - ireturn # Accept Interfaces, Return Concrete Types.
-  - lll # Reports long lines.
-  - maintidx # Maintidx measures the maintainability index of each function.
-  - makezero # Finds slice declarations with non-zero initial length.
-  - misspell # Finds commonly misspelled English words.
-  - revive # General linter. Drop-in replacement of golint.
   - spancheck # Checks for mistakes with OpenTelemetry/Census spans.
   ## opted out
   - ginkgolinter # Enforces standards of using ginkgo and gomega.
   - gochecknoglobals # Checks that no global variables exist. (no settings sadly)
-  - rowserrcheck # Checks whether Rows.Err of rows is checked successfully. [no SQL in use]
   ## broken
+  - cyclop ## triggers package-level warning at the last file, skips nolint elsewhere
   - godot ## Check if comments end in a period. [changes comments indiscriminately]
   - goheader ## Checks is file header matches to pattern. [breaks packages]
   ## deprecated linters (step 1)
-  - execinquery
-  - gomnd ## renamed to mnd
+  - exportloopref
+  ## deprecated linters (step 2)
+  # - execinquery
+  # - gomnd ## renamed to mnd
+  enable-all: true
+  fast: false
 issues:
-  exclude-use-default: false
-  exclude-case-sensitive: false
-  exclude-dirs-use-default: false
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  fix: false
   exclude:
+  ## gocritic exceptions
+  ### unnamedResult is a dupe of revive's confusing-results; it also doesn't
+  ### detect type aliases like revive does
+  - "unnamedResult: consider giving a name to these results"
   ## gomodguard: dupe of gomoddirectives
   - "import of package `(.+)` is blocked because the module has a local replace directive."
+  exclude-case-sensitive: false
+  exclude-dirs:
+  - tmp
+  exclude-dirs-use-default: true
+  exclude-files:
+  - ".*\\.sql\\.go$"
+  - ".*\\.xo\\.go$"
+  - ".*_gen\\.go$"
+  - internal/drivers/sqlite/model/db.go
+  - internal/drivers/sqlite/model/models.go
+  - internal/drivers/trackers/anilist/generated.go
+  exclude-generated: strict
   exclude-rules:
-  - path: _test\.go
+  - path: '.+_test\.go'
     linters:
+    - containedctx
+    - dupl
+    - err113
+    - exhaustruct
     - funlen
+    - maintidx
+  ## wire functions return iface so it can switch drivers without touching return types
+  - path: cmd/handler/wire.go
+    linters:
+    - ireturn
+  exclude-use-default: true
+  fix: false
+  include:
+  ## - EXC0001 # (errcheck): unchecked errors on common functions (os stds/env/close, fmt prints)
+  - EXC0002 # comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form
+  ## - EXC0003 # (golint): False positive when tests are defined in package 'test'
+  - EXC0004 # possible misuse of unsafe.Pointer|should have signature
+  ## - EXC0005 # (staticcheck): explicit 'break' in a 'switch'
+  - EXC0006 # G103: Use of unsafe calls should be audited
+  - EXC0007 # G204: Subprocess launched with variable
+  ## - EXC0008 # (gosec): Duplicate of errcheck G104
+  - EXC0009 # (G301|G302|G307): Expect (directory permissions to be 0750|file permissions to be 0600) or less
+  - EXC0010 # G304: Potential file inclusion via variable
+  # - EXC0011 # (ST1000|ST1020|ST1021|ST1022) method|function|type|const|package comment requirements
+  - EXC0012 # exported (.+) should have comment( \(or a comment on this block\))? or be unexported
+  - EXC0013 # package comment should be of the form "(.+)..."
+  - EXC0014 # comment on exported (.+) should be of the form "(.+)..."
+  - EXC0015 # should have a package comment
+  max-issues-per-linter: 0
+  max-same-issues: 0
 severity:
   default-severity: error
-  case-sensitive: false
   rules:
-  - severity: warning
-    linters:
-    # - asasalint
-    # - bidichk
-    # - copyloopvar
-    - cyclop
-    # - decorder
-    # - depguard
-    - dogsled
-    - dupword
-    # - errcheck
-    # - errchkjson
-    # - errorlint
-    # - exhaustive
+  - linters:
+    - err113
     - exhaustruct
-    # - forbidigo
-    - funlen
-    - gci
-    - ginkgolinter
-    - gocognit
-    - goconst
     - gocritic
-    - gocyclo
-    # - gofmt
-    # - gofumpt
-    - goimports
-    - gomoddirectives
-    - gomodguard
-    # - gosec
-    - gosimple
-    - gosmopolitan
-    # - govet
-    - grouper
-    - importas
-    - inamedparam
-    - interfacebloat
-    - intrange
-    - ireturn
-    - lll
-    - loggercheck
-    - maintidx
-    - makezero
-    - misspell
-    - mnd
-    # - musttag
-    # - nakedret
-    - nestif
-    - nilnil
-    - nlreturn
-    # - nolintlint
-    # - nonamedreturns
-    # - paralleltest
-    - perfsprint
-    - prealloc
-    # - predeclared
-    - promlinter
-    # - protogetter
-    # - reassign
-    # - revive
-    - sloglint
-    # - spancheck
-    # - staticcheck
-    - stylecheck
-    - tagalign
-    # - tagliatelle
-    # - tenv
-    # - testifylint
-    # - testpackage
-    # - thelper
-    # - unconvert
-    # - unparam
-    # - unused
-    - usestdlibvars
-    - varnamelen
-    - whitespace
-    # - wrapcheck
-    - wsl
-  - severity: note
-    linters:
+    - revive
+    severity: warning
+  - linters:
     - dupl
     - godox
+    severity: note
   ## deprecated or broken
-  - severity: none
-    linters:
-    ## broken
+  - linters:
     - godot
     - goheader
-    ## deprecated
     - execinquery
     - gomnd
+    severity: none

@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/sqlc-2.0.json
+version: "2"
+sql:
+- engine: sqlite
+  queries: db/queries.sql
+  schema: internal/drivers/sqlite/schema.sql
+  gen:
+    go:
+      out: internal/drivers/sqlite/model
+      json_tags_id_uppercase: true

@@ -1,6 +1,6 @@
 @startuml
 set separator none
-title Github - Containers
+title GitHub - Containers
 
 top to bottom direction
 
@@ -10,11 +10,11 @@ top to bottom direction
 
 System(Anilistarr, "Anilistarr", $descr="converts anime sources for *arr services", $tags="", $link="")
 
-System_Boundary("Github_boundary", "Github", $tags="") {
-  Container(Github.GitHub, "GitHub", $techn="", $descr="", $tags="", $link="")
+System_Boundary("GitHub_boundary", "GitHub", $tags="") {
+  Container(GitHub.API, "API", $techn="REST", $descr="", $tags="", $link="")
 }
 
-Rel(Anilistarr, Github.GitHub, "Uses", $techn="HTTP", $tags="", $link="")
+Rel(Anilistarr, GitHub.API, "Uses", $techn="HTTP/REST", $tags="", $link="")
 
 SHOW_LEGEND(true)
 @enduml

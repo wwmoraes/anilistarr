@@ -8,11 +8,10 @@ import (
 
 	telemetry "github.com/wwmoraes/gotell"
 
-	"github.com/wwmoraes/anilistarr/internal/adapters"
-	"github.com/wwmoraes/anilistarr/internal/drivers/caches"
-	"github.com/wwmoraes/anilistarr/internal/drivers/providers"
-	"github.com/wwmoraes/anilistarr/internal/drivers/stores"
-	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
+	"github.com/wwmoraes/anilistarr/internal/drivers/badger"
+	"github.com/wwmoraes/anilistarr/internal/drivers/bolt"
+	"github.com/wwmoraes/anilistarr/internal/drivers/redis"
+	"github.com/wwmoraes/anilistarr/internal/drivers/sqlite"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -20,33 +19,30 @@ const (
 	cacheUserTTL      = 24 * time.Hour
 	cacheMediaListTTL = time.Hour
 	anilistPageSize   = 50
+	storeType         = StoreBadger
+	cacheType         = CacheBadger
 )
 
-func NewAnilistMediaLister(anilistEndpoint string, store adapters.Store, cache adapters.Cache) (usecases.MediaLister, error) {
-	tracker := anilist.New(anilistEndpoint, anilistPageSize)
+func newStore(dataPath string) (usecases.Store, error) {
+	var store usecases.Store
 
-	if cache != nil {
-		tracker = &adapters.CachedTracker{
-			Cache:   cache,
-			Tracker: tracker,
-			TTL: adapters.CachedTrackerTTL{
-				UserID:       cacheUserTTL,
-				MediaListIDs: cacheMediaListTTL,
-			},
-		}
+	var err error
+
+	// TODO kill this switch...
+	switch storeType {
+	case StoreBadger:
+		store, err = badger.New(
+			path.Join(dataPath, "badger", "store"),
+			badger.WithLogger(&badger.Logr{
+				Logger: telemetry.Logr(context.TODO()),
+			}),
+		)
+	case StoreSQL:
+		store, err = sqlite.New(path.Join(dataPath, "sqlite-store.db"))
+	default:
+		return nil, usecases.ErrStatusUnimplemented
 	}
 
-	return usecases.NewMediaLister(tracker, &adapters.Mapper{
-		Provider: providers.AnilistFribbsProvider,
-		Store:    store,
-	})
-}
-
-func NewStore(dataPath string) (adapters.Store, error) {
-	// store, err := stores.NewSQL("sqlite", path.Join(dataPath, "media2.db?loc=auto"))
-	store, err := stores.NewBadger(path.Join(dataPath, "badger", "store"), &stores.BadgerOptions{
-		Logger: &caches.BadgerLogr{Logger: telemetry.Logr(context.TODO())},
-	})
 	if err != nil {
 		return nil, fmt.Errorf("store initialization failed: %w", err)
 	}
@@ -54,13 +50,30 @@ func NewStore(dataPath string) (adapters.Store, error) {
 	return store, nil
 }
 
-func NewCache(dataPath string) (adapters.Cache, error) {
-	// cache, err := caches.NewRedis(cacheOptions)
-	// cache, err := caches.NewBolt(path.Join(dataPath, "bolt-cache.db"), nil)
-	// cache, err := caches.NewFile("tmp/cache.txt")
-	cache, err := caches.NewBadger(path.Join(dataPath, "badger", "cache"), &caches.BadgerOptions{
-		Logger: &caches.BadgerLogr{Logger: telemetry.Logr(context.TODO())},
-	})
+func newCache(dataPath string) (usecases.Cache, error) {
+	var cache usecases.Cache
+
+	var err error
+
+	// TODO kill this switch...
+	switch cacheType {
+	case CacheBadger:
+		cache, err = badger.New(
+			path.Join(dataPath, "badger", "cache"),
+			badger.WithLogger(&badger.Logr{
+				Logger: telemetry.Logr(context.TODO()),
+			}),
+		)
+	case CacheBolt:
+		cache, err = bolt.New(path.Join(dataPath, "bolt-cache.db"), nil)
+	case CacheRedis:
+		cache, err = redis.New(nil)
+	case CacheSQL:
+		cache, err = sqlite.New(path.Join(dataPath, "sqlite-cache.db"))
+	default:
+		return nil, usecases.ErrStatusUnimplemented
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("cache initialization failed: %w", err)
 	}

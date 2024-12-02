@@ -1,70 +1,38 @@
-# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/evilmartians/lefthook/refs/tags/v1.10.2/schema.json
 assert_lefthook_installed: true
 commit-msg:
   commands:
     commitlint:
-      run: grep -q "^fixup! " "{1}" || commitlint lint --message "{1}"
+      run: grep -q "^fixup! " "{1}" || cog verify --file "{1}"
     trailers:
       run: git interpret-trailers --in-place --trailer "sign" --trim-empty "{1}"
 pre-commit:
   piped: true
-  commands:
-    typos:
-      priority: 1
-      run: typos --force-exclude {staged_files}
-      exclude: .*\.(jpg|png)$
-    ## TODO check case conflict?
-    ## TODO check JSON
-    ## TODO check YAML
-    ## TODO check TOML
-    ## TODO check trailing whitespace?
-    checktask:
-      priority: 1
-      run: task -a -j > /dev/null
-      glob: Taskfile.yaml
-    editorconfig-checker:
-      priority: 1
-      run: editorconfig-checker ${ARGS} {staged_files}
-      env:
-        ARGS: ""
-      exclude: .*\.(jpg|png)$
-    ## TODO XML/HTML lint
-    fix:
-      priority: 1
-      run: task fix -- {staged_files}
-      glob: "**/*.go"
-      stage_fixed: true
-    lint-markdown:
-      priority: 10
-      run: task lint:markdown
-      glob: "**/*.md"
-    hadolint:
-      priority: 10
-      run: task lint:container
-      glob: Dockerfile
-    golangci-lint:
-      priority: 10
-      run: task lint:code
-      glob: "**/*.go"
-    tidy:
-      priority: 40
-      run: task tidy
-      glob: "{**/*.go,go.mod}"
-      stage_fixed: true
+  jobs:
+  - name: lint-task
+    run: task -a -j > /dev/null
+    glob: Taskfile.yaml
+  - name: tidy
+    run: task tidy
+    glob: "{**/*.go,go.mod}"
+    stage_fixed: true
+  - name: fix
+    run: task fix
+    glob: "**/*.go"
+    stage_fixed: true
+  - name: lint
+    run: task lint
 pre-push:
-  piped: true
-  commands:
-    check-commits:
-      priority: 1
-      run: task lint:commits
-    build:
-      priority: 50
-      run: task build
-      glob: "{**/*.go,go.mod,go.sum}"
-    test:
-      priority: 50
-      run: task test
-      glob: "{**/*.go,go.mod,go.sum}"
+  parallel: true
+  jobs:
+  - name: check-commits
+    run: task lint:commits
+  - name: build
+    run: task build
+    glob: "{**/*.go,go.mod,go.sum}"
+  - name: test
+    run: task test
+    glob: "{**/*.go,go.mod,go.sum}"
 skip_output:
 - meta
 # - summary
