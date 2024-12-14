@@ -34,8 +34,12 @@ tasks:
     vars:
       NAME: '{{ index .MATCH 0 }}'
       COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+      MODULE:
+        sh: >-
+          {{ .GO }} list -m
     cmd: >-
       {{ .GO }} tool cover -func={{ .COVERPROFILE | q }}
+      | sed 's|{{ .MODULE }}/||g'
   coverage:report:*:
     label: golang:coverage:report:{{ .NAME }}
     desc: Generates a HTML coverage report from a test profile.
