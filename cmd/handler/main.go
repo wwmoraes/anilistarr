@@ -29,7 +29,7 @@ import (
 
 const (
 	NAMESPACE = "github.com/wwmoraes/anilistarr"
-	NAME      = "oteller"
+	NAME      = "anilistarr"
 
 	apiInboundRateBurst     = 1000
 	refreshInterval         = time.Hour * 24 * 7
