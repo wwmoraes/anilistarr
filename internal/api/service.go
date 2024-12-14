@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,26 +11,35 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-type apiService struct {
+var _ ServerInterface = (*Service)(nil)
+
+type Service struct {
 	Unimplemented
 
 	mediaLister usecases.MediaLister
 }
 
-func NewService(mediaLister usecases.MediaLister) (ServerInterface, error) {
+func NewService(mediaLister usecases.MediaLister) (*Service, error) {
 	if mediaLister == nil {
-		return nil, fmt.Errorf("Server needs a valid Media Lister instance")
+		return nil, errors.New("server needs a valid media lister instance")
 	}
 
-	return &apiService{
+	return &Service{
 		mediaLister: mediaLister,
 	}, nil
 }
 
-func (service *apiService) GetUserID(w http.ResponseWriter, r *http.Request, name string) {
+func (service *Service) GetUserID(w http.ResponseWriter, r *http.Request, name string) {
 	span := telemetry.SpanFromContext(r.Context())
 
-	userId, err := service.mediaLister.GetUserID(r.Context(), name)
+	userID, err := service.mediaLister.GetUserID(r.Context(), name)
+	if errors.Is(err, usecases.ErrNotFound) {
+		span.RecordError(err)
+		http.Error(w, err.Error(), http.StatusNotFound)
+
+		return
+	}
+
 	if err != nil {
 		span.RecordError(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,13 +48,13 @@ func (service *apiService) GetUserID(w http.ResponseWriter, r *http.Request, nam
 	}
 
 	w.Header().Add("X-Anilist-User-Name", name)
-	w.Header().Add("X-Anilist-User-Id", userId)
+	w.Header().Add("X-Anilist-User-Id", userID)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, userId)
+	fmt.Fprintln(w, userID)
 }
 
-func (service *apiService) GetUserMedia(w http.ResponseWriter, r *http.Request, name string) {
+func (service *Service) GetUserMedia(w http.ResponseWriter, r *http.Request, name string) {
 	span := telemetry.SpanFromContext(r.Context())
 
 	customList, err := service.mediaLister.Generate(r.Context(), name)
@@ -55,13 +65,7 @@ func (service *apiService) GetUserMedia(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	data, err := json.Marshal(customList)
-	if err != nil {
-		span.RecordError(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-
-		return
-	}
+	data, _ := json.Marshal(customList)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
