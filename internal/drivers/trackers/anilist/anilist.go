@@ -4,11 +4,13 @@ package anilist
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	telemetry "github.com/wwmoraes/gotell"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -49,6 +51,12 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 	defer span.End()
 
 	res, err := GetUserByName(ctx, tracker.Client, name)
+
+	gqlErrorList := gqlerror.List{}
+	if errors.As(err, &gqlErrorList) && len(gqlErrorList) > 0 && gqlErrorList[0].Message == "Not Found." {
+		return "", span.Assert(usecases.ErrNotFound)
+	}
+
 	if err != nil {
 		return "", span.Assert(fmt.Errorf(usecases.FailedGetUserErrorTemplate, err))
 	}
