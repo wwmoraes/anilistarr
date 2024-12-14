@@ -223,6 +223,19 @@ tasks:
     - pkg/**/*.go
     generates:
     - '{{ .GOLANGCI_LINT_SARIF }}'
+  lint:commits:
+    vars:
+      REMOTE:
+        sh: git remote
+      LOCAL_BRANCH:
+        sh: git branch --show-current
+      REMOTE_BRANCH:
+        sh: git rev-parse --symbolic-full-name @{u} || echo -n "{{ .DEFAULT }}"
+      DEFAULT:
+        sh: >-
+          git remote set-head origin --auto;
+          git symbolic-ref refs/remotes/{{ .REMOTE }}/HEAD
+    cmd: cog check {{ .REMOTE_BRANCH }}..{{ .LOCAL_BRANCH }}
   lint:markdown:
     summary: Lints markdown files.
     cmd: markdownlint .

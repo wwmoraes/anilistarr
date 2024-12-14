@@ -54,6 +54,9 @@ pre-commit:
 pre-push:
   piped: true
   commands:
+    check-commits:
+      priority: 1
+      run: task lint:commits
     build:
       priority: 50
       run: task build
