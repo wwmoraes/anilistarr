@@ -205,7 +205,7 @@ tasks:
     desc: Runs static analysis on the code base.
     deps:
     - task: lint:code
-    - task: lint:container
+    - task: image:lint
     - task: lint:markdown
   lint:code:
     summary: Runs static analysis on the source code.
