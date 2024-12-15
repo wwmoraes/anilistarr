@@ -21,6 +21,7 @@ includes:
       IMAGE_NAME: wwmoraes/anilistarr
       REPOSITORY: wwmoraes/anilistarr
   golang:
+    dir: '{{ .ROOT_DIR }}'
     taskfile: .task/golang.yaml
     internal: true
     vars:

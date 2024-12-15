@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: 3
 
-includes:
-  gnu: gnu.yaml
+env:
+  # needed for run -cover
+  GOCOVERDIR: '{{ env "GOCOVERDIR" | default .GOCOVERDIR | default "coverage/integration" }}'
 
 vars:
   COVERAGE_DIR: '{{ .COVERAGE_DIR | default "coverage" }}'
@@ -10,26 +11,34 @@ vars:
   TEST_PACKAGES: '{{ .TEST_PACKAGES | default "internal pkg" }}'
   TEST_IGNORE_PATTERNS: '{{ .TEST_IGNORE_PATTERNS | default ".gen.go: .pb.go: .pb.gw.go:" }}'
 
+includes:
+  gnu:
+    dir: '{{ .ROOT_DIR }}'
+    internal: true
+    taskfile: gnu.yaml
+
 tasks:
   build:
     desc: Builds the server binary.
     vars:
-      FLAGS: '{{ .FLAGS | default "-trimpath" }}'
+      CLI_ARGS: '{{ .CLI_ARGS | default "-trimpath" }}'
       PACKAGE: '{{ .PACKAGE | default "./..." }}'
       OUTPUT: '{{ .OUTPUT | default "./bin/" }}'
     deps:
     - tidy
     - generate
-    cmd: >-
-      {{ .GO }} build {{ .FLAGS }} -o {{ .OUTPUT | q }} {{ .PACKAGE | q }}
+    cmds:
+    - >-
+      {{ .GO }} build {{ .CLI_ARGS }} -o {{ .OUTPUT | q }} {{ .PACKAGE | q }}
+    - strip -s -x {{ .OUTPUT }}{{ if hasSuffix "/" .OUTPUT }}*{{ end }}
     sources:
     - '**/*.go'
     - exclude: '**/*_test.go'
     - go.sum
     generates:
-    - '{{ .OUTPUT }}{{ if hasSuffix "/" .OUTPUT }}/*{{ end }}'
+    - '{{ .OUTPUT }}{{ if hasSuffix "/" .OUTPUT }}*{{ end }}'
   coverage:show:*:
-    label: golang:coverage:{{ .NAME }}
+    label: golang:coverage:show:{{ .NAME }}
     desc: Shows code coverage from a test profile.
     vars:
       NAME: '{{ index .MATCH 0 }}'
@@ -39,6 +48,7 @@ tasks:
           {{ .GO }} list -m
     cmd: >-
       {{ .GO }} tool cover -func={{ .COVERPROFILE | q }}
+      | grep -v '{{ .TEST_IGNORE_PATTERNS | trim | splitList " " | join "\\|" }}'
       | sed 's|{{ .MODULE }}/||g'
   coverage:report:*:
     label: golang:coverage:report:{{ .NAME }}
@@ -76,6 +86,13 @@ tasks:
       golangci-lint run
       --fix
       --enable-only {{ .LINTERS | splitList " " | join "," | q }}
+  lint:
+    summary: Runs golangci-lint to lint Golang source code.
+    method: none
+    cmd: golangci-lint run {{ .CLI_ARGS }}
+    sources:
+    - '**/*.go'
+    - .golangci.yaml
   test:instrumented:*:
     label: golang:test:instrumented:{{ .NAME }}
     desc: Runs an instrumented binary to collect coverage data.
@@ -173,6 +190,6 @@ tasks:
       {{ .GO }} mod tidy
     sources:
     - '**/*.go'
-    - go.mod
     generates:
+    - go.mod
     - go.sum
