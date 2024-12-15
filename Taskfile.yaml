@@ -48,6 +48,13 @@ tasks:
       vars:
         FLAGS: -mod=readonly -trimpath -ldflags="-s -w -X 'main.version={{ .VERSION }}'"
         PACKAGE: ./cmd/handler/...
+  check:
+    # TODO add sources so we can use with watch
+    desc: Runs all checks that validates changes.
+    silent: true
+    cmds:
+    - lefthook run pre-commit {{ .CLI_ARGS }}
+    - lefthook run pre-push {{ .CLI_ARGS }}
   clean:
     desc: Cleans up generated artifacts.
     vars:
