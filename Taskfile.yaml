@@ -297,7 +297,7 @@ tasks:
   test:unit:
     desc: Runs unit tests.
     vars:
-      CLI_ARGS: -v -shuffle on -covermode atomic -race {{ .CLI_ARGS }}
+      CLI_ARGS: -shuffle on -covermode atomic -race {{ .CLI_ARGS }}
     deps:
     - task: golang:test:unit:impure.unit
       vars:
