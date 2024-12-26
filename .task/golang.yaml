@@ -67,6 +67,20 @@ tasks:
     - '{{ .COVERPROFILE }}'
     generates:
     - '{{ .OUTPUT }}'
+  coverage:treemap:*:
+    label: golang:coverage:treemap:{{ .NAME }}
+    desc: Generates a SVG coverage map from a test profile.
+    vars:
+      NAME: '{{ index .MATCH 0 }}'
+      COVERPROFILE: '{{ joinPath .COVERAGE_DIR (printf "%s.txt" .NAME) }}'
+      OUTPUT: '{{ joinPath .COVERAGE_DIR (printf "%s.svg" .NAME) }}'
+    deps:
+    - gnu:mkdir:{{ .OUTPUT | dir }}
+    cmd: go-cover-treemap -coverprofile {{ .COVERPROFILE | q }} > {{ .OUTPUT | q }}
+    sources:
+    - '{{ .COVERPROFILE }}'
+    generates:
+    - '{{ .OUTPUT }}'
   generate:
     summary: Generates code from annotations.
     run: when_changed

@@ -82,6 +82,24 @@ tasks:
     - test
     cmd:
       task: golang:coverage:show:all
+  coverage:treemap:
+    desc: Generate a coverage treemap/heatmap from all tests.
+    deps:
+    - test
+    cmd:
+      task: golang:coverage:treemap:all
+  coverage:treemap:unit:
+    desc: Generate a coverage treemap/heatmap from unit tests.
+    deps:
+    - test:unit
+    cmd:
+      task: golang:coverage:treemap:unit.part
+  coverage:treemap:integration:
+    desc: Generate a coverage treemap/heatmap from integration tests.
+    deps:
+    - test:integration
+    cmd:
+      task: golang:coverage:treemap:integration.part
   coverage:unit:
     desc: Shows test coverage from the unit test profile.
     deps:

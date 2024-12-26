@@ -52,6 +52,7 @@ in mkShell {
 		pkgs.redis
 		pkgs.sqlc
 		pkgs.unstable.delve
+		pkgs.unstable.go-cover-treemap
 		pkgs.unstable.golangci-lint-langserver
 		pkgs.unstable.gopls
 		pkgs.unstable.gotests
