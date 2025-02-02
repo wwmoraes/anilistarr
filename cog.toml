@@ -1,0 +1,45 @@
+#:schema https://raw.githubusercontent.com/cocogitto/cocogitto/refs/heads/main/website/public/cog-schema.json
+
+branch_whitelist = ["master"]
+from_latest_tag = true
+post_bump_hooks = [
+  "git push",
+  "git push {{version}}",
+  "goreleaser release --clean --release-notes CHANGELOG.md",
+]
+pre_bump_hooks = [
+  "task check",
+  "goreleaser check",
+  "goreleaser healthcheck",
+  "goreleaser build --clean",
+]
+tag_prefix = "v"
+
+[git_hooks.commit-msg]
+script = """#!/usr/bin/env sh
+grep -q "^fixup! " "$1" || cog verify --file "$1"
+git interpret-trailers --in-place --trailer sign --trim-empty "$1"
+"""
+
+[git_hooks.post-checkout]
+script = "task --download --yes"
+
+[git_hooks.post-commit]
+script = "tput bel || true"
+
+[git_hooks.pre-commit]
+script = "task --yes git:hooks:pre-commit"
+
+[git_hooks.pre-push]
+script = "task --yes git:hooks:pre-push"
+
+[changelog]
+authors = [
+  { signature = "William Artero", username = "wwmoraes" },
+]
+owner = "wwmoraes"
+package_template = "package_remote"
+path = "CHANGELOG.md"
+remote = "github.com"
+repository = "anilistarr"
+template = "remote"

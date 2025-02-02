@@ -47,7 +47,7 @@ const (
 	requestReadHeaderTimeout = 5 * time.Second
 )
 
-var version = "0.2.0-8-g6002c65"
+var version = "0.0.0-unknown"
 
 //nolint:funlen,maintidx // TODO tidy handler main fn
 func main() {

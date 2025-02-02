@@ -6,4 +6,8 @@ binary = false
 DisableIndentity = "DisableIndentity"
 
 [files]
-extend-exclude = [".golangci.yaml", "**/*.gen.go", ".vscode/*.schema.json"]
+extend-exclude = [
+  ".golangci.yaml",
+  "**/*.gen.go",
+  "CHANGELOG.md",
+]
