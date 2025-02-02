@@ -1,10 +1,17 @@
 # yaml-language-server: $schema=https://github.com/wwmoraes/kaizen/raw/master/schemas/goreleaser.schema.json
+project_name: anilistarr
 before:
   hooks:
-  - go mod download
+  - task check
 builds:
 - id: handler
   main: ./cmd/handler
+  binary: bin/handler
+  flags:
+  - -race
+  - -trimpath
+  ldflags:
+  - -s -w -X main.build={{.Version}}
   env:
   - CGO_ENABLED=0
   goos:
@@ -23,15 +30,13 @@ builds:
     goarch: "386"
 checksum:
   name_template: 'checksums.txt'
+gomod:
+  proxy: true
+  mod: readonly
 snapshot:
   name_template: "{{- .Version -}}+{{ .FullCommit }}"
 changelog:
-  sort: asc
-  filters:
-    exclude:
-    - '^docs:'
-    - '^test:'
-    - '^ci:'
+  disable: true
 release:
   github:
     owner: wwmoraes
