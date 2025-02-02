@@ -81,7 +81,7 @@ jobs:
           ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-build-
     - name: build
-      run: task build
+      run: task --yes build
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -113,7 +113,7 @@ jobs:
           ${{ runner.os }}-lint-${{ hashFiles('.golangci.yaml') }}
           ${{ runner.os }}-lint-
     - name: run lint
-      run: task lint
+      run: task --yes --silent --output prefixed lint
       continue-on-error: true
     - name: Upload golangci-lint report
       uses: github/codeql-action/upload-sarif@v3
@@ -158,9 +158,9 @@ jobs:
           ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-test-
     - name: run test
-      run: task test
+      run: task --yes test
     - name: upload coverage report
-      run: task coverage:upload
+      run: task --yes coverage:upload
       if: always()
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -194,7 +194,7 @@ jobs:
         # yamllint enable rule:line-length
     - name: build container image
       run: >-
-        task docker:build --
+        task --yes docker:build --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
     # fix to prevent ever-growing caches
@@ -204,5 +204,5 @@ jobs:
       run: |
         rm -rf ${{ runner.temp }}/.buildx-cache
         mv ${{ runner.temp }}/.buildx-cache-new ${{ runner.temp }}/.buildx-cache
-    - name: test container
-      run: task test:container
+    - name: test image
+      run: task --yes docker:test

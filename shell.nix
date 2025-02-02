@@ -16,7 +16,6 @@ in mkShell {
 		pkgs.editorconfig-checker
 		pkgs.git
 		pkgs.go-junit-report
-		pkgs.go-task
 		pkgs.goreleaser
 		pkgs.grype
 		pkgs.hadolint
@@ -24,14 +23,13 @@ in mkShell {
 		pkgs.markdownlint-cli
 		pkgs.nur.repos.wwmoraes.codecov-cli-bin
 		pkgs.oapi-codegen
-		pkgs.svu
 		pkgs.typos
 		pkgs.unstable.cocogitto
 		pkgs.unstable.container-structure-test
 		pkgs.unstable.go
+		pkgs.unstable.go-task
 		pkgs.unstable.golangci-lint
 		pkgs.unstable.hadolint-sarif
-		pkgs.unstable.lefthook
 		pkgs.unstable.sarif-fmt
 	] ++ lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
 	] ++ lib.optionals (builtins.getEnv "CI" == "") [ # local-only

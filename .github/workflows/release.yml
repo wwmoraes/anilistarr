@@ -87,7 +87,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: push image
       run: >-
-        task docker:push --
+        task --yes docker:push --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
     # fix to prevent ever-growing caches

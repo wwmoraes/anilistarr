@@ -1,13 +1,19 @@
-.direnv
 *.env.local
 *.sarif
-*-image.tar
+.direnv
+.task/checksum
+.task/remote
+.task/timestamp
 /bin/
+/build
 /coverage/
 /dist/
-/docs/site
 /docs/*.png
-/build
+/docs/site
+
+# go-task local override
+[Tt]askfile.yaml
+[Tt]askfile.yml
 
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore

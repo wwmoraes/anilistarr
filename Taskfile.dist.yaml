@@ -5,25 +5,47 @@ dotenv:
 - .env.local
 - .env
 
-vars:
-  VERSION:
-    sh: >-
-      git tag --points-at HEAD | cut -dv -f2  | grep .
-      || svu prerelease --strip-prefix --pre-release alpha
-
 includes:
-  codecov:
-    taskfile: .task/codecov.yaml
-    internal: true
+  codecov: https://github.com/wwmoraes/kaizen.git//taskfile/codecov.yaml
   docker:
-    taskfile: .task/docker.yaml
+    taskfile: https://github.com/wwmoraes/kaizen.git//taskfile/docker.yaml
     vars:
-      IMAGE_NAME: wwmoraes/anilistarr
-      REPOSITORY: wwmoraes/anilistarr
+      NAME: wwmoraes/anilistarr
+      PLATFORMS: >-
+        linux/amd64
+        linux/arm/v7
+        linux/arm64
+      BUILD_ARGS: >-
+        VERSION={{ .VERSION | q }}
+        {{ with .ALPINE_VERSION -}}ALPINE_VERSION={{ . | q }}{{- end }}
+        {{ with .GOLANG_VERSION -}}GOLANG_VERSION={{ . | q }}{{- end }}
+      LABELS: >-
+        org.opencontainers.image.documentation=https://github.com/wwmoraes/anilistarr/blob/{{ .BRANCH }}/README.md
+        org.opencontainers.image.revision={{ .REVISION | q }}
+        org.opencontainers.image.source=https://github.com/wwmoraes/anilistarr
+        org.opencontainers.image.url=https://hub.docker.com/r/wwmoraes/anilistarr
+        org.opencontainers.image.version={{ .VERSION | q }}
+      TAGS: >-
+        {{ .BRANCH }}
+        {{ .VERSION | splitList "+" | first }}
+        {{- if not (contains "-" .VERSION) }}
+        latest
+        {{ .VERSION | splitList "+" | first | splitList "." | initial | join "." }}
+        {{ .VERSION | splitList "+" | first | splitList "." | first }}
+        {{- end }}
+  git:
+    taskfile: https://github.com/wwmoraes/kaizen.git//taskfile/git.yaml
+    vars:
+      GIT_PRE_COMMIT_TASKS: >-
+        tidy
+        fix
+        lint
+      GIT_PRE_PUSH_TASKS: >-
+        build
+        test
+  gnu: https://github.com/wwmoraes/kaizen.git//taskfile/gnu.yaml
   golang:
-    dir: '{{ .ROOT_DIR }}'
-    taskfile: .task/golang.yaml
-    internal: true
+    taskfile: https://github.com/wwmoraes/kaizen.git//taskfile/golang.yaml
     vars:
       TEST_IGNORE_PATTERNS: >-
         .gen.go:
@@ -38,24 +60,26 @@ includes:
         internal/entities
         internal/usecases
         pkg
+  markdown: https://github.com/wwmoraes/kaizen.git//taskfile/markdown.yaml
 
 tasks:
   build:
-    aliases:
-    - default
     desc: Builds the server binary.
     cmd:
       task: golang:build
       vars:
-        FLAGS: -mod=readonly -trimpath -ldflags="-s -w -X 'main.version={{ .VERSION }}'"
+        CLI_ARGS: >-
+          -mod=readonly
+          -trimpath
+          -race
+          -ldflags="-s -w -X 'main.version={{ .VERSION }}+{{ .REVISION }}'"
         PACKAGE: ./cmd/handler/...
   check:
-    # TODO add sources so we can use with watch
+    aliases: [default]
     desc: Runs all checks that validates changes.
-    silent: true
-    cmds:
-    - lefthook run pre-commit {{ .CLI_ARGS }}
-    - lefthook run pre-push {{ .CLI_ARGS }}
+    deps:
+    - git:hooks:pre-commit
+    - git:hooks:pre-push
   clean:
     desc: Cleans up generated artifacts.
     vars:
@@ -73,9 +97,9 @@ tasks:
     sources:
     - golangci-lint-report.xml
   configure:
-    desc: Configures the repository and project for work.
+    summary: Sets up a local copy of this repository for contribution.
     deps:
-    - lefthook:install
+    - task: git:hooks:install
   coverage:
     desc: Shows test coverage from a test profile.
     deps:
@@ -166,13 +190,13 @@ tasks:
     - task: golang:test:junit:integration
     - task: codecov:report:flagged:integration:coverage/integration.part.txt
     - task: codecov:report:tests:integration:coverage/integration.junit.xml
-  db:
-    desc: Creates a blank SQLite database file from the schema.
-    cmd: sqlite3 anilist-tvdb.db < db/schema.sqlite.sql
-    sources:
-    - db/schema.sqlite.sql
-    generates:
-    - anilist-tvdb.db
+  # db:
+  #   desc: Creates a blank SQLite database file from the schema.
+  #   cmd: sqlite3 anilist-tvdb.db < db/schema.sqlite.sql
+  #   sources:
+  #   - db/schema.sqlite.sql
+  #   generates:
+  #   - anilist-tvdb.db
   docs:
     desc: Starts a local Golang package documentation server.
     silent: true
@@ -182,6 +206,7 @@ tasks:
     desc: Applies linter lixes to code when supported.
     deps:
     - task: golang:fix
+    - task: markdown:fix
   generate:diagrams:
     desc: Generates system diagrams based on the domain model.
     vars:
@@ -205,16 +230,6 @@ tasks:
     generates:
     - docs/structurizr-*.puml
     - docs/*.png
-  git:hook:clean:
-    internal: true
-    summary: Removes git hooks from the local repository.
-    vars:
-      GIT_CORE_HOOKSPATH: '{{ .GIT_CORE_HOOKSPATH | default ".git/hooks" }}'
-    deps:
-    - for: sources
-      task: gnu:rm:file:{{ .ITEM }}
-    sources:
-    - '{{ .GIT_CORE_HOOKSPATH }}/*'
   invoke:get-user:
     desc: Retrieves user ID through the handler API.
     vars:
@@ -225,66 +240,56 @@ tasks:
     vars:
       USERNAME: '{{ .CLI_ARGS | default "algwyn" }}'
     cmd: curl -v "http://${HOST}:${PORT}/user/{{ .USERNAME }}/media"
-  lefthook:install:
-    summary: Configures git hooks using lefthook.
-    vars:
-      GIT_CORE_HOOKSPATH: .git/hooks # sh: git rev-parse --git-path hooks
-    cmds:
-    - task: git:hook:clean
-      vars:
-        GIT_CORE_HOOKSPATH: '{{ .GIT_CORE_HOOKSPATH }}'
-    - lefthook install
-    sources:
-    - .lefthook.yaml
-    - .lefthook-local.yaml
-    generates:
-    - '{{ .GIT_CORE_HOOKSPATH }}/*'
   lint:
     desc: Runs static analysis on the code base.
     deps:
-    - task: docker:lint
-    - task: lint:code
-    - task: lint:markdown
-    - task: lint:style
-    - task: lint:typos
-  lint:code:
-    summary: Runs static analysis on the source code.
-    silent: true
-    vars:
-      GOLANGCI_LINT_SARIF: '{{ .GOLANGCI_LINT_SARIF | default "golangci-lint.sarif" }}'
-    cmds:
-    - golangci-lint run {{ .CLI_ARGS }}
-    - sarif-fmt -i {{ .GOLANGCI_LINT_SARIF | q }}
-    - jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' {{ .GOLANGCI_LINT_SARIF | q }} > /dev/null
-    sources:
-    - .golangci.yaml
-    - cmd/**/*.go
-    - internal/**/*.go
-    - pkg/**/*.go
-    generates:
-    - '{{ .GOLANGCI_LINT_SARIF }}'
-  lint:commits:
-    vars:
-      REMOTE:
-        sh: git remote
-      LOCAL_BRANCH:
-        sh: git branch --show-current
-      REMOTE_BRANCH:
-        sh: git rev-parse --symbolic-full-name @{u} || echo -n "{{ .DEFAULT }}"
-      DEFAULT:
-        sh: >-
-          git remote set-head origin --auto;
-          git symbolic-ref refs/remotes/{{ .REMOTE }}/HEAD
-    cmd: cog check {{ .REMOTE_BRANCH }}..{{ .LOCAL_BRANCH }}
-  lint:markdown:
-    summary: Lints markdown files.
-    cmd: markdownlint .
-    sources:
-    - "**/*.md"
-  lint:style:
+    - task: docker:lint:sarif
+    - task: golang:lint
+    - task: markdown:lint
+    - task: style:lint
+    - task: task:lint
+    - task: typos:lint
+  style:lint:
+    run: when_changed
     cmd: editorconfig-checker
-  lint:typos:
+    sources:
+    - ./**/*.*
+    - exclude: ./**/*.gen.go
+    - exclude: ./**/*.sarif
+    - exclude: ./bin/**/*.*
+    - exclude: ./dist/**/*.*
+    - exclude: ./nix/**/*.*
+    - exclude: ./tmp/**/*.*
+  task:lint:
+    deps:
+    - for: sources
+      task: task:lint:{{ .ITEM }}
+    sources:
+    - "{{ .ROOT_TASKFILE }}"
+    - .task/**/*.yml
+    - .task/**/*.yaml
+  task:lint:*:
+    label: task:lint:{{ splitList "-taskfile." .FILE | first }}
+    prefix: task:lint:{{ splitList "-taskfile." .FILE | first }}
+    run: when_changed
+    vars:
+      FILE: '{{ index .MATCH 0 }}'
+    cmd: task -a -j -t {{ .FILE }} > /dev/null
+    sources:
+    - "{{ .FILE }}"
+  typos:lint:
+    desc: Checks for typos in text files.
     cmd: typos --force-exclude
+    run: when_changed
+    sources:
+    - ./**/*.*
+    - exclude: ./**/*.gen.go
+    - exclude: ./**/*.sarif
+    - exclude: ./bin/**/*.*
+    - exclude: ./dist/**/*.*
+    - exclude: ./nix/**/*.*
+    - exclude: ./tmp/**/*.*
+    - exclude: .golangci.yaml
   redis:cli:
     desc: Opens a Redis CLI instance towards the Redis proxy.
     interactive: true
@@ -295,6 +300,12 @@ tasks:
     interactive: true
     ignore_error: true
     cmd: flyctl redis proxy
+  docker:run:handler:
+    cmd:
+      task: docker:run
+      vars:
+        DOCKER_RUN_CLI_ARGS: >-
+          -e DATA_PATH=/var/handler
   run:handler:
     desc: Runs the API handler.
     interactive: true
@@ -366,3 +377,6 @@ tasks:
       task -s coverage:unit
       | grcat conf.golang
       | grep -v 100.0%
+  debug:
+    cmd: |-
+      echo "${GOCOVERDIR}"
