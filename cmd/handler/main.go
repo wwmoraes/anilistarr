@@ -22,7 +22,6 @@ import (
 	"github.com/wwmoraes/gotell/logging"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
-	_ "go.uber.org/automaxprocs"
 	"golang.org/x/time/rate"
 	_ "modernc.org/sqlite"
 

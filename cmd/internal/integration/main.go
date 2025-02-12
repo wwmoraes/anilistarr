@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/wwmoraes/gotell/logging"
-	_ "go.uber.org/automaxprocs"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters/cachedtracker"
 	"github.com/wwmoraes/anilistarr/internal/adapters/sources"
