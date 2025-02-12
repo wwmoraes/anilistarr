@@ -7,6 +7,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"net/textproto"
@@ -52,6 +53,21 @@ var version = "0.0.0-unknown"
 //nolint:funlen,maintidx // TODO tidy handler main fn
 func main() {
 	defer process.HandleExit()
+
+	flags := struct {
+		version bool
+	}{
+		version: false,
+	}
+
+	flag.BoolVar(&flags.version, "version", false, "shows version and exits")
+	flag.Parse()
+
+	if flags.version {
+		fmt.Fprintln(os.Stdout, version)
+
+		return
+	}
 
 	ctx := context.Background()
 
