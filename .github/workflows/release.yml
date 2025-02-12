@@ -27,8 +27,6 @@ jobs:
       with:
         install-nix: true
         cache-store: true
-    - name: set golang environment variables
-      uses: wwmoraes/actions/golang/env@master
     - name: cache modules
       uses: pat-s/always-upload-cache@v3
       with:
