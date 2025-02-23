@@ -66,7 +66,7 @@ func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (strin
 	if userID != "" {
 		span.AddEvent("cache hit")
 
-		return userID, span.Assert(err)
+		return userID, span.Assert(nil)
 	}
 
 	span.AddEvent("cache miss")

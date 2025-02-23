@@ -8,6 +8,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"reflect"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -15,8 +16,9 @@ import (
 
 	"github.com/wwmoraes/anilistarr/internal/adapters/cachedtracker"
 	"github.com/wwmoraes/anilistarr/internal/adapters/sources"
+	"github.com/wwmoraes/anilistarr/internal/drivers/animelists"
 	"github.com/wwmoraes/anilistarr/internal/drivers/badger"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/entities"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/process"
 )
@@ -26,7 +28,7 @@ const (
 	coverageUserID   = 9000
 )
 
-//nolint:funlen // TODO refactor integration main func
+//nolint:funlen,maintidx // TODO refactor integration main func
 func main() {
 	defer process.HandleExit()
 
@@ -79,7 +81,7 @@ func main() {
 
 	mediaLister := usecases.MediaList{
 		Tracker: &cachedTracker,
-		Source:  sources.JSON[testdata.Metadata](`memory:///test`),
+		Source:  sources.JSON[animelists.Anilist2TVDBMetadata](`memory:///test`),
 		Store:   store,
 	}
 	defer process.AssertClose(&mediaLister, "failed to close media lister")
@@ -87,12 +89,12 @@ func main() {
 	err = mediaLister.Refresh(ctx, usecases.HTTPGetter(&httpClient{
 		Data: map[string]string{
 			"memory:///test": `[
-				{"source_id": "1", "target_id": "101"},
-				{"source_id": "2", "target_id": "102"},
-				{"source_id": "3", "target_id": "103"},
-				{"source_id": "5", "target_id": "105"},
-				{"source_id": "8", "target_id": "108"},
-				{"source_id": "13", "target_id": "113"}
+				{"anilist_id": 1, "thetvdb_id": 101},
+				{"anilist_id": 2, "thetvdb_id": 102},
+				{"anilist_id": 3, "thetvdb_id": 103},
+				{"anilist_id": 5, "thetvdb_id": 105},
+				{"anilist_id": 8, "thetvdb_id": 108},
+				{"anilist_id": 13, "thetvdb_id": 113}
 			]`,
 		},
 	}))
@@ -107,4 +109,18 @@ func main() {
 	process.Assert(err)
 
 	log.Info("GenerateCustomList", "username", coverageUsername, "list", customList)
+
+	//nolint:mnd // test data
+	wantedCustomList := entities.CustomList{
+		entities.CustomEntry{TvdbID: 101},
+		entities.CustomEntry{TvdbID: 102},
+		entities.CustomEntry{TvdbID: 103},
+		entities.CustomEntry{TvdbID: 105},
+		entities.CustomEntry{TvdbID: 108},
+		entities.CustomEntry{TvdbID: 113},
+	}
+
+	if !reflect.DeepEqual(customList, wantedCustomList) {
+		process.AssertWith(usecases.ErrStatusUnknown, "custom list does not matches expectations")
+	}
 }

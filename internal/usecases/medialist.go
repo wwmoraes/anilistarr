@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -169,7 +170,7 @@ func (lister *MediaList) MapIDs(ctx context.Context, ids []entities.SourceID) ([
 	}
 
 	records, err := lister.Store.GetMediaBulk(ctx, ids)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrStatusNotFound) {
 		return nil, span.Assert(fmt.Errorf("failed to map IDs: %w", err))
 	}
 
