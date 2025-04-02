@@ -404,13 +404,14 @@ linters-settings:
     - w http.ResponseWriter
     - r *http.Request
     ignore-names:
-    - db # database handler/client
-    - fd # file descriptor/handler
-    - id
-    - ok
+    - db # database
+    - fd # file descriptor
+    - fn # function
+    - id # identifier
+    - ok # OK!
     - tt # table test
-    - tx # database transaction
-    - wg # WaitGroup
+    - tx # transaction
+    - wg # wait group
   whitespace:
     multi-func: false
     multi-if: true
