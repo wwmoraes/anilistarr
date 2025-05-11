@@ -16,7 +16,7 @@ externalDocs:
   description: Find out more about the project
   url: http://github.com/wwmoraes/anilistarr
 servers:
-  - url: https://anilistarr.fly.dev
+- url: https://anilistarr.fly.dev
 paths:
   /user/{name}/id:
     get:

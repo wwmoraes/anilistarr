@@ -19,6 +19,7 @@ in mkShell {
 		pkgs.hadolint
 		pkgs.jq
 		pkgs.markdownlint-cli
+		pkgs.moreutils
 		pkgs.nur.repos.wwmoraes.codecov-cli-bin
 		pkgs.typos
 		pkgs.unstable.cocogitto
@@ -28,6 +29,7 @@ in mkShell {
 		pkgs.unstable.golangci-lint
 		pkgs.unstable.hadolint-sarif
 		pkgs.unstable.sarif-fmt
+		pkgs.yamlfmt
 	] ++ lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
 	] ++ lib.optionals (builtins.getEnv "CI" == "") [ # local-only
 		pkgs.curl

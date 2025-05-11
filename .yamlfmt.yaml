@@ -1,0 +1,13 @@
+exclude:
+- .direnv
+- .task/remote
+- tmp
+
+formatter:
+  type: basic
+  indentless_arrays: true
+  retain_line_breaks_single: true
+  trim_trailing_whitespace: true
+  scan_folded_as_literal: true
+
+gitignore_excludes: true

@@ -249,6 +249,7 @@ tasks:
     - task: style:lint
     - task: task:lint
     - task: typos:lint
+    - task: yaml:lint
   style:lint:
     run: when_changed
     cmd: editorconfig-checker
@@ -290,6 +291,13 @@ tasks:
     - exclude: ./nix/**/*.*
     - exclude: ./tmp/**/*.*
     - exclude: .golangci.yaml
+  yaml:lint:
+    desc: Checks for style deviations in YAML files.
+    cmd: yamlfmt -lint . 2>&1 | tee /dev/tty | ifne false
+    run: when_changed
+    sources:
+    - ./**/*.yml
+    - ./**/*.yaml
   redis:cli:
     desc: Opens a Redis CLI instance towards the Redis proxy.
     interactive: true

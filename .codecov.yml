@@ -22,7 +22,6 @@ coverage:
         flags:
         - unit
 
-
 flag_management:
   default_rules:
     carryforward: true
