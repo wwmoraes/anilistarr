@@ -2,7 +2,7 @@
 // Anilist's GraphQL API.
 package anilist
 
-//go:generate go run github.com/Khan/genqlient@latest
+//go:generate go run github.com/Khan/genqlient
 
 import (
 	"context"

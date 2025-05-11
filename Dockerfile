@@ -7,7 +7,7 @@ FROM golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} AS build
 
 WORKDIR /src
 
-COPY go.mod go.sum ./
+COPY go.mod go.sum tools.go ./
 RUN go mod download -x
 
 COPY *.go .

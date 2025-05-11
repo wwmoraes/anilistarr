@@ -11,8 +11,6 @@
 	inherit (pkgs) lib mkShell;
 in mkShell {
 	packages = [
-		## TODO github.com/Khan/genqlient
-		## TODO github.com/wadey/gocovmerge
 		pkgs.editorconfig-checker
 		pkgs.git
 		pkgs.go-junit-report
@@ -22,7 +20,6 @@ in mkShell {
 		pkgs.jq
 		pkgs.markdownlint-cli
 		pkgs.nur.repos.wwmoraes.codecov-cli-bin
-		pkgs.oapi-codegen
 		pkgs.typos
 		pkgs.unstable.cocogitto
 		pkgs.unstable.container-structure-test
@@ -33,8 +30,6 @@ in mkShell {
 		pkgs.unstable.sarif-fmt
 	] ++ lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
 	] ++ lib.optionals (builtins.getEnv "CI" == "") [ # local-only
-		## TODO pkgsite
-		## TODO https://github.com/xo/xo
 		pkgs.curl
 		pkgs.docker-client
 		pkgs.eclint
@@ -46,7 +41,6 @@ in mkShell {
 		pkgs.nur.repos.wwmoraes.structurizr-site-generatr
 		pkgs.plantuml
 		pkgs.redis
-		pkgs.sqlc
 		pkgs.unstable.delve
 		pkgs.unstable.go-cover-treemap
 		pkgs.unstable.gopls

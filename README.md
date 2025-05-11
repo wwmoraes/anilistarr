@@ -85,7 +85,6 @@ file. The Docker image provided contains the handler alone, for instance.
 - [Golang](https://go.dev) - Base language
 - [Chi](https://go-chi.io) - net/HTTP-compatible router that doesn't suck
 - [genqlient](https://github.com/Khan/genqlient) - type-safe GraphQL client generator
-- [xo](https://github.com/xo/xo) - SQL client code generator
 - [Open Telemetry](https://opentelemetry.io) - Observability
 
 ## 🧑‍💻 Authors

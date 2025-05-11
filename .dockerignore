@@ -23,11 +23,11 @@ coverage
 coverage.out
 dist
 docs/site
-internal/**/*.graphql
-internal/**/genqlient.yaml
 sonar-project.properties
 src
 tmp
 
+!internal/**/*.graphql
+!internal/**/genqlient.yaml
 !sqlc.yaml
 !swagger.yaml
