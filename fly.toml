@@ -8,12 +8,10 @@ primary_region = "ams"
 
 [env]
 ANILIST_GRAPHQL_ENDPOINT = "https://graphql.anilist.co"
-DATA_PATH = "/var/handler"
+DATA_PATH = "/var/tmp/handler"
 OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
 OTEL_EXPORTER_OTLP_ENDPOINT = "https://otlp-gateway-prod-eu-west-0.grafana.net/otlp"
 OTEL_RESOURCE_ATTRIBUTES = "deployment.environment=production"
-REDIS_ADDRESS = "fly-anilistarr.upstash.io:6379"
-REDIS_USERNAME = "default"
 
 [build.args]
 VERSION = "0.1.0-rc.1"
@@ -21,7 +19,7 @@ VERSION = "0.1.0-rc.1"
 [http_service]
 internal_port = 8080
 force_https = true
-auto_stop_machines = true
+auto_stop_machines = "suspend"
 auto_start_machines = true
 min_machines_running = 0
 processes = ["app"]
@@ -29,3 +27,11 @@ processes = ["app"]
 [metrics]
 port = 9091 # default for most prometheus clients
 path = "/metrics" # default for most prometheus clients
+
+[mounts]
+auto_extend_size_limit = "5GB"
+auto_extend_size_threshold = 80
+destination = "/var/tmp/handler"
+initial_size = "1GB"
+snapshot_retention = 1
+source = "handler"

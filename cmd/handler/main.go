@@ -26,11 +26,9 @@ import (
 	_ "modernc.org/sqlite"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters/cachedtracker"
-	"github.com/wwmoraes/anilistarr/internal/adapters/chaincache"
 	"github.com/wwmoraes/anilistarr/internal/adapters/sources"
 	"github.com/wwmoraes/anilistarr/internal/api"
 	"github.com/wwmoraes/anilistarr/internal/drivers/animelists"
-	"github.com/wwmoraes/anilistarr/internal/drivers/redis"
 	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/process"
@@ -89,7 +87,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	log.Info("staring up", "name", serviceName, "version", version)
+	dataPath := os.Getenv("DATA_PATH")
 
 	host := os.Getenv("HOST")
 	if host == "" {
@@ -101,34 +99,25 @@ func main() {
 		port = "8080"
 	}
 
-	dataPath := os.Getenv("DATA_PATH")
+	log.Info(
+		"staring up",
+		"name", serviceName,
+		"version", version,
+		"data path", dataPath,
+		"host", host,
+		"port", port,
+	)
 
 	store, err := newStore(dataPath)
-	process.Assert(err)
-
-	redisAddress := os.Getenv("REDIS_ADDRESS")
-	redisPassword := os.Getenv("REDIS_PASSWORD")
-	redisUsername := os.Getenv("REDIS_USERNAME")
-
-	redisCache, err := redis.New(&redis.Options{
-		Addr:       redisAddress,
-		ClientName: serviceName,
-		Password:   redisPassword,
-		Username:   redisUsername,
-	})
 	process.Assert(err)
 
 	fileCache, err := newCache(dataPath)
 	process.Assert(err)
 
-	cache := chaincache.ChainCache{
-		redisCache,
-		fileCache,
-	}
-	defer process.AssertClose(cache, "failed to close cache")
+	defer process.AssertClose(fileCache, "failed to close cache")
 
 	tracker := cachedtracker.CachedTracker{
-		Cache: cache,
+		Cache: fileCache,
 		Tracker: anilist.New(
 			os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
 			anilist.WithPageSize(anilistPageSize),

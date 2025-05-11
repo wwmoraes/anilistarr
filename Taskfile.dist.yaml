@@ -13,7 +13,6 @@ includes:
       NAME: wwmoraes/anilistarr
       PLATFORMS: >-
         linux/amd64
-        linux/arm/v7
         linux/arm64
       BUILD_ARGS: >-
         VERSION={{ .VERSION | q }}
@@ -308,12 +307,17 @@ tasks:
     interactive: true
     ignore_error: true
     cmd: flyctl redis proxy
+  docker:test:handler:
+    cmds:
+    - touch Dockerfile
+    - task: docker:load
+    - task: docker:test
   docker:run:handler:
     cmd:
       task: docker:run
-      vars:
-        DOCKER_RUN_CLI_ARGS: >-
-          -e DATA_PATH=/var/handler
+      # vars:
+      #   DOCKER_RUN_CLI_ARGS: >-
+      #     -e DATA_PATH=/var/tmp/handler
   run:handler:
     desc: Runs the API handler.
     interactive: true
@@ -335,13 +339,6 @@ tasks:
       task: golang:test:merge:all
       vars:
         SOURCES: '*.part'
-  ## TODO move to .task/docker.yaml
-  test:container:
-    desc: Tests the generated container image structure.
-    cmd: >-
-      container-structure-test test
-      -c container-structure-test.yaml
-      -i wwmoraes/anilistarr:edge
   test:integration:
     desc: Runs instrumented tests.
     cmd:
@@ -385,6 +382,3 @@ tasks:
       task -s coverage:unit
       | grcat conf.golang
       | grep -v 100.0%
-  debug:
-    cmd: |-
-      echo "${GOCOVERDIR}"
