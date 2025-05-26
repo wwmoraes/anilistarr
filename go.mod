@@ -1,6 +1,6 @@
 module github.com/wwmoraes/anilistarr
 
-go 1.22.5
+go 1.23.0
 
 require (
 	dario.cat/mergo v1.0.1
@@ -15,9 +15,9 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/wwmoraes/gotell v0.4.0
 	go.etcd.io/bbolt v1.3.11
-	go.opentelemetry.io/otel v1.31.0
+	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/sdk v1.31.0
-	go.opentelemetry.io/otel/trace v1.31.0
+	go.opentelemetry.io/otel/trace v1.36.0
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/mod v0.21.0
 	golang.org/x/sync v0.8.0
@@ -56,6 +56,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/vektah/gqlparser/v2 v2.5.18 // indirect
 	go.opencensus.io v0.24.0 // indirect
+	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.56.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.56.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.56.0 // indirect
@@ -64,7 +65,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.31.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.31.0 // indirect
 	go.opentelemetry.io/otel/log v0.7.0 // indirect
-	go.opentelemetry.io/otel/metric v1.31.0 // indirect
+	go.opentelemetry.io/otel/metric v1.36.0 // indirect
 	go.opentelemetry.io/otel/sdk/log v0.7.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.31.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
