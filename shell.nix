@@ -30,6 +30,7 @@ in mkShell {
 		pkgs.unstable.hadolint-sarif
 		pkgs.unstable.sarif-fmt
 		pkgs.yamlfmt
+		pkgs.yq-go
 	] ++ lib.optionals (builtins.getEnv "CI" != "") [ # CI-only
 	] ++ lib.optionals (builtins.getEnv "CI" == "") [ # local-only
 		pkgs.curl
