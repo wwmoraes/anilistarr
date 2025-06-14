@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/bbolt"
+	bolterrors "go.etcd.io/bbolt/errors"
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/bolt"
 	"github.com/wwmoraes/anilistarr/internal/testdata"
@@ -188,7 +189,7 @@ func TestBolt_SetString(t *testing.T) {
 					ReadOnly:     true,
 				},
 			},
-			wantError: bbolt.ErrDatabaseReadOnly,
+			wantError: bolterrors.ErrDatabaseReadOnly,
 		},
 	}
 

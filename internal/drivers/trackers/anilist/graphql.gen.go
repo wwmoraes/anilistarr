@@ -117,7 +117,7 @@ func (v *__GetWatchingInput) GetPage() int { return v.Page }
 // GetPerPage returns __GetWatchingInput.PerPage, and is useful for accessing the field via an interface.
 func (v *__GetWatchingInput) GetPerPage() int { return v.PerPage }
 
-// The query or mutation executed by GetUserByName.
+// The query executed by GetUserByName.
 const GetUserByName_Operation = `
 query GetUserByName ($name: String!) {
 	User(name: $name) {
@@ -130,7 +130,7 @@ func GetUserByName(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	name string,
-) (*GetUserByNameResponse, error) {
+) (data_ *GetUserByNameResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "GetUserByName",
 		Query:  GetUserByName_Operation,
@@ -138,10 +138,9 @@ func GetUserByName(
 			Name: name,
 		},
 	}
-	var err_ error
 
-	var data_ GetUserByNameResponse
-	resp_ := &graphql.Response{Data: &data_}
+	data_ = &GetUserByNameResponse{}
+	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
 		ctx_,
@@ -149,10 +148,10 @@ func GetUserByName(
 		resp_,
 	)
 
-	return &data_, err_
+	return data_, err_
 }
 
-// The query or mutation executed by GetWatching.
+// The query executed by GetWatching.
 const GetWatching_Operation = `
 query GetWatching ($userId: Int!, $page: Int!, $perPage: Int!) {
 	Page(page: $page, perPage: $perPage) {
@@ -175,7 +174,7 @@ func GetWatching(
 	userId int,
 	page int,
 	perPage int,
-) (*GetWatchingResponse, error) {
+) (data_ *GetWatchingResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "GetWatching",
 		Query:  GetWatching_Operation,
@@ -185,10 +184,9 @@ func GetWatching(
 			PerPage: perPage,
 		},
 	}
-	var err_ error
 
-	var data_ GetWatchingResponse
-	resp_ := &graphql.Response{Data: &data_}
+	data_ = &GetWatchingResponse{}
+	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
 		ctx_,
@@ -196,5 +194,5 @@ func GetWatching(
 		resp_,
 	)
 
-	return &data_, err_
+	return data_, err_
 }

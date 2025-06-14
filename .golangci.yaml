@@ -222,19 +222,19 @@ linters-settings:
     no-extra-aliases: true
     no-unaliased: false
     alias:
-    - alias: pcsngv1alpha
-      pkg: github.com/wwmoraes/anilistarr/internal/drivers/grpc/pcsng/v1alpha
-    - alias: semconv
-      pkg: go.opentelemetry.io/otel/semconv/v1.24.0
+    # avoids clashing with the main badger package
+    - alias: badgerstore
+      pkg: github.com/ostafen/clover/v2/store/badger
+    - alias: bolterrors
+      pkg: go.etcd.io/bbolt/errors
     - alias: otelruntime
       pkg: go.opentelemetry.io/contrib/instrumentation/runtime
     - alias: sdkmetric
       pkg: go.opentelemetry.io/otel/sdk/metric
     - alias: sdktrace
       pkg: go.opentelemetry.io/otel/sdk/trace
-    # avoids clashing with the main badger package
-    - alias: badgerstore
-      pkg: github.com/ostafen/clover/v2/store/badger
+    - alias: semconv
+      pkg: go.opentelemetry.io/otel/semconv/v1.24.0
     - alias: telemetry
       pkg: github.com/wwmoraes/gotell
   inamedparam: {}
