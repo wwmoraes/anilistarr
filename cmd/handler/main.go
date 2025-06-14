@@ -147,7 +147,7 @@ func main() {
 		"X-Frame-Options":              []string{"DENY"},
 	}))
 	router.Use(Limiter(rate.NewLimiter(
-		rate.Every(apiInboundRateInterval),
+		rate.Limit(apiInboundRateBurst)*rate.Every(apiInboundRateInterval),
 		apiInboundRateBurst,
 	)))
 

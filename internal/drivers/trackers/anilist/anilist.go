@@ -82,7 +82,7 @@ func New(endpoint string, opts ...with.Option[Options]) *Tracker {
 			endpoint,
 			&RatedClient{
 				Doer:    options.Client,
-				Limiter: rate.NewLimiter(rate.Every(interval), requests),
+				Limiter: rate.NewLimiter(rate.Limit(requests)*rate.Every(interval), requests),
 			},
 		),
 		PageSize: options.PageSize,
