@@ -21,6 +21,7 @@ in mkShell {
 		pkgs.markdownlint-cli
 		pkgs.moreutils
 		pkgs.nur.repos.wwmoraes.codecov-cli-bin
+		pkgs.ripgrep
 		pkgs.typos
 		pkgs.unstable.cocogitto
 		pkgs.unstable.container-structure-test
