@@ -51,4 +51,11 @@ in mkShell {
 		pkgs.unstable.gotests
 		pkgs.unstable.gotools
 	];
+
+	shellHook = ''
+		if [ -n "$CI" ]; then
+			export GOCACHE=$(go env GOCACHE)
+			export GOMODCACHE=$(go env GOMODCACHE)
+		fi
+	'';
 }
