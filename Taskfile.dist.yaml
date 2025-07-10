@@ -172,9 +172,9 @@ tasks:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
       CODECOV_NAME: unit
     cmds:
-    - task: golang:test:junit:unit
+    - task: golang:test:junit:unit.part
     - task: codecov:report:flagged:unit:coverage/unit.part.txt
-    - task: codecov:report:tests:unit:coverage/unit.junit.xml
+    - task: codecov:report:tests:unit:coverage/unit.part.junit.xml
   coverage:upload:integration:
     summary: Uploads the integration test coverage data to Codecov.
     deps:
@@ -186,9 +186,9 @@ tasks:
       CODECOV_TOKEN: '{{ .CODECOV_TOKEN }}'
       CODECOV_NAME: integration
     cmds:
-    - task: golang:test:junit:integration
+    - task: golang:test:junit:integration.part
     - task: codecov:report:flagged:integration:coverage/integration.part.txt
-    - task: codecov:report:tests:integration:coverage/integration.junit.xml
+    - task: codecov:report:tests:integration:coverage/integration.part.junit.xml
   # db:
   #   desc: Creates a blank SQLite database file from the schema.
   #   cmd: sqlite3 anilist-tvdb.db < db/schema.sqlite.sql
