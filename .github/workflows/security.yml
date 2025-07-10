@@ -51,12 +51,14 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: initialize
       uses: github/codeql-action/init@v3
       with:
         languages: go
     - name: build
-      run: task --yes build
+      run: task build
     - name: analysis
       uses: github/codeql-action/analyze@v3
       with:
@@ -71,8 +73,14 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        install: true
+    - name: docker builder inspect
+      run: docker builder inspect --debug
     - name: cache build
       uses: pat-s/always-upload-cache@v3
       with:
@@ -86,7 +94,7 @@ jobs:
         # yamllint enable rule:line-length
     - name: build image
       run: >-
-        task --yes docker:build --
+        task docker:build --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
     # fix to prevent ever-growing caches

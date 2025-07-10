@@ -27,6 +27,8 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: cache modules
       uses: pat-s/always-upload-cache@v3
       with:
@@ -60,6 +62,8 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: set up docker buildx
@@ -85,7 +89,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: push image
       run: >-
-        task --yes docker:push --
+        task docker:push --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
     # fix to prevent ever-growing caches

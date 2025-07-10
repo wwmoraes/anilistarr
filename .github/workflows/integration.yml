@@ -60,6 +60,8 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: cache modules
       uses: pat-s/always-upload-cache@v3
       with:
@@ -79,7 +81,7 @@ jobs:
           ${{ runner.os }}-build-${{ hashFiles('**/*.go') }}
           ${{ runner.os }}-build-
     - name: build
-      run: task --yes build
+      run: task build
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -90,6 +92,8 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: cache modules
       uses: pat-s/always-upload-cache@v3
       with:
@@ -109,7 +113,7 @@ jobs:
           ${{ runner.os }}-lint-${{ hashFiles('.golangci.yaml') }}
           ${{ runner.os }}-lint-
     - name: run lint
-      run: task --yes --silent --output prefixed lint
+      run: task --silent --output prefixed lint
       continue-on-error: true
     - name: Upload golangci-lint report
       uses: github/codeql-action/upload-sarif@v3
@@ -133,6 +137,8 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: cache modules
       uses: pat-s/always-upload-cache@v3
       with:
@@ -143,18 +149,10 @@ jobs:
           ${{ runner.os }}-modules-
     - name: download modules
       run: go mod download
-    - name: cache test
-      uses: pat-s/always-upload-cache@v3
-      with:
-        path: ${GOCACHE}
-        key: ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
-        restore-keys: |
-          ${{ runner.os }}-test-${{ hashFiles('**/*.go') }}
-          ${{ runner.os }}-test-
     - name: run test
-      run: task --yes test
+      run: task test
     - name: upload coverage report
-      run: task --yes coverage:upload
+      run: task coverage:upload
       if: always()
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -171,6 +169,8 @@ jobs:
       with:
         install-nix: true
         cache-store: true
+    - name: pre-fetch taskfile
+      run: task --download --yes
     - name: set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: set up docker buildx
@@ -188,7 +188,7 @@ jobs:
         # yamllint enable rule:line-length
     - name: build container image
       run: >-
-        task --yes docker:build --
+        task docker:build --
         --cache-to type=local,mode=max,dest=${{ runner.temp }}/.buildx-cache-new
         --cache-from type=local,src=${{ runner.temp }}/.buildx-cache
     # fix to prevent ever-growing caches
@@ -199,4 +199,4 @@ jobs:
         rm -rf ${{ runner.temp }}/.buildx-cache
         mv ${{ runner.temp }}/.buildx-cache-new ${{ runner.temp }}/.buildx-cache
     - name: test image
-      run: task --yes docker:test
+      run: task docker:test
