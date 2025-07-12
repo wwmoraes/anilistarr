@@ -80,7 +80,11 @@ func (db *SQLite) GetString(ctx context.Context, key string) (string, error) {
 }
 
 // SetString stores value for key. It overrides any previously existing value.
-func (db *SQLite) SetString(ctx context.Context, key, value string, _ ...usecases.CacheOption) error {
+func (db *SQLite) SetString(
+	ctx context.Context,
+	key, value string,
+	_ ...usecases.CacheOption,
+) error {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 

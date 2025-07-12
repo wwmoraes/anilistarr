@@ -98,7 +98,11 @@ func (client *Badger) GetString(ctx context.Context, key string) (string, error)
 }
 
 // SetString stores value for key. It overrides any previously stored value.
-func (client *Badger) SetString(ctx context.Context, key, value string, options ...usecases.CacheOption) error {
+func (client *Badger) SetString(
+	ctx context.Context,
+	key, value string,
+	options ...usecases.CacheOption,
+) error {
 	_, span := telemetry.Start(ctx)
 	defer span.End()
 

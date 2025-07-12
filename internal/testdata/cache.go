@@ -25,7 +25,11 @@ func (cache *MockCache) GetString(ctx context.Context, key string) (string, erro
 	return args.String(0), args.Error(1)
 }
 
-func (cache *MockCache) SetString(ctx context.Context, key, value string, options ...usecases.CacheOption) error {
+func (cache *MockCache) SetString(
+	ctx context.Context,
+	key, value string,
+	options ...usecases.CacheOption,
+) error {
 	args := cache.Called(ctx, key, value, options)
 
 	return args.Error(0)

@@ -76,7 +76,11 @@ func (chain ChainCache) GetString(ctx context.Context, key string) (string, erro
 }
 
 // SetString sets they key-value pair to the first cache in the chain.
-func (chain ChainCache) SetString(ctx context.Context, key, value string, options ...usecases.CacheOption) error {
+func (chain ChainCache) SetString(
+	ctx context.Context,
+	key, value string,
+	options ...usecases.CacheOption,
+) error {
 	if len(chain) == 0 {
 		return fmt.Errorf("%w: %s", usecases.ErrStatusFailedPrecondition, "no caches in the chain")
 	}

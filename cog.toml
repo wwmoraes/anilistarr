@@ -39,13 +39,12 @@ env -u GOFLAGS golangci-lint run
 script = """#!/usr/bin/env sh
 set -eu
 
+nix flake check -L
 env -u GOFLAGS make dist image
 """
 
 [changelog]
-authors = [
-  { signature = "William Artero", username = "wwmoraes" },
-]
+authors = [{ signature = "William Artero", username = "wwmoraes" }]
 owner = "wwmoraes"
 package_template = "package_remote"
 path = "CHANGELOG.md"

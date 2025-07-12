@@ -21,7 +21,6 @@ coverage:
       unit:
         flags:
         - unit
-
 flag_management:
   default_rules:
     carryforward: true
@@ -38,7 +37,6 @@ flag_management:
   individual_flags:
   - name: integration
   - name: unit
-
 component_management:
   default_rules:
     statuses:

@@ -66,7 +66,11 @@ func (cache *Redis) GetString(ctx context.Context, key string) (string, error) {
 
 // SetString stores value for key in the cache. It supports entries with a set
 // expiration time by using [adapters.WithTTL] option.
-func (cache *Redis) SetString(ctx context.Context, key, value string, options ...usecases.CacheOption) error {
+func (cache *Redis) SetString(
+	ctx context.Context,
+	key, value string,
+	options ...usecases.CacheOption,
+) error {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 

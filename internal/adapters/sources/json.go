@@ -24,7 +24,10 @@ func (source JSON[F]) String() string {
 }
 
 // Fetch retrieves and parses metadata from the provider URI.
-func (source JSON[F]) Fetch(ctx context.Context, client usecases.Getter) ([]usecases.Metadata, error) {
+func (source JSON[F]) Fetch(
+	ctx context.Context,
+	client usecases.Getter,
+) ([]usecases.Metadata, error) {
 	_, span := telemetry.Start(ctx)
 	defer span.End()
 
@@ -34,7 +37,9 @@ func (source JSON[F]) Fetch(ctx context.Context, client usecases.Getter) ([]usec
 
 	data, err := client.Get(ctx, source.String())
 	if err != nil {
-		return nil, span.Assert(errors.Join(usecases.ErrStatusUnavailable, fmt.Errorf("failed to get JSON: %w", err)))
+		return nil, span.Assert(
+			errors.Join(usecases.ErrStatusUnavailable, fmt.Errorf("failed to get JSON: %w", err)),
+		)
 	}
 
 	metadata, err := unmarshalJSON[F](data)
@@ -50,7 +55,10 @@ func unmarshalJSON[F usecases.Metadata](data []byte) ([]usecases.Metadata, error
 
 	err := json.Unmarshal(data, &dataEntries)
 	if err != nil {
-		return nil, errors.Join(usecases.ErrStatusFailedPrecondition, fmt.Errorf("failed to unmarshal JSON: %w", err))
+		return nil, errors.Join(
+			usecases.ErrStatusFailedPrecondition,
+			fmt.Errorf("failed to unmarshal JSON: %w", err),
+		)
 	}
 
 	entries := make([]usecases.Metadata, 0, len(dataEntries))

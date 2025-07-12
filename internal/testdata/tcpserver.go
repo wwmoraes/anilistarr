@@ -14,7 +14,6 @@ type TCPServer struct {
 }
 
 func (server *TCPServer) Start(ctx context.Context) {
-
 	go func() {
 		for {
 			select {

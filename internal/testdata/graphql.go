@@ -9,8 +9,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var _ http.Handler = (*MockGraphqlHandler)(nil)
-var _ http.RoundTripper = (*MockHTTPRoundTripper)(nil)
+var (
+	_ http.Handler      = (*MockGraphqlHandler)(nil)
+	_ http.RoundTripper = (*MockHTTPRoundTripper)(nil)
+)
 
 type MockGraphqlHandler struct {
 	mock.Mock
