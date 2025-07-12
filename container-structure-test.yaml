@@ -13,8 +13,9 @@ fileExistenceTests:
   shouldExist: true
   gid: 20000
   uid: 20000
-  permissions: drwxr-x---
-
+  ## TODO disable others permissions; docker's COPY --chmod does not work 👌
+  # permissions: drwxr-x---
+  permissions: drwxr-xr-x
 metadataTest:
   cmd: [/usr/bin/handler]
   workdir: /

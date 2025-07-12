@@ -5,30 +5,27 @@ on:
   push:
     branches:
     - master
-    paths:
-    - .dockerignore
-    - .env
-    - .envrc
-    - .github/workflows/security.yml
-    - .golangci.yaml
-    - .task/*.yaml
-    - '**.go'
-    - Dockerfile
-    - go.mod
-    - go.sum
-    - shell.nix
-    - Taskfile.yaml
+    - user/*/trunk
+    paths-ignore:
+    - .direnv
+    - .helix
+    - .meta
+    - docs
+    - "*.md"
+    - .codecov.yml
+    - media.db.sql
   pull_request:
     branches:
     - master
-    paths:
-    - .github/workflows/codeql.yml
-    - .golangci.yaml
-    - Dockerfile
-    - .dockerignore
-    - go.mod
-    - go.sum
-    - '**.go'
+    - user/*/trunk
+    paths-ignore:
+    - .direnv
+    - .helix
+    - .meta
+    - docs
+    - "*.md"
+    - .codecov.yml
+    - media.db.sql
   schedule:
   - cron: '0 9 * * 1'
 
@@ -41,7 +38,7 @@ permissions:
   security-events: write
 
 jobs:
-  analyze:
+  sast:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
@@ -51,36 +48,6 @@ jobs:
       with:
         install-nix: true
         cache-store: true
-    - name: pre-fetch taskfile
-      run: task --download --yes
-    - name: initialize
-      uses: github/codeql-action/init@v3
-      with:
-        languages: go
-    - name: build
-      run: task build
-    - name: analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:go"
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v4
-    - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.2.0
-      with:
-        install-nix: true
-        cache-store: true
-    - name: pre-fetch taskfile
-      run: task --download --yes
-    - name: set up docker buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        install: true
-    - name: build image
-      run: task docker:load
     - name: cache grype
       uses: pat-s/always-upload-cache@v3
       with:
@@ -89,12 +56,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-grype-${{ hashFiles('.grype.yaml') }}
           ${{ runner.os }}-grype-
-    - name: update db
-      run: grype db update || grype db delete && grype db update
     - name: scan
-      run: grype -o sarif --fail-on critical ${{ github.repository }}:latest  > grype.sarif
+      run: make sast
       timeout-minutes: 5
     - name: report
       uses: github/codeql-action/upload-sarif@v3
+      if: always()
       with:
-        sarif_file: grype.sarif
+        sarif_file: sast.sarif

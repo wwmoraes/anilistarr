@@ -1,19 +1,13 @@
 *.env.local
 *.sarif
+*.tar
 .direnv
-.task/checksum
-.task/remote
-.task/timestamp
-/bin/
+/bin
 /build
-/coverage/
-/dist/
+/coverage
+/dist
 /docs/*.png
 /docs/site
-
-# go-task local override
-[Tt]askfile.yaml
-[Tt]askfile.yml
 
 # Binaries for programs and plugins
 *.exe
@@ -21,15 +15,6 @@
 *.dll
 *.so
 *.dylib
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
 
 # Go workspace file
 go.work
@@ -41,7 +26,6 @@ go.work
 
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*

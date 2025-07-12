@@ -11,6 +11,7 @@
 	inherit (pkgs) lib mkShell;
 in mkShell {
 	packages = [
+		pkgs.checkmake
 		pkgs.editorconfig-checker
 		pkgs.git
 		pkgs.go-junit-report
@@ -57,5 +58,7 @@ in mkShell {
 			export GOCACHE=$(go env GOCACHE)
 			export GOMODCACHE=$(go env GOMODCACHE)
 		fi
+
+		cog install-hook --all --overwrite
 	'';
 }

@@ -8,7 +8,6 @@ post_bump_hooks = [
   "goreleaser release --clean --release-notes CHANGELOG.md",
 ]
 pre_bump_hooks = [
-  "task check",
   "goreleaser check",
   "goreleaser healthcheck",
   "goreleaser build --clean",
@@ -18,20 +17,30 @@ tag_prefix = "v"
 [git_hooks.commit-msg]
 script = """#!/usr/bin/env sh
 grep -q "^fixup! " "$1" || cog verify --file "$1"
-git interpret-trailers --in-place --trailer sign --trim-empty "$1"
+git interpret-trailers --in-place --trailer signer --trailer patch-stack --trim-empty "$1"
 """
 
 [git_hooks.post-checkout]
-script = "task --download --yes"
-
-[git_hooks.post-commit]
-script = "tput bel || true"
+script = """make configure"""
 
 [git_hooks.pre-commit]
-script = "task --yes git:hooks:pre-commit"
+script = """#!/usr/bin/env sh
+set -eu
+
+checkmake Makefile
+hadolint Dockerfile
+editorconfig-checker
+markdownlint "**/*.md"
+env -u GOFLAGS make generate
+env -u GOFLAGS golangci-lint run
+"""
 
 [git_hooks.pre-push]
-script = "task --yes git:hooks:pre-push"
+script = """#!/usr/bin/env sh
+set -eu
+
+env -u GOFLAGS make dist image
+"""
 
 [changelog]
 authors = [

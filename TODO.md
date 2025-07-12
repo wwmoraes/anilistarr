@@ -10,6 +10,10 @@
 - [ ] feat: add support for anime-lists <https://github.com/Anime-Lists/anime-lists>
 - [ ] chore: PoC zerolog <https://github.com/go-logr/zerologr>
 
+## snippets
+
+- `gotests -w -exported -parallel -template_dir .meta/gotests/templates TARGET`
+
 ## production
 
 - <https://fly.io/docs/postgres/>
