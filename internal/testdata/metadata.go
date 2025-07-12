@@ -4,9 +4,7 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-var (
-	_ usecases.Metadata = (*Metadata)(nil)
-)
+var _ usecases.Metadata = (*Metadata)(nil)
 
 //nolint:tagliatelle // JSON tags must match the upstream naming convention
 type Metadata struct {

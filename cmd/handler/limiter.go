@@ -34,9 +34,14 @@ func Limiter(limiter *rate.Limiter) func(next http.Handler) http.Handler {
 
 			if reservation.Delay() > 0 {
 				reservation.Cancel()
-				w.Header().Add("Retry-After", strconv.FormatFloat(math.Ceil(reservation.Delay().Seconds()), 'f', 0, 64))
+				w.Header().
+					Add("Retry-After", strconv.FormatFloat(math.Ceil(reservation.Delay().Seconds()), 'f', 0, 64))
 				w.WriteHeader(http.StatusTooManyRequests)
-				http.Error(w, usecases.ErrStatusResourceExhausted.Error(), http.StatusTooManyRequests)
+				http.Error(
+					w,
+					usecases.ErrStatusResourceExhausted.Error(),
+					http.StatusTooManyRequests,
+				)
 				span.RecordError(usecases.ErrStatusResourceExhausted)
 
 				return

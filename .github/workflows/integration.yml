@@ -1,5 +1,4 @@
 name: Integration
-
 # yamllint disable-line rule:truthy
 on:
   push:
@@ -33,11 +32,9 @@ on:
 permissions:
   contents: read
   security-events: write
-
 defaults:
   run:
     shell: bash
-
 jobs:
   integrate:
     runs-on: ubuntu-latest

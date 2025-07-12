@@ -31,7 +31,10 @@ func (tracker *memoryTracker) GetUserID(_ context.Context, name string) (string,
 }
 
 // GetMediaListIDs retrieves the media IDs of a registered user
-func (tracker *memoryTracker) GetMediaListIDs(_ context.Context, userID string) ([]entities.SourceID, error) {
+func (tracker *memoryTracker) GetMediaListIDs(
+	_ context.Context,
+	userID string,
+) ([]entities.SourceID, error) {
 	if tracker.MediaLists == nil {
 		return nil, usecases.ErrStatusFailedPrecondition
 	}

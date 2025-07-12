@@ -1,8 +1,10 @@
-# yaml-language-server: $schema=https://github.com/wwmoraes/kaizen/raw/master/schemas/goreleaser.schema.json
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
 project_name: anilistarr
 before:
   hooks:
-  - task check
+  - ./.git/hooks/pre-commit
+  - nix flake check -L
 builds:
 - id: handler
   main: ./cmd/handler
@@ -10,7 +12,7 @@ builds:
   flags:
   - -trimpath
   ldflags:
-  - -s -w -X main.build={{.Version}}
+  - -s -w -X main.version={{.Version}}
   env:
   - CGO_ENABLED=0
   goos:
@@ -18,13 +20,12 @@ builds:
   - darwin
   goarch:
   - amd64
-  - arm
   - arm64
-  goarm:
-  - "7"
   ignore:
   - goos: darwin
     goarch: arm
+  - goos: darwin
+    goarch: amd64
   - goos: darwin
     goarch: "386"
 checksum:
@@ -33,7 +34,7 @@ gomod:
   proxy: true
   mod: readonly
 snapshot:
-  name_template: "{{- .Version -}}+{{ .FullCommit }}"
+  version_template: "{{- .RawVersion -}}+{{ .FullCommit }}"
 changelog:
   disable: true
 release:

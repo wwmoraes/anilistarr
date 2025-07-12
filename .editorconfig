@@ -1,18 +1,11 @@
 [*]
-indent_style = tab
-# indent_size = 2
-end_of_line = lf
 charset = utf-8
-trim_trailing_whitespace = true
-insert_final_newline = true
-
-[.vscode/*.json]
-insert_final_newline = false
-
-[*.md]
-indent_style = space
+end_of_line = lf
 indent_size = 2
-trim_trailing_whitespace = false
+indent_style = tab
+insert_final_newline = true
+tab_width = 2
+trim_trailing_whitespace = true
 
 [*.{puml,yaml,yml,json,toml,dsl,graphql}]
 indent_style = space
@@ -22,30 +15,41 @@ indent_size = 2
 indent_style = space
 indent_size = 2
 
+## 2-width tab convention
+
+## 4-width tab convention
 [Makefile]
+indent_size = tab
 indent_style = tab
+tab_width = 4
 
-[*.mk]
-indent_style = tab
+## 2 spaces convention
+[*.{json,nix,toml,yaml,yaml.gotmpl,yml}]
+indent_size = 2
+indent_style = space
+tab_width = 2
 
-[*.go]
-indent_style = tab
+## 4 spaces convention
+[*.{fish}]
+indent_size = 4
+indent_style = space
+tab_width = 4
 
-[go.mod]
-indent_style = tab
+## formatted automatically by treefmt
+[*.md]
+indent_size = unset
+indent_style = unset
+tab_width = unset
 
-[.git*]
-indent_style = tab
-
-[docs/structurizr-*.puml]
-end_of_line = unset
+## generated content
+[flake.lock]
+generated_code = true
 indent_size = unset
 indent_style = unset
 insert_final_newline = unset
-tab_width = unset
 trim_trailing_whitespace = unset
 
-[nix/sources.*]
+[docs/structurizr-*.puml]
 end_of_line = unset
 indent_size = unset
 indent_style = unset

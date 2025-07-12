@@ -15,7 +15,7 @@ VERSION != git describe --tags --always | cut -dv -f2
 -include .make/*.mk
 
 .PHONY: all
-all: bin/handler
+all: bin/handler gomod2nix.toml
 
 .PHONY: configure
 configure:

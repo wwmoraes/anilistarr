@@ -30,6 +30,9 @@ endef
 
 GO_SOURCES = $(shell git ls-files '*.go') $(strip ${GO_GENERATE_TARGETS})
 
+gomod2nix.toml: go.sum
+	gomod2nix generate
+
 go.sum: GOFLAGS-=-mod-readonly
 go.sum: ${GO_SOURCES} go.mod
 	@go mod tidy -v -x

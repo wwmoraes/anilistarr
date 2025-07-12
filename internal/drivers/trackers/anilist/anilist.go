@@ -97,7 +97,8 @@ func (tracker *Tracker) GetUserID(ctx context.Context, name string) (string, err
 	res, err := GetUserByName(ctx, tracker.Client, name)
 
 	gqlErrorList := gqlerror.List{}
-	if errors.As(err, &gqlErrorList) && len(gqlErrorList) > 0 && gqlErrorList[0].Message == "Not Found." {
+	if errors.As(err, &gqlErrorList) && len(gqlErrorList) > 0 &&
+		gqlErrorList[0].Message == "Not Found." {
 		return "", span.Assert(usecases.ErrStatusNotFound)
 	}
 
@@ -167,7 +168,10 @@ func (tracker *Tracker) getMediaListIDs(ctx context.Context, userID int) iter.Se
 	}
 }
 
-func (tracker *Tracker) getWatchingPage(ctx context.Context, userID, page int) (*GetWatchingResponse, error) {
+func (tracker *Tracker) getWatchingPage(
+	ctx context.Context,
+	userID, page int,
+) (*GetWatchingResponse, error) {
 	ctx, span := telemetry.StartNamed(
 		ctx,
 		"anilist.GetWatching",

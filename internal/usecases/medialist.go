@@ -161,7 +161,10 @@ func (lister *MediaList) Refresh(ctx context.Context, client Getter) error {
 
 // MapIDs converts IDs between a source tracker and a target reference. Returns
 // all IDs that were found, or an empty slice if no matches were found.
-func (lister *MediaList) MapIDs(ctx context.Context, ids []entities.SourceID) ([]entities.TargetID, error) {
+func (lister *MediaList) MapIDs(
+	ctx context.Context,
+	ids []entities.SourceID,
+) ([]entities.TargetID, error) {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 

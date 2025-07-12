@@ -19,7 +19,10 @@ func (source *MockSource) String() string {
 	return args.String(0)
 }
 
-func (source *MockSource) Fetch(ctx context.Context, client usecases.Getter) ([]usecases.Metadata, error) {
+func (source *MockSource) Fetch(
+	ctx context.Context,
+	client usecases.Getter,
+) ([]usecases.Metadata, error) {
 	args := source.Called(ctx, client)
 
 	return args.Get(0).([]usecases.Metadata), args.Error(1)

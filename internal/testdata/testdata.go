@@ -14,8 +14,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type Constructor[T any] func(testing.TB) T
-type Functor[T any] func(testing.TB, T) T
+type (
+	Constructor[T any] func(testing.TB) T
+	Functor[T any]     func(testing.TB, T) T
+)
 
 func Compose[T any](tb testing.TB, value T, functors ...Functor[T]) T {
 	tb.Helper()

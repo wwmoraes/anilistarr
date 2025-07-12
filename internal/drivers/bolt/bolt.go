@@ -86,7 +86,11 @@ func (cache *Bolt) GetString(ctx context.Context, key string) (string, error) {
 }
 
 // SetString stores a key and value in the underlying BoltDB. It returns
-func (cache *Bolt) SetString(ctx context.Context, key, value string, _ ...usecases.CacheOption) error {
+func (cache *Bolt) SetString(
+	ctx context.Context,
+	key, value string,
+	_ ...usecases.CacheOption,
+) error {
 	_, span := telemetry.Start(ctx)
 	defer span.End()
 

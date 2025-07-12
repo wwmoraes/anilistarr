@@ -89,7 +89,10 @@ func (wrapper *CachedTracker) GetUserID(ctx context.Context, name string) (strin
 // GetMediaListIDs retrieves the list of medias for an user ID. It returns a
 // cache value if available; otherwise it requests the tracker and caches it for
 // future use.
-func (wrapper *CachedTracker) GetMediaListIDs(ctx context.Context, userID string) ([]string, error) {
+func (wrapper *CachedTracker) GetMediaListIDs(
+	ctx context.Context,
+	userID string,
+) ([]string, error) {
 	ctx, span := telemetry.Start(ctx)
 	defer span.End()
 

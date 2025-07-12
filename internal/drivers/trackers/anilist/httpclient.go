@@ -42,7 +42,9 @@ func (client *RatedClient) Do(req *http.Request) (*http.Response, error) {
 		reservation.Cancel()
 
 		res := newResponseFor(req, http.StatusTooManyRequests, nil, http.Header{
-			"Retry-After": []string{strconv.FormatFloat(math.Ceil(reservation.Delay().Seconds()), 'f', 0, 64)},
+			"Retry-After": []string{
+				strconv.FormatFloat(math.Ceil(reservation.Delay().Seconds()), 'f', 0, 64),
+			},
 		})
 
 		return res, nil
@@ -69,7 +71,12 @@ func (client *RatedClient) Do(req *http.Request) (*http.Response, error) {
 	return resp, span.Assert(nil)
 }
 
-func newResponseFor(req *http.Request, status int, data []byte, headers http.Header) *http.Response {
+func newResponseFor(
+	req *http.Request,
+	status int,
+	data []byte,
+	headers http.Header,
+) *http.Response {
 	span := telemetry.SpanFromContext(req.Context())
 
 	writer := httptest.NewRecorder()
@@ -87,7 +94,11 @@ func newResponseFor(req *http.Request, status int, data []byte, headers http.Hea
 	return res
 }
 
-func tryUpdateLimiterBurstFromHeaders(ctx context.Context, limiter *rate.Limiter, headers http.Header) {
+func tryUpdateLimiterBurstFromHeaders(
+	ctx context.Context,
+	limiter *rate.Limiter,
+	headers http.Header,
+) {
 	span := telemetry.SpanFromContext(ctx)
 
 	value := headers.Get("X-Ratelimit-Remaining")
@@ -105,7 +116,11 @@ func tryUpdateLimiterBurstFromHeaders(ctx context.Context, limiter *rate.Limiter
 	limiter.SetBurst(remaining)
 }
 
-func tryUpdateLimiterBurstAtFromHeaders(ctx context.Context, limiter *rate.Limiter, headers http.Header) {
+func tryUpdateLimiterBurstAtFromHeaders(
+	ctx context.Context,
+	limiter *rate.Limiter,
+	headers http.Header,
+) {
 	span := telemetry.SpanFromContext(ctx)
 
 	burstValue := headers.Get("X-Ratelimit-Limit")
