@@ -56,5 +56,10 @@
       };
     };
   };
-
+  settings.global.excludes = [
+    "internal/api/api.gen.go"
+    "internal/drivers/sqlite/model/db.go"
+    "internal/drivers/sqlite/model/models.go"
+    "internal/drivers/sqlite/model/queries.sql.go"
+  ];
 }
