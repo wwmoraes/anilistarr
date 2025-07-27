@@ -10,7 +10,7 @@ post_bump_hooks = [
 pre_bump_hooks = [
   "goreleaser check",
   "goreleaser healthcheck",
-  "goreleaser build --clean",
+  "make check",
 ]
 tag_prefix = "v"
 
