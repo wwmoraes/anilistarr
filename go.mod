@@ -17,7 +17,7 @@ require (
 	github.com/redis/go-redis/v9 v9.10.0
 	github.com/sqlc-dev/sqlc v1.29.0
 	github.com/stretchr/testify v1.10.0
-	github.com/vektah/gqlparser/v2 v2.5.27
+	github.com/vektah/gqlparser/v2 v2.5.30
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	github.com/wwmoraes/gotell v0.5.0
 	go.etcd.io/bbolt v1.4.1
