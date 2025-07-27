@@ -14,7 +14,6 @@ on:
     - docs
     - "*.md"
     - .codecov.yml
-    - media.db.sql
   pull_request:
     branches:
     - master
@@ -28,7 +27,6 @@ on:
     - docs
     - "*.md"
     - .codecov.yml
-    - media.db.sql
 permissions:
   contents: read
   security-events: write

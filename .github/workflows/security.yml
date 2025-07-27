@@ -12,7 +12,6 @@ on:
     - docs
     - "*.md"
     - .codecov.yml
-    - media.db.sql
   pull_request:
     branches:
     - master
@@ -24,7 +23,6 @@ on:
     - docs
     - "*.md"
     - .codecov.yml
-    - media.db.sql
   schedule:
   - cron: '0 9 * * 1'
 env:
