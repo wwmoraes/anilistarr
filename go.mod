@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/Khan/genqlient v0.8.1
-	github.com/agiledragon/gomonkey/v2 v2.12.0
+	github.com/agiledragon/gomonkey/v2 v2.13.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dgraph-io/badger/v4 v4.7.0
 	github.com/getkin/kin-openapi v0.132.0
