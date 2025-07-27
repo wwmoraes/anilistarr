@@ -20,7 +20,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.27
 	github.com/wadey/gocovmerge v0.0.0-20160331181800-b5bfa59ec0ad
 	github.com/wwmoraes/gotell v0.5.0
-	go.etcd.io/bbolt v1.4.1
+	go.etcd.io/bbolt v1.4.2
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/sdk v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
