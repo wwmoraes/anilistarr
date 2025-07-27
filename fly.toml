@@ -26,6 +26,7 @@ port = 9091       # default for most prometheus clients
 path = "/metrics" # default for most prometheus clients
 
 [mounts]
+auto_extend_size_increment = "1GB"
 auto_extend_size_limit = "5GB"
 auto_extend_size_threshold = 80
 destination = "/var/tmp/handler"
