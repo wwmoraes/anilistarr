@@ -37,11 +37,12 @@ ARG TARGETOS
 ARG TARGETARCH
 COPY dist/handler_${TARGETOS}_${TARGETARCH}*/bin/handler /usr/bin/handler
 
+USER 20000:20000
+
 CMD ["/usr/bin/handler"]
 
 ENV DATA_PATH=${DATA_PATH}
 EXPOSE 8080
-USER 20000:20000
 VOLUME ${DATA_PATH}
 
 LABEL org.opencontainers.image.authors="William Artero <docker@artero.dev>"

@@ -81,6 +81,7 @@ fix-golang:
 
 .PHONY: sast
 sast: sast.sarif
+	sarif-fmt --input $<
 
 .PHONY: invoke-get-user
 invoke-get-user:
@@ -91,7 +92,7 @@ invoke-get-media:
 	curl -v "http://${HOST}:${PORT}/user/${USERNAME}/media"
 
 sast.sarif: Dockerfile.sarif semgrep.sarif
-	jq --slurp 'def deepmerge(a;b): reduce b[] as $$item (a; reduce ($$item | keys_unsorted[]) as $$key (.; $$item[$$key] as $$val | ($$val | type) as $$type | .[$$key] = if ($$type == "object") then deepmerge({}; [if .[$$key] == null then {} else .[$$key] end, $$val]) elif ($$type == "array") then (.[$$key] + $$val | unique) else $$val end)); deepmerge({}; .)' $^ > $@
+	@jq --slurp 'def deepmerge(a;b): reduce b[] as $$item (a; reduce ($$item | keys_unsorted[]) as $$key (.; $$item[$$key] as $$val | ($$val | type) as $$type | .[$$key] = if ($$type == "object") then deepmerge({}; [if .[$$key] == null then {} else .[$$key] end, $$val]) elif ($$type == "array") then (.[$$key] + $$val | unique) else $$val end)); deepmerge({}; .)' $^ > $@
 
 $(wildcard docs/structurizr-*.puml) &: docs/workspace.dsl
 	structurizr-cli export -f plantuml/c4plantuml -w docs/workspace.dsl -o docs
@@ -106,7 +107,7 @@ dist/: ${GO_SOURCES} go.sum .goreleaser.yml
 	goreleaser release --clean --snapshot --skip before
 
 semgrep.sarif: ${GO_SOURCES} Dockerfile
-	-semgrep scan --sarif-output=$@
+	semgrep scan --quiet --sarif 2>/dev/null | jq 'del(.runs[].results[] | select(.suppressions))' > $@
 
 docs/components.png: docs/components.puml
 	plantuml $<

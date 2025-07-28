@@ -46,6 +46,9 @@ func (service *Service) GetUserID(w http.ResponseWriter, r *http.Request, name s
 	w.Header().Add("X-Anilist-User-Id", userID)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
+
+	// false positive: non-HTML content type already set and sent above
+	// nosemgrep: no-fprintf-to-responsewriter, no-direct-write-to-responsewriter
 	fmt.Fprintln(w, userID)
 }
 
@@ -64,8 +67,12 @@ func (service *Service) GetUserMedia(w http.ResponseWriter, r *http.Request, nam
 
 	data, _ := json.Marshal(customList)
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
+
+	// false positive: non-HTML content type already set and sent above
+	// nosemgrep: no-direct-write-to-responsewriter
 	_, err = w.Write(data)
+
 	span.RecordError(err)
 }

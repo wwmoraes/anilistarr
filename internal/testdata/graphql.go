@@ -61,6 +61,10 @@ func (handler *MockGraphqlHandler) ServeHTTP(w http.ResponseWriter, req *http.Re
 
 	res := handler.TestData().Get(string(reqBody)).Data().([]byte)
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	// false positive: non-HTML content type already set and sent above
+	// nosemgrep: no-direct-write-to-responsewriter
 	_, err = w.Write(res)
 	if err != nil {
 		panic(err)
