@@ -36,12 +36,16 @@ Dockerfile.tar: Dockerfile dist
 	container-structure-test test -c container-structure-test.yaml -i wwmoraes/anilistarr:latest
 
 Dockerfile.sarif: Dockerfile.hadolint.sarif Dockerfile.grype.sarif
-	jq --slurp 'def deepmerge(a;b): reduce b[] as $$item (a; reduce ($$item | keys_unsorted[]) as $$key (.; $$item[$$key] as $$val | ($$val | type) as $$type | .[$$key] = if ($$type == "object") then deepmerge({}; [if .[$$key] == null then {} else .[$$key] end, $$val]) elif ($$type == "array") then (.[$$key] + $$val | unique) else $$val end)); deepmerge({}; .)' $^ > $@
+	$(info merging container SAST reports into $@...)
+	@jq --slurp 'def deepmerge(a;b): reduce b[] as $$item (a; reduce ($$item | keys_unsorted[]) as $$key (.; $$item[$$key] as $$val | ($$val | type) as $$type | .[$$key] = if ($$type == "object") then deepmerge({}; [if .[$$key] == null then {} else .[$$key] end, $$val]) elif ($$type == "array") then (.[$$key] + $$val | unique) else $$val end)); deepmerge({}; .)' $^ > $@
 
 Dockerfile.hadolint.sarif: Dockerfile
-	-hadolint -f json $< | hadolint-sarif | tee $@ | sarif-fmt
+	$(info running SAST analysis (hadolint)...)
+	-@hadolint -f json $< | hadolint-sarif | tee $@ | sarif-fmt
 	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
 
 Dockerfile.grype.sarif:
-	grype db update || grype db delete && grype db update
-	-grype -o sarif --fail-on critical wwmoraes/anilistarr:latest > $@
+	$(info running SAST analysis (grype)...)
+	-@grype db update --quiet || grype db delete --quiet && grype db update --quiet
+	-@grype -o sarif --fail-on critical wwmoraes/anilistarr:latest | tee $@ | sarif-fmt
+	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null

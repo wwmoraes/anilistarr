@@ -81,7 +81,7 @@ fix-golang:
 
 .PHONY: sast
 sast: sast.sarif
-	sarif-fmt --input $<
+	@sarif-fmt --input $<
 
 .PHONY: invoke-get-user
 invoke-get-user:
@@ -107,7 +107,9 @@ dist/: ${GO_SOURCES} go.sum .goreleaser.yml
 	goreleaser release --clean --snapshot --skip before
 
 semgrep.sarif: ${GO_SOURCES} Dockerfile
-	semgrep scan --quiet --sarif 2>/dev/null | jq 'del(.runs[].results[] | select(.suppressions))' > $@
+	$(info running SAST analysis (semgrep)...)
+	-@semgrep scan --quiet --sarif 2>/dev/null | jq 'del(.runs[].results[] | select(.suppressions))' | tee $@ | sarif-fmt
+	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
 
 docs/components.png: docs/components.puml
 	plantuml $<
