@@ -43,7 +43,7 @@ coverage: coverage/all.txt
 
 .PHONY: release
 release:
-	goreleaser release --clean
+	cog bump
 
 .PHONY: generate
 generate: $(strip ${GO_GENERATE_TARGETS})
