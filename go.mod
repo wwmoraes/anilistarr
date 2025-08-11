@@ -13,8 +13,8 @@ require (
 	github.com/goccy/go-json v0.10.5
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
-	github.com/redis/go-redis/extra/redisotel/v9 v9.10.0
-	github.com/redis/go-redis/v9 v9.10.0
+	github.com/redis/go-redis/extra/redisotel/v9 v9.12.0
+	github.com/redis/go-redis/v9 v9.12.0
 	github.com/sqlc-dev/sqlc v1.29.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vektah/gqlparser/v2 v2.5.27
@@ -79,7 +79,7 @@ require (
 	github.com/pingcap/log v1.1.0 // indirect
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250613120101-5b778e9129f0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.10.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.12.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/riza-io/grpc-go v0.2.0 // indirect
 	github.com/speakeasy-api/jsonpath v0.6.2 // indirect
