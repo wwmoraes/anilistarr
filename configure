@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+set -eu
+
+cog install-hook --all --overwrite
+git config --local include.path ../.gitconfig
+make generate

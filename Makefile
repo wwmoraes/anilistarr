@@ -1,8 +1,9 @@
+MAKEFLAGS += --no-builtin-rules
+MAKEFLAGS += --no-builtin-variables
+.SUFFIXES:
+
 -include .env
 -include .env.local
-
-GOCOVERDIR=coverage/integration
-GOFLAGS += -cover -covermode=atomic -race -short -shuffle=on -mod=readonly -trimpath
 
 export
 
@@ -17,14 +18,10 @@ VERSION != git describe --tags --always | cut -dv -f2
 .PHONY: all
 all: bin/handler gomod2nix.toml
 
-.PHONY: configure
-configure:
-	cog install-hook --all --overwrite
-
 .PHONY: check
-check:
-	@./.git/hooks/pre-commit
-	@./.git/hooks/pre-push
+check::
+	editorconfig-checker
+	nix flake check -L
 
 .PHONY: clean
 clean:
@@ -38,15 +35,15 @@ dist: dist/
 test: coverage/all.txt
 
 .PHONY: coverage
-coverage: coverage/all.txt
-	go tool cover -func=$< | sed 's|${GOMODULE}/||g'
+coverage: coverage/all.txt coverage/all.html
+	go tool cover -func=$< | sed 's|${GOMODULE}/||g' | grep -v '100.0%' | column -t
 
 .PHONY: release
 release:
 	cog bump
 
 .PHONY: generate
-generate: $(strip ${GO_GENERATE_TARGETS})
+generate: ${GO_GENERATE_TARGETS}
 
 .PHONY: coverage-upload
 coverage-upload: coverage-unit-upload coverage-integration-upload
@@ -65,19 +62,13 @@ coverage-integration-upload: coverage/integration.part.txt coverage/integration.
 diagrams: $(wildcard docs/structurizr-*.png) docs/components.png
 
 .PHONY: fix
-fix: fix-markdown
 fix: fix-golang
 fix: ;
-
-.PHONY: fix-markdown
-fix-markdown: $(shell git ls-files '*.md')
-	$(info fixing in-place markdown files...)
-	@markdownlint --fix $^
 
 .PHONY: fix-golang
 fix-golang:
 	$(info fixing in-place golang issues...)
-	@env -u GOFLAGS golangci-lint run --fix
+	@golangci-lint run --fix
 
 .PHONY: sast
 sast: sast.sarif
@@ -102,7 +93,6 @@ $(wildcard docs/structurizr-*.png) &: $(wildcard docs/structurizr-*.puml)
 	plantuml $^
 	@touch docs/structurizr-*.png
 
-dist/: GOFLAGS=
 dist/: ${GO_SOURCES} go.sum .goreleaser.yml
 	goreleaser release --clean --snapshot --skip before
 
@@ -117,3 +107,7 @@ docs/components.png: docs/components.puml
 
 %/:
 	@test -d $@ || mkdir $@
+
+coverage/%.html: coverage/%.txt
+	$(info generating coverage HTML report $@...)
+	go tool cover -html=$< -o $@
