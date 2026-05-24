@@ -1,0 +1,7 @@
+[merge "go-generate"]
+name = "golang generate"
+driver = go generate ./...
+
+[merge "go-tidy"]
+name = "golang modules lock"
+driver = go mod tidy

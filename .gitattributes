@@ -1,0 +1,2 @@
+*.gen.go merge=go-generate
+go.sum merge=go-tidy
