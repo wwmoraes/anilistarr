@@ -61,7 +61,6 @@ rec {
         # pkgs.nur.repos.wwmoraes.goutline
         pkgs.nur.repos.wwmoraes.structurizr-cli
         pkgs.nur.repos.wwmoraes.structurizr-site-generatr
-        pkgs.omnix
         pkgs.plantuml
         pkgs.unstable.cocogitto
         pkgs.unstable.go-cover-treemap
