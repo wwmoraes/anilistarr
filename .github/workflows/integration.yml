@@ -35,8 +35,23 @@ defaults:
 env:
   DEVSHELL: ci
 jobs:
+  warmup:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: direnv nix
+      uses: JRMurr/direnv-nix-action@v4.2.0
+      with:
+        install-nix: true
+        cache-store: true
+    - name: cache devshell
+      run: nix develop --command true
   integrate:
     runs-on: ubuntu-latest
+    needs: [warmup]
     steps:
     - name: checkout
       uses: actions/checkout@v4
