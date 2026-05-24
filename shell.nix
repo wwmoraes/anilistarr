@@ -55,7 +55,6 @@ rec {
         # pkgs.anilistarr
         # keep-sorted start
         pkgs.curl
-        pkgs.flyctl
         pkgs.gomod2nix
         # pkgs.nur.repos.wwmoraes.gopium
         # pkgs.nur.repos.wwmoraes.goutline

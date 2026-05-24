@@ -44,11 +44,8 @@ support.
 It works by fetching the user info directly from Anilist thanks to its API, and
 converts the IDs using community-provided mappings.
 
-Try it out on a live instance at `https://anilistarr.fly.dev/`. For API details
-check either the [source Swagger definition](./swagger.yaml) or the generated
-[online version here][swagger-ui].
-
-[swagger-ui]: https://editor-next.swagger.io/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fwwmoraes%2Fanilistarr%2Fmaster%2Fswagger.yaml
+Check out API details either directly on the [source Swagger
+definition](./swagger.yaml) or the generated [online version][swagger-ui].
 
 ## 🏁 Getting Started
 
