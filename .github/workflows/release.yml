@@ -1,11 +1,12 @@
 name: Release
-# yamllint disable-line rule:truthy
 on:
   push:
     tags:
     - '*'
 permissions:
   contents: read
+env:
+  DEVSHELL: ci
 jobs:
   release:
     runs-on: ubuntu-latest

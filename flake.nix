@@ -88,10 +88,10 @@
           checks = {
             formatting = treefmt.config.build.check self;
           };
+          devShells = import ./shell.nix { inherit pkgs; };
 
           formatter = treefmt.config.build.wrapper;
 
-          devShells.default = import ./shell.nix { inherit pkgs; };
 
           packages = rec {
             default = handler;

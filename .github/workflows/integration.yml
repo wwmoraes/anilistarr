@@ -33,6 +33,8 @@ permissions:
 defaults:
   run:
     shell: bash
+env:
+  DEVSHELL: ci
 jobs:
   integrate:
     runs-on: ubuntu-latest

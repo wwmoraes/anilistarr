@@ -1,5 +1,4 @@
 name: Security
-# yamllint disable-line rule:truthy
 on:
   push:
     branches:
@@ -26,6 +25,7 @@ on:
   schedule:
   - cron: '0 9 * * 1'
 env:
+  DEVSHELL: ci
   GRYPE_DB_CACHE_TEMP_PATH: .cache/grype/db/
 permissions:
   actions: read

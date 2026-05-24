@@ -2,69 +2,79 @@
   pkgs,
   ...
 }:
-let
-  inherit (pkgs) lib mkShell;
-in
-mkShell {
-  packages =
-    [
-      pkgs.checkmake
-      pkgs.docker-client
-      pkgs.editorconfig-checker
-      pkgs.git
-      pkgs.go-junit-report
-      pkgs.goEnv
-      pkgs.goreleaser
-      pkgs.grype
-      pkgs.hadolint
-      pkgs.jq
-      pkgs.markdownlint-cli
-      pkgs.moreutils
-      pkgs.nur.repos.wwmoraes.codecov-cli-bin
-      pkgs.nur.repos.wwmoraes.structurizr-cli
-      pkgs.omnix
-      pkgs.plantuml
-      pkgs.ripgrep
-      pkgs.semgrep
-      pkgs.unstable.cocogitto
-      pkgs.unstable.container-structure-test
-      pkgs.unstable.go
-      pkgs.unstable.go-cover-treemap
-      pkgs.unstable.go-task
-      pkgs.unstable.golangci-lint
-      pkgs.unstable.hadolint-sarif
-      pkgs.unstable.sarif-fmt
-      pkgs.yq-go
-    ]
-    ++ lib.optionals (builtins.getEnv "CI" != "") [
-      # CI-only
-    ]
-    ++ lib.optionals (builtins.getEnv "CI" == "") [
-      # local-only
-      # pkgs.anilistarr
-      pkgs.curl
-      pkgs.docker-client
-      pkgs.eclint
-      pkgs.flyctl
-      pkgs.gomod2nix
-      pkgs.nur.repos.wwmoraes.gopium
-      pkgs.nur.repos.wwmoraes.goutline
-      pkgs.nur.repos.wwmoraes.structurizr-site-generatr
-      pkgs.plantuml
-      pkgs.redis
-      pkgs.unstable.delve
-      pkgs.unstable.go-cover-treemap
-      pkgs.unstable.gopls
-      pkgs.unstable.gotests
-      pkgs.unstable.gotools
-    ];
+rec {
+  default =
+    let
+      goEnv = pkgs.mkGoEnv { pwd = ./.; };
+    in
+    pkgs.mkShell {
+      nativeBuildInputs = [
+        # keep-sorted start
+        goEnv
+        pkgs.docker-client
+        pkgs.eclint
+        pkgs.editorconfig-checker
+        pkgs.git
+        pkgs.goreleaser
+        pkgs.gotestdox
+        pkgs.grype
+        pkgs.hadolint
+        pkgs.jq
+        pkgs.moreutils
+        pkgs.remake
+        pkgs.ripgrep
+        pkgs.semgrep
+        pkgs.unstable.container-structure-test
+        pkgs.unstable.go
+        pkgs.unstable.golangci-lint
+        # keep-sorted end
+      ];
+    };
 
-  shellHook = ''
-    if [ -n "$CI" ]; then
-      export GOCACHE=$(go env GOCACHE)
-      export GOMODCACHE=$(go env GOMODCACHE)
-    fi
+  ci = default.overrideAttrs (
+    final: prev: {
+      nativeBuildInputs = [
+        # keep-sorted start
+        pkgs.go-junit-report
+        pkgs.nur.repos.wwmoraes.codecov-cli-bin
+        pkgs.unstable.hadolint-sarif
+        # keep-sorted end
+      ]
+      ++ prev.nativeBuildInputs;
 
-    cog install-hook --all --overwrite
-  '';
+      shellHook = ''
+        export GOCACHE=$(go env GOCACHE)
+        export GOMODCACHE=$(go env GOMODCACHE)
+      '';
+    }
+  );
+
+  terminal = default.overrideAttrs (
+    final: prev: {
+      nativeBuildInputs = [
+        # pkgs.anilistarr
+        # keep-sorted start
+        pkgs.curl
+        pkgs.flyctl
+        pkgs.gomod2nix
+        # pkgs.nur.repos.wwmoraes.gopium
+        # pkgs.nur.repos.wwmoraes.goutline
+        pkgs.nur.repos.wwmoraes.structurizr-cli
+        pkgs.nur.repos.wwmoraes.structurizr-site-generatr
+        pkgs.omnix
+        pkgs.plantuml
+        pkgs.unstable.cocogitto
+        pkgs.unstable.go-cover-treemap
+        pkgs.unstable.gotests
+        pkgs.unstable.gotools
+        pkgs.unstable.sarif-fmt
+        # keep-sorted end
+      ]
+      ++ prev.nativeBuildInputs;
+
+      shellHook = ''
+        cog install-hook --all --overwrite
+      '';
+    }
+  );
 }
