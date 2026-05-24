@@ -1,25 +1,57 @@
 {
+  mkFormatterModule,
+  pkgs,
+  ...
+}:
+{
+  imports = [
+    (mkFormatterModule {
+      name = "checkmake";
+      package = "checkmake";
+      args = [ ];
+      includes = [
+        "Makefile"
+      ];
+    })
+    (mkFormatterModule {
+      name = "hadolint";
+      package = "hadolint";
+      args = [ ];
+      ## TODO generate config file
+      includes = [
+        "Dockerfile"
+        "*.Dockerfile"
+        "Dockerfile.*"
+      ];
+    })
+  ];
+
   projectRootFile = "flake.nix";
 
-  ## TODO custom: checkmake
+  programs.checkmake.enable = true;
   ## TODO custom: editorconfig-checker/eclint
   ## TODO custom: golangci-lint
-  ## TODO custom: hadolint
-  ## TODO custom: markdownlint  # beautysh
-  # programs.fish_indent.enable = true;
   programs.gofmt.enable = true;
   programs.gofumpt.enable = true;
   programs.goimports.enable = true;
   programs.golines.enable = true;
-  # programs.jsonfmt.enable = true;
-  # keep-sorted
-  # programs.mdformat.enable = true;
+  programs.hadolint.enable = true;
+  programs.keep-sorted.enable = true;
+  programs.mdformat = {
+    enable = true;
+    package = pkgs.mdformat.withPlugins (
+      ps: with ps; [
+        mdformat-frontmatter
+      ]
+    );
+    settings = {
+      number = true;
+      wrap = 80;
+    };
+  };
   programs.nixf-diagnose.enable = true;
   # oxipng
   # pinact
-  # programs.shellcheck-posix.enable = true;
-  # programs.shellcheck-bash.enable = true;
-  # shfmt
   programs.nixfmt.enable = true;
   programs.statix.enable = true;
   # programs.taplo = {
@@ -27,11 +59,16 @@
   #   excludes = [
   #     "gomod2nix.toml"
   #   ];
+  #   package = pkgs.unstable.taplo;
+  #   settings = {
+  #     formatting = {
+  #       reorder_keys = true;
+  #     };
+  #   };
   # };
   programs.typos = {
     enable = true;
     excludes = [
-      "**/*.gen.go"
       ".golangci.yaml"
       "CHANGELOG.md"
       "go.mod"
@@ -41,10 +78,6 @@
   };
   programs.yamlfmt = {
     enable = true;
-    excludes = [
-      ".direnv"
-      "tmp"
-    ];
     settings = {
       gitignore_excludes = true;
       formatter = {
@@ -57,9 +90,11 @@
     };
   };
   settings.global.excludes = [
-    "internal/api/api.gen.go"
+    ".direnv"
+    "**/*.gen.go"
     "internal/drivers/sqlite/model/db.go"
     "internal/drivers/sqlite/model/models.go"
     "internal/drivers/sqlite/model/queries.sql.go"
+    "tmp"
   ];
 }
