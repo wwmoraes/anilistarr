@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -71,30 +71,27 @@ func TestMediaList_Generate(t *testing.T) {
 		entities.CustomEntry{TvdbID: 913},
 	}
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	tracker.On("GetUserID", mock.Anything, username).
+	tracker.EXPECT().GetUserID(mock.Anything, username).
 		Return(userID, nil).Once()
-	tracker.On("GetMediaListIDs", mock.Anything, userID).
+	tracker.EXPECT().GetMediaListIDs(mock.Anything, userID).
 		Return(sourceIDs, nil).Once()
-	store.On("GetMediaBulk", mock.Anything, sourceIDs).
+	store.EXPECT().GetMediaBulk(mock.Anything, sourceIDs).
 		Return(medias, nil).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.Generate(t.Context(), username)
 	require.NoError(t, err)
 
 	assert.Equal(t, customList, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Generate_GetUserID_error(t *testing.T) {
@@ -102,26 +99,23 @@ func TestMediaList_Generate_GetUserID_error(t *testing.T) {
 
 	username := "foo"
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	tracker.On("GetUserID", mock.Anything, username).
+	tracker.EXPECT().GetUserID(mock.Anything, username).
 		Return("", usecases.ErrStatusNotFound).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.Generate(t.Context(), username)
 	require.ErrorIs(t, err, usecases.ErrStatusNotFound)
 
 	assert.Nil(t, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Generate_GetMediaListIDs_error(t *testing.T) {
@@ -132,28 +126,25 @@ func TestMediaList_Generate_GetMediaListIDs_error(t *testing.T) {
 	username := "foo"
 	userID := "1"
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	tracker.On("GetUserID", mock.Anything, username).
+	tracker.EXPECT().GetUserID(mock.Anything, username).
 		Return(userID, nil).Once()
-	tracker.On("GetMediaListIDs", mock.Anything, userID).
+	tracker.EXPECT().GetMediaListIDs(mock.Anything, userID).
 		Return(sourceIDs, usecases.ErrStatusNotFound).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.Generate(t.Context(), username)
 	require.ErrorIs(t, err, usecases.ErrStatusNotFound)
 
 	assert.Nil(t, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Generate_Store_error(t *testing.T) {
@@ -165,30 +156,27 @@ func TestMediaList_Generate_Store_error(t *testing.T) {
 	userID := "1"
 	sourceIDs := []entities.SourceID{"1", "2", "3", "5", "8", "13"}
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	tracker.On("GetUserID", mock.Anything, username).
+	tracker.EXPECT().GetUserID(mock.Anything, username).
 		Return(userID, nil).Once()
-	tracker.On("GetMediaListIDs", mock.Anything, userID).
+	tracker.EXPECT().GetMediaListIDs(mock.Anything, userID).
 		Return(sourceIDs, nil).Once()
-	store.On("GetMediaBulk", mock.Anything, sourceIDs).
+	store.EXPECT().GetMediaBulk(mock.Anything, sourceIDs).
 		Return(medias, usecases.ErrStatusUnknown).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.Generate(t.Context(), username)
 	require.ErrorIs(t, err, usecases.ErrStatusUnknown)
 
 	assert.Nil(t, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Generate_parse_error(t *testing.T) {
@@ -206,30 +194,27 @@ func TestMediaList_Generate_parse_error(t *testing.T) {
 		{SourceID: "13", TargetID: ""},
 	}
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	tracker.On("GetUserID", mock.Anything, username).
+	tracker.EXPECT().GetUserID(mock.Anything, username).
 		Return(userID, nil).Once()
-	tracker.On("GetMediaListIDs", mock.Anything, userID).
+	tracker.EXPECT().GetMediaListIDs(mock.Anything, userID).
 		Return(sourceIDs, nil).Once()
-	store.On("GetMediaBulk", mock.Anything, sourceIDs).
+	store.EXPECT().GetMediaBulk(mock.Anything, sourceIDs).
 		Return(medias, nil).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.Generate(t.Context(), username)
 	require.Error(t, err)
 
 	assert.Nil(t, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_GetUserID(t *testing.T) {
@@ -238,26 +223,23 @@ func TestMediaList_GetUserID(t *testing.T) {
 	username := "foo"
 	userID := "1"
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	tracker.On("GetUserID", mock.Anything, username).
+	tracker.EXPECT().GetUserID(mock.Anything, username).
 		Return(userID, nil).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.GetUserID(t.Context(), username)
 	require.NoError(t, err)
 
 	assert.Equal(t, userID, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Refresh(t *testing.T) {
@@ -265,16 +247,16 @@ func TestMediaList_Refresh(t *testing.T) {
 
 	getter := usecases.HTTPGetter(nil)
 	data := []usecases.Metadata{
-		testdata.Metadata{SourceID: "1", TargetID: "91"},
-		testdata.Metadata{SourceID: "2", TargetID: "92"},
-		testdata.Metadata{SourceID: "3", TargetID: "93"},
-		testdata.Metadata{SourceID: "5", TargetID: "95"},
-		testdata.Metadata{SourceID: "8", TargetID: "98"},
-		testdata.Metadata{SourceID: "13", TargetID: "913"},
-		testdata.Metadata{SourceID: "999", TargetID: ""},
-		testdata.Metadata{SourceID: "999", TargetID: "0"},
-		testdata.Metadata{SourceID: "", TargetID: "999"},
-		testdata.Metadata{SourceID: "0", TargetID: "999"},
+		test.Metadata{SourceID: "1", TargetID: "91"},
+		test.Metadata{SourceID: "2", TargetID: "92"},
+		test.Metadata{SourceID: "3", TargetID: "93"},
+		test.Metadata{SourceID: "5", TargetID: "95"},
+		test.Metadata{SourceID: "8", TargetID: "98"},
+		test.Metadata{SourceID: "13", TargetID: "913"},
+		test.Metadata{SourceID: "999", TargetID: ""},
+		test.Metadata{SourceID: "999", TargetID: "0"},
+		test.Metadata{SourceID: "", TargetID: "999"},
+		test.Metadata{SourceID: "0", TargetID: "999"},
 	}
 	medias := []*entities.Media{
 		{SourceID: "1", TargetID: "91"},
@@ -285,27 +267,23 @@ func TestMediaList_Refresh(t *testing.T) {
 		{SourceID: "13", TargetID: "913"},
 	}
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	source.On("Fetch", mock.Anything, testdata.Implements[usecases.Getter](t)).
+	source.EXPECT().Fetch(mock.Anything, implements[usecases.Getter](t)).
 		Return(data, nil).Once()
-	store.On("PutMediaBulk", mock.Anything, medias).
+	store.EXPECT().PutMediaBulk(mock.Anything, medias).
 		Return(nil).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	err := mediaLister.Refresh(t.Context(), getter)
 	require.NoError(t, err)
-
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Refresh_Source_error(t *testing.T) {
@@ -315,25 +293,21 @@ func TestMediaList_Refresh_Source_error(t *testing.T) {
 
 	getter := usecases.HTTPGetter(nil)
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	source.On("Fetch", mock.Anything, testdata.Implements[usecases.Getter](t)).
+	source.EXPECT().Fetch(mock.Anything, implements[usecases.Getter](t)).
 		Return(data, errors.New("foo")).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	err := mediaLister.Refresh(t.Context(), getter)
 	require.Error(t, err)
-
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Refresh_Store_error(t *testing.T) {
@@ -341,16 +315,16 @@ func TestMediaList_Refresh_Store_error(t *testing.T) {
 
 	getter := usecases.HTTPGetter(nil)
 	data := []usecases.Metadata{
-		testdata.Metadata{SourceID: "1", TargetID: "91"},
-		testdata.Metadata{SourceID: "2", TargetID: "92"},
-		testdata.Metadata{SourceID: "3", TargetID: "93"},
-		testdata.Metadata{SourceID: "5", TargetID: "95"},
-		testdata.Metadata{SourceID: "8", TargetID: "98"},
-		testdata.Metadata{SourceID: "13", TargetID: "913"},
-		testdata.Metadata{SourceID: "999", TargetID: ""},
-		testdata.Metadata{SourceID: "999", TargetID: "0"},
-		testdata.Metadata{SourceID: "", TargetID: "999"},
-		testdata.Metadata{SourceID: "0", TargetID: "999"},
+		test.Metadata{SourceID: "1", TargetID: "91"},
+		test.Metadata{SourceID: "2", TargetID: "92"},
+		test.Metadata{SourceID: "3", TargetID: "93"},
+		test.Metadata{SourceID: "5", TargetID: "95"},
+		test.Metadata{SourceID: "8", TargetID: "98"},
+		test.Metadata{SourceID: "13", TargetID: "913"},
+		test.Metadata{SourceID: "999", TargetID: ""},
+		test.Metadata{SourceID: "999", TargetID: "0"},
+		test.Metadata{SourceID: "", TargetID: "999"},
+		test.Metadata{SourceID: "0", TargetID: "999"},
 	}
 	medias := []*entities.Media{
 		{SourceID: "1", TargetID: "91"},
@@ -361,27 +335,23 @@ func TestMediaList_Refresh_Store_error(t *testing.T) {
 		{SourceID: "13", TargetID: "913"},
 	}
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	source.On("Fetch", mock.Anything, testdata.Implements[usecases.Getter](t)).
+	source.EXPECT().Fetch(mock.Anything, implements[usecases.Getter](t)).
 		Return(data, nil).Once()
-	store.On("PutMediaBulk", mock.Anything, medias).
+	store.EXPECT().PutMediaBulk(mock.Anything, medias).
 		Return(errors.New("foo")).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	err := mediaLister.Refresh(t.Context(), getter)
 	require.Error(t, err)
-
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_MapIDs(t *testing.T) {
@@ -399,26 +369,23 @@ func TestMediaList_MapIDs(t *testing.T) {
 		{SourceID: "13", TargetID: "913"},
 	}
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	store.On("GetMediaBulk", mock.Anything, sourceIDs).
+	store.EXPECT().GetMediaBulk(mock.Anything, sourceIDs).
 		Return(medias, nil).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.MapIDs(ctx, sourceIDs)
 	require.NoError(t, err)
 
 	assert.Equal(t, targetIDs, got)
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_MapIDs_Store_error(t *testing.T) {
@@ -427,43 +394,47 @@ func TestMediaList_MapIDs_Store_error(t *testing.T) {
 	ctx := t.Context()
 	sourceIDs := []entities.SourceID{"1", "2", "3", "5", "8", "13", "999", ""}
 
-	source := testdata.MockSource{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	tracker := test.NewMockTracker(t)
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
+		Source:  source,
 		Store:   nil,
-		Tracker: &tracker,
+		Tracker: tracker,
 	}
 
 	got, err := mediaLister.MapIDs(ctx, sourceIDs)
 	require.Error(t, err)
 
 	assert.Nil(t, got)
-	source.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestMediaList_Close(t *testing.T) {
 	t.Parallel()
 
-	source := testdata.MockSource{}
-	store := testdata.MockStore{}
-	tracker := testdata.MockTracker{}
+	source := test.NewMockSource(t)
+	store := test.NewMockStore(t)
+	tracker := test.NewMockTracker(t)
 
-	store.On("Close").Return(nil).Once()
-	tracker.On("Close").Return(nil).Once()
+	store.EXPECT().Close().Return(nil).Once()
+	tracker.EXPECT().Close().Return(nil).Once()
 
 	mediaLister := usecases.MediaList{
-		Source:  &source,
-		Store:   &store,
-		Tracker: &tracker,
+		Source:  source,
+		Store:   store,
+		Tracker: tracker,
 	}
 
 	err := mediaLister.Close()
 	require.NoError(t, err)
+}
 
-	source.AssertExpectations(t)
-	store.AssertExpectations(t)
-	tracker.AssertExpectations(t)
+func implements[T any](tb testing.TB) any {
+	tb.Helper()
+
+	return mock.MatchedBy(func(value any) bool {
+		_, ok := value.(T)
+
+		return ok
+	})
 }

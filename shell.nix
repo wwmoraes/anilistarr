@@ -27,6 +27,7 @@ rec {
         pkgs.unstable.container-structure-test
         pkgs.unstable.go
         pkgs.unstable.golangci-lint
+        pkgs.valkey
         # keep-sorted end
       ];
     };

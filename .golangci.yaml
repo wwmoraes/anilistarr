@@ -283,6 +283,8 @@ linters:
         arguments:
         - checkPrivateReceivers
         - sayRepetitiveInsteadOfStutters
+        exclude:
+        - internal/test/*
       - name: unhandled-error
         arguments:
         - strings\.Builder\.WriteString

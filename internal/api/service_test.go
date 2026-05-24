@@ -15,7 +15,7 @@ import (
 
 	"github.com/wwmoraes/anilistarr/internal/api"
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -26,7 +26,7 @@ func TestService_GetUserID(t *testing.T) {
 	userID := "bar"
 
 	ctx := t.Context()
-	mediaLister := testdata.MockMediaLister{}
+	mediaLister := test.MockMediaLister{}
 
 	mediaLister.
 		On("GetUserID", mock.Anything, username).
@@ -99,7 +99,7 @@ func TestService_GetUserID_error(t *testing.T) {
 			username := "foo"
 			ctx := t.Context()
 
-			mediaLister := testdata.MockMediaLister{}
+			mediaLister := test.MockMediaLister{}
 
 			mediaLister.
 				On("GetUserID", mock.Anything, username).
@@ -146,7 +146,7 @@ func TestService_GetUserMedia(t *testing.T) {
 		},
 	}
 
-	mediaLister := testdata.MockMediaLister{}
+	mediaLister := test.MockMediaLister{}
 
 	mediaLister.
 		On("Generate", mock.Anything, username).
@@ -180,7 +180,7 @@ func TestService_GetUserMedia(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Subset(t, res.Header, http.Header{
-		"Content-Type": []string{"application/json"},
+		"Content-Type": []string{"application/json; charset=utf-8"},
 	})
 	assert.Equal(t, medias, gotMedias)
 	mediaLister.AssertExpectations(t)
@@ -193,7 +193,7 @@ func TestService_GetUserMedia_error(t *testing.T) {
 	ctx := t.Context()
 	wantErr := errors.New("bar")
 
-	mediaLister := testdata.MockMediaLister{}
+	mediaLister := test.MockMediaLister{}
 
 	mediaLister.
 		On("Generate", mock.Anything, username).

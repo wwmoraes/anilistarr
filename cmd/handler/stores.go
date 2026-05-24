@@ -1,5 +1,3 @@
-// Package stores provides [usecases.Store] implementations for various
-// different storage technologies.
 package main
 
 const (

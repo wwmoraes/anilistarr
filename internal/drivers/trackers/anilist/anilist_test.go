@@ -3,18 +3,23 @@
 package anilist_test
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -96,11 +101,11 @@ func TestTracker(t *testing.T) {
 	userID := 1
 	mediaList := []string{"11"}
 
-	transport := testdata.MockHTTPRoundTripper{}
+	transport := test.MockRoundTripper{}
 
 	transport.On(
 		"RoundTrip",
-		testdata.HTTPRequestWithJSONBody(t, graphql.Request{
+		httpRequestWithJSONBody(t, graphql.Request{
 			OpName: "GetUserByName",
 			Query:  anilist.GetUserByName_Operation,
 			Variables: &struct {
@@ -111,7 +116,7 @@ func TestTracker(t *testing.T) {
 		}),
 	).Return(
 		//nolint:bodyclose // client transport closes it
-		testdata.HTTPResponseWithJSONBody(t, graphql.Response{
+		httpResponseWithJSONBody(t, graphql.Response{
 			Data: &anilist.GetUserByNameResponse{
 				User: anilist.GetUserByNameUser{
 					Id: userID,
@@ -123,7 +128,7 @@ func TestTracker(t *testing.T) {
 
 	transport.On(
 		"RoundTrip",
-		testdata.HTTPRequestWithJSONBody(t, graphql.Request{
+		httpRequestWithJSONBody(t, graphql.Request{
 			OpName: "GetWatching",
 			Query:  anilist.GetWatching_Operation,
 			Variables: &struct {
@@ -139,7 +144,7 @@ func TestTracker(t *testing.T) {
 		}),
 	).Return(
 		//nolint:bodyclose // client transport closes it
-		testdata.HTTPResponseWithJSONBody(t, graphql.Response{
+		httpResponseWithJSONBody(t, graphql.Response{
 			Data: &anilist.GetWatchingResponse{
 				Page: anilist.GetWatchingPage{
 					MediaList: []anilist.GetWatchingPageMediaList{
@@ -182,11 +187,11 @@ func TestTracker_GetUserID_not_found(t *testing.T) {
 	ctx := t.Context()
 	username := "foo"
 
-	transport := testdata.MockHTTPRoundTripper{}
+	transport := test.MockRoundTripper{}
 
 	transport.On(
 		"RoundTrip",
-		testdata.HTTPRequestWithJSONBody(t, graphql.Request{
+		httpRequestWithJSONBody(t, graphql.Request{
 			OpName: "GetUserByName",
 			Query:  anilist.GetUserByName_Operation,
 			Variables: &struct {
@@ -197,7 +202,7 @@ func TestTracker_GetUserID_not_found(t *testing.T) {
 		}),
 	).Return(
 		//nolint:bodyclose // client transport closes it
-		testdata.HTTPResponseWithJSONBody(t, graphql.Response{
+		httpResponseWithJSONBody(t, graphql.Response{
 			Data: &anilist.GetUserByNameResponse{
 				User: anilist.GetUserByNameUser{},
 			},
@@ -242,11 +247,11 @@ func TestTracker_GetUserID_unavailable(t *testing.T) {
 	ctx := t.Context()
 	username := "foo"
 
-	transport := testdata.MockHTTPRoundTripper{}
+	transport := test.MockRoundTripper{}
 
 	transport.On(
 		"RoundTrip",
-		testdata.HTTPRequestWithJSONBody(t, graphql.Request{
+		httpRequestWithJSONBody(t, graphql.Request{
 			OpName: "GetUserByName",
 			Query:  anilist.GetUserByName_Operation,
 			Variables: &struct {
@@ -257,7 +262,7 @@ func TestTracker_GetUserID_unavailable(t *testing.T) {
 		}),
 	).Return(
 		//nolint:bodyclose // client transport closes it
-		testdata.HTTPResponseWithJSONBody(t, graphql.Response{
+		httpResponseWithJSONBody(t, graphql.Response{
 			Data: &anilist.GetUserByNameResponse{
 				User: anilist.GetUserByNameUser{},
 			},
@@ -294,4 +299,52 @@ func TestTracker_GetUserID_unavailable(t *testing.T) {
 	assert.Empty(t, got)
 
 	transport.AssertExpectations(t)
+}
+
+func httpResponseWithJSONBody(tb testing.TB, body any) *http.Response {
+	tb.Helper()
+
+	resRec := httptest.NewRecorder()
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	_, err = resRec.Write(data)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	return resRec.Result()
+}
+
+func httpRequestWithJSONBody(tb testing.TB, body any) any {
+	tb.Helper()
+
+	want, err := json.Marshal(body)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	return mock.MatchedBy(func(req *http.Request) bool {
+		var (
+			body io.ReadCloser
+			data bytes.Buffer
+		)
+
+		body, req.Body = req.Body, io.NopCloser(&data)
+
+		_, err := io.Copy(&data, body)
+		if err != nil {
+			tb.Fatal(err)
+		}
+
+		err = body.Close()
+		if err != nil {
+			tb.Fatal(err)
+		}
+
+		return bytes.Equal(data.Bytes(), want)
+	})
 }

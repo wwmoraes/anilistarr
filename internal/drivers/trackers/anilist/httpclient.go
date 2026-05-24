@@ -19,12 +19,22 @@ import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
+const (
+	// HTTPHeaderRateLimitBurst contains the rate limit HTTP header name
+	HTTPHeaderRateLimitBurst = "X-Ratelimit-Limit"
+	// HTTPHeaderRateLimitRemaining contains the remaining rate HTTP header name
+	HTTPHeaderRateLimitRemaining = "X-Ratelimit-Remaining"
+	// HTTPHeaderRateLimitReset contains the rate reset timestamp HTTP header name
+	HTTPHeaderRateLimitReset = "X-Ratelimit-Reset"
+)
+
 var _ graphql.Doer = (*RatedClient)(nil)
 
 // RatedClient is a rate-limited HTTP client. This allows consuming upstream
 // resources with usage limits in a friendly way.
 type RatedClient struct {
 	usecases.Doer
+
 	Limiter *rate.Limiter
 }
 
@@ -58,9 +68,9 @@ func (client *RatedClient) Do(req *http.Request) (*http.Response, error) {
 	span.SetAttributes(httpconv.ResponseHeader(telemetry.FilterHeaders(
 		resp.Header,
 		"Retry-After",
-		"X-Ratelimit-Limit",
-		"X-Ratelimit-Remaining",
-		"X-Ratelimit-Reset",
+		HTTPHeaderRateLimitBurst,
+		HTTPHeaderRateLimitRemaining,
+		HTTPHeaderRateLimitReset,
 	))...)
 
 	if resp.StatusCode == http.StatusTooManyRequests {
@@ -101,7 +111,7 @@ func tryUpdateLimiterBurstFromHeaders(
 ) {
 	span := telemetry.SpanFromContext(ctx)
 
-	value := headers.Get("X-Ratelimit-Remaining")
+	value := headers.Get(HTTPHeaderRateLimitRemaining)
 	if value == "" {
 		return
 	}
@@ -123,12 +133,12 @@ func tryUpdateLimiterBurstAtFromHeaders(
 ) {
 	span := telemetry.SpanFromContext(ctx)
 
-	burstValue := headers.Get("X-Ratelimit-Limit")
+	burstValue := headers.Get(HTTPHeaderRateLimitBurst)
 	if burstValue == "" {
 		return
 	}
 
-	resetValue := headers.Get("X-Ratelimit-Reset")
+	resetValue := headers.Get(HTTPHeaderRateLimitReset)
 	if resetValue == "" {
 		return
 	}

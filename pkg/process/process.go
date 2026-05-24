@@ -23,7 +23,7 @@ var exitCode atomic.Int64
 // [process.Assert] and its variants may atomically change the exit code once to
 // a non-zero value.
 func HandleExit() {
-	//nolint:revive // this runs within main so not a deep-exit
+	//nolint:nolintlint,revive // this runs within main so not a deep-exit
 	os.Exit(int(exitCode.Load()))
 }
 

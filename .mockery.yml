@@ -22,6 +22,16 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
+  context:
+    config:
+      filename: context_mocks.go
+    interfaces:
+      Context:
+  github.com/go-logr/logr:
+    config:
+      filename: logr_mocks.go
+    interfaces:
+      LogSink:
   github.com/wwmoraes/anilistarr/internal/usecases:
     config:
       filename: usecases_mocks.go
@@ -32,3 +42,8 @@ packages:
       FS:
       File:
       FileInfo:
+  net/http:
+    config:
+      filename: http_mocks.go
+    interfaces:
+      RoundTripper:

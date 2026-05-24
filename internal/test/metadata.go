@@ -1,4 +1,4 @@
-package testdata
+package test
 
 import (
 	"github.com/wwmoraes/anilistarr/internal/usecases"

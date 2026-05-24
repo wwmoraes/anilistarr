@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -18,126 +19,12 @@ import (
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/sqlite"
 	"github.com/wwmoraes/anilistarr/internal/entities"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 	"github.com/wwmoraes/anilistarr/pkg/finalizers"
 )
 
-type functor = testdata.Functor[*sqlite.SQLite]
-
-func newSQLite(tb testing.TB) *sqlite.SQLite {
-	tb.Helper()
-
-	db, err := sqlite.New(tb.Context(), "file::memory:")
-	if err != nil {
-		tb.Fatal(err)
-	}
-
-	return db
-}
-
-func putStrings(entries ...[2]string) functor {
-	return functor(func(tb testing.TB, db *sqlite.SQLite) *sqlite.SQLite {
-		tb.Helper()
-
-		var err error
-
-		for _, pair := range entries {
-			err = db.SetString(tb.Context(), pair[0], pair[1])
-			if err != nil {
-				tb.Fatal(err)
-			}
-		}
-
-		return db
-	})
-}
-
-func putMedias(medias ...*entities.Media) functor {
-	return functor(func(tb testing.TB, db *sqlite.SQLite) *sqlite.SQLite {
-		tb.Helper()
-
-		var err error
-
-		for _, media := range medias {
-			err = db.PutMedia(tb.Context(), media)
-			if err != nil {
-				tb.Fatal(err)
-			}
-		}
-
-		return db
-	})
-}
-
-func closeSQLite(tb testing.TB, db *sqlite.SQLite) *sqlite.SQLite {
-	tb.Helper()
-
-	err := db.Close()
-	if err != nil {
-		tb.Fatal(err)
-	}
-
-	return db
-}
-
-func sortMedia(a, b *entities.Media) int {
-	return strings.Compare(a.SourceID, b.SourceID)
-}
-
-//nolint:gocognit // needed to test cancelled context side-effects
-func newInterruptCtx(tb testing.TB, successes uint, caller string) *testdata.MockContext {
-	tb.Helper()
-
-	doneChan := make(chan struct{})
-
-	var outDoneChan <-chan struct{} = doneChan
-
-	ctx := testdata.MockContext{}
-
-	ctx.On("Value", mock.Anything).Return(nil)
-	errCall := ctx.On("Err").Return(nil)
-
-	ctx.On("Done").Return(outDoneChan).Run(func(_ mock.Arguments) {
-		if !testdata.CallerMatches(tb, caller) {
-			return
-		}
-
-		count := ctx.TestData().Get("count").Uint(0)
-		count++
-
-		if count <= successes {
-			ctx.TestData().Set("count", count)
-
-			return
-		}
-
-		closed := ctx.TestData().Get("closed").Bool(false)
-		if !closed {
-			// make sure the channel is empty
-			select {
-			default:
-			case <-doneChan:
-			}
-
-			close(doneChan)
-			ctx.TestData().Set("closed", true)
-			errCall.Return(context.Canceled)
-		}
-	})
-
-	tb.Cleanup(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				tb.Log(err)
-			}
-		}()
-
-		close(doneChan)
-	})
-
-	return &ctx
-}
+type sqliteFunctor = func(testing.TB, *sqlite.SQLite) *sqlite.SQLite
 
 func TestNew(t *testing.T) {
 	t.Parallel()
@@ -259,7 +146,7 @@ func TestSQLite_GetString(t *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), putStrings(
+				db: compose(t, newSQLite(t), putStrings(
 					[2]string{"foo", "bar"},
 				)),
 			},
@@ -393,7 +280,7 @@ func TestSQLite_GetMedia(t *testing.T) {
 		{
 			name: "db error",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), closeSQLite),
+				db: compose(t, newSQLite(t), closeSQLite),
 			},
 			args: args{
 				ctx: t.Context(),
@@ -405,7 +292,7 @@ func TestSQLite_GetMedia(t *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), putMedias(
+				db: compose(t, newSQLite(t), putMedias(
 					&entities.Media{
 						SourceID: "foo",
 						TargetID: "bar",
@@ -482,7 +369,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 		{
 			name: "db error",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), closeSQLite),
+				db: compose(t, newSQLite(t), closeSQLite),
 			},
 			args: args{
 				ctx: t.Context(),
@@ -506,7 +393,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 		{
 			name: "partial match",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), putMedias(
+				db: compose(t, newSQLite(t), putMedias(
 					&entities.Media{
 						SourceID: "foo",
 						TargetID: "bar",
@@ -528,7 +415,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 		{
 			name: "total match",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), putMedias(
+				db: compose(t, newSQLite(t), putMedias(
 					&entities.Media{
 						SourceID: "foo",
 						TargetID: "bar",
@@ -635,7 +522,7 @@ func TestSQLite_PutMedia(t *testing.T) {
 		{
 			name: "closed db error",
 			fields: fields{
-				db: testdata.Compose(t, newSQLite(t), closeSQLite),
+				db: compose(t, newSQLite(t), closeSQLite),
 			},
 			args: args{
 				ctx: t.Context(),
@@ -874,4 +761,144 @@ func ExampleNew_schema_failure() {
 	// Output:
 	// DB: <nil>
 	// Error: failed to execute schema queries: attempt to write a readonly database (8)
+}
+
+func callerMatches(tb testing.TB, target string) bool {
+	tb.Helper()
+
+	pc, _, _, ok := runtime.Caller(5)
+	if !ok {
+		tb.Fatal("failed to retrieve caller program counter")
+	}
+
+	funcInfo := runtime.FuncForPC(pc)
+	if funcInfo == nil {
+		tb.Fatal("failed to retrieve caller function info")
+	}
+
+	return funcInfo.Name() == target
+}
+
+func closeSQLite(tb testing.TB, db *sqlite.SQLite) *sqlite.SQLite {
+	tb.Helper()
+
+	err := db.Close()
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	return db
+}
+
+func compose(tb testing.TB, value *sqlite.SQLite, functors ...sqliteFunctor) *sqlite.SQLite {
+	tb.Helper()
+
+	for _, decorate := range functors {
+		value = decorate(tb, value)
+	}
+
+	return value
+}
+
+//nolint:gocognit // needed to test cancelled context side-effects
+func newInterruptCtx(tb testing.TB, successes uint, caller string) *test.MockContext {
+	tb.Helper()
+
+	doneChan := make(chan struct{})
+
+	var outDoneChan <-chan struct{} = doneChan
+
+	ctx := test.MockContext{}
+
+	ctx.On("Value", mock.Anything).Return(nil)
+	errCall := ctx.On("Err").Return(nil)
+
+	ctx.On("Done").Return(outDoneChan).Run(func(_ mock.Arguments) {
+		if !callerMatches(tb, caller) {
+			return
+		}
+
+		count := ctx.TestData().Get("count").Uint(0)
+		count++
+
+		if count <= successes {
+			ctx.TestData().Set("count", count)
+
+			return
+		}
+
+		closed := ctx.TestData().Get("closed").Bool(false)
+		if !closed {
+			// make sure the channel is empty
+			select {
+			default:
+			case <-doneChan:
+			}
+
+			close(doneChan)
+			ctx.TestData().Set("closed", true)
+			errCall.Return(context.Canceled)
+		}
+	})
+
+	tb.Cleanup(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				tb.Log(err)
+			}
+		}()
+
+		close(doneChan)
+	})
+
+	return &ctx
+}
+
+func newSQLite(tb testing.TB) *sqlite.SQLite {
+	tb.Helper()
+
+	db, err := sqlite.New(tb.Context(), "file::memory:")
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	return db
+}
+
+func putMedias(medias ...*entities.Media) sqliteFunctor {
+	return func(tb testing.TB, db *sqlite.SQLite) *sqlite.SQLite {
+		tb.Helper()
+
+		var err error
+
+		for _, media := range medias {
+			err = db.PutMedia(tb.Context(), media)
+			if err != nil {
+				tb.Fatal(err)
+			}
+		}
+
+		return db
+	}
+}
+
+func putStrings(entries ...[2]string) sqliteFunctor {
+	return func(tb testing.TB, db *sqlite.SQLite) *sqlite.SQLite {
+		tb.Helper()
+
+		var err error
+
+		for _, pair := range entries {
+			err = db.SetString(tb.Context(), pair[0], pair[1])
+			if err != nil {
+				tb.Fatal(err)
+			}
+		}
+
+		return db
+	}
+}
+
+func sortMedia(a, b *entities.Media) int {
+	return strings.Compare(a.SourceID, b.SourceID)
 }

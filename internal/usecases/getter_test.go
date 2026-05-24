@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -24,7 +24,7 @@ func TestHTTPGetter(t *testing.T) {
 	want := []byte("bar")
 
 	req, err := http.NewRequestWithContext(
-		context.TODO(),
+		t.Context(),
 		http.MethodGet,
 		uri,
 		http.NoBody,
@@ -38,14 +38,13 @@ func TestHTTPGetter(t *testing.T) {
 	res := resWriter.Result()
 	defer res.Body.Close()
 
-	doer := testdata.MockDoer{}
+	doer := test.NewMockDoer(t)
 
-	doer.On("Do", req).
-		Return(res, nil).Once()
+	doer.EXPECT().Do(req).Return(res, nil).Once()
 
-	getter := usecases.HTTPGetter(&doer)
+	getter := usecases.HTTPGetter(doer)
 
-	got, err := getter.Get(context.TODO(), uri)
+	got, err := getter.Get(t.Context(), uri)
 	require.NoError(t, err)
 
 	assert.Equal(t, want, got)
@@ -74,7 +73,7 @@ func TestHTTPGetter_NewRequestWithContext_error(t *testing.T) {
 		{
 			name: "invalid URI",
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				uri: "\n",
 			},
 		},
@@ -84,9 +83,9 @@ func TestHTTPGetter_NewRequestWithContext_error(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			doer := testdata.MockDoer{}
+			doer := test.NewMockDoer(t)
 
-			getter := usecases.HTTPGetter(&doer)
+			getter := usecases.HTTPGetter(doer)
 
 			got, err := getter.Get(tt.args.ctx, tt.args.uri)
 			require.ErrorIs(t, err, usecases.ErrStatusInvalidArgument)
@@ -106,21 +105,20 @@ func TestHTTPGetter_Do_error(t *testing.T) {
 	doErr := errors.New("bar")
 
 	req, err := http.NewRequestWithContext(
-		context.TODO(),
+		t.Context(),
 		http.MethodGet,
 		uri,
 		http.NoBody,
 	)
 	require.NoError(t, err)
 
-	doer := testdata.MockDoer{}
+	doer := test.NewMockDoer(t)
 
-	doer.On("Do", req).
-		Return(res, doErr).Once()
+	doer.EXPECT().Do(req).Return(res, doErr).Once()
 
-	getter := usecases.HTTPGetter(&doer)
+	getter := usecases.HTTPGetter(doer)
 
-	got, err := getter.Get(context.TODO(), uri)
+	got, err := getter.Get(t.Context(), uri)
 	require.ErrorIs(t, err, usecases.ErrStatusUnknown)
 
 	assert.Nil(t, got)
@@ -202,7 +200,7 @@ func TestHTTPGetter_non200(t *testing.T) {
 			uri := "http://example.com/foo.txt"
 
 			req, err := http.NewRequestWithContext(
-				context.TODO(),
+				t.Context(),
 				http.MethodGet,
 				uri,
 				http.NoBody,
@@ -215,14 +213,13 @@ func TestHTTPGetter_non200(t *testing.T) {
 			res := resWriter.Result()
 			defer res.Body.Close()
 
-			doer := testdata.MockDoer{}
+			doer := test.NewMockDoer(t)
 
-			doer.On("Do", req).
-				Return(res, nil).Once()
+			doer.EXPECT().Do(req).Return(res, nil).Once()
 
-			getter := usecases.HTTPGetter(&doer)
+			getter := usecases.HTTPGetter(doer)
 
-			got, err := getter.Get(context.TODO(), uri)
+			got, err := getter.Get(t.Context(), uri)
 			require.Error(t, err)
 
 			assert.Nil(t, got)
@@ -237,31 +234,26 @@ func TestFSGetter(t *testing.T) {
 	name := "foo.txt"
 	data := []byte("bar")
 
-	root := testdata.MockFS{}
-	file := testdata.MockFile{}
-	fileInfo := testdata.MockFileInfo{}
+	root := test.NewMockFS(t)
+	file := test.NewMockFile(t)
+	fileInfo := test.NewMockFileInfo(t)
 
-	root.On("Open", name).
-		Return(&file, nil).Once()
-	file.On("Stat").
-		Return(&fileInfo, nil).Once()
-	file.On("Close").
-		Return(nil).Once()
-	fileInfo.On("Size").
-		Return(int64(len(data))).Once()
+	root.EXPECT().Open(name).Return(file, nil).Once()
+	file.EXPECT().Stat().Return(fileInfo, nil).Once()
+	file.EXPECT().Close().Return(nil).Once()
+	fileInfo.EXPECT().Size().Return(int64(len(data))).Once()
 
 	// first read returns data up to the file size
-	fileReadCall := file.On("Read", mock.AnythingOfType("[]uint8")).
-		Return(len(data), nil).Once()
-	fileReadCall.RunFn = testdata.FileReadWith(data)
+	fileReadCall := file.EXPECT().Read(mock.AnythingOfType("[]uint8")).Return(len(data), nil).Once()
+	fileReadCall.RunFn = test.FileReadWith(t, data)
 
 	// second read returns EOF and breaks the loop
-	file.On("Read", mock.AnythingOfType("[]uint8")).
+	file.EXPECT().Read(mock.AnythingOfType("[]uint8")).
 		Return(0, io.EOF).Once().NotBefore(fileReadCall)
 
-	getter := usecases.FSGetter(&root)
+	getter := usecases.FSGetter(root)
 
-	got, err := getter.Get(context.TODO(), name)
+	got, err := getter.Get(t.Context(), name)
 	require.NoError(t, err)
 
 	assert.Equal(t, data, got)

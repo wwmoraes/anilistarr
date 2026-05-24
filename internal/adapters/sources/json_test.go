@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters/sources"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -19,11 +19,11 @@ func TestJSONProvider(t *testing.T) {
 	testURI := "mem://test"
 
 	testMetadata := []usecases.Metadata{
-		testdata.Metadata{
+		test.Metadata{
 			SourceID: "1",
 			TargetID: "91",
 		},
-		testdata.Metadata{
+		test.Metadata{
 			SourceID: "2",
 			TargetID: "92",
 		},
@@ -34,9 +34,9 @@ func TestJSONProvider(t *testing.T) {
 		t.Error(err)
 	}
 
-	provider := sources.JSON[testdata.Metadata](testURI)
+	provider := sources.JSON[test.Metadata](testURI)
 
-	getter := testdata.MockGetter{}
+	getter := test.MockGetter{}
 
 	getter.On("Get", mock.Anything, testURI).
 		Return(testData, nil).Once()
@@ -54,7 +54,7 @@ func TestJSONProvider(t *testing.T) {
 func TestJSONProvider_nilGetter(t *testing.T) {
 	t.Parallel()
 
-	provider := sources.JSON[testdata.Metadata]("")
+	provider := sources.JSON[test.Metadata]("")
 
 	got, err := provider.Fetch(t.Context(), nil)
 	require.ErrorIs(t, err, usecases.ErrStatusInternal)
@@ -69,12 +69,12 @@ func TestJSONProvider_notFound(t *testing.T) {
 
 	testURI := "mem://test"
 
-	getter := testdata.MockGetter{}
+	getter := test.MockGetter{}
 
 	getter.On("Get", mock.Anything, testURI).
 		Return(data, usecases.ErrStatusNotFound).Once()
 
-	provider := sources.JSON[testdata.Metadata](testURI)
+	provider := sources.JSON[test.Metadata](testURI)
 
 	got, err := provider.Fetch(t.Context(), &getter)
 	require.ErrorIs(t, err, usecases.ErrStatusNotFound)
@@ -89,11 +89,11 @@ func TestJSONProvider_invalid(t *testing.T) {
 	testURI := "mem://test"
 	testData := []byte("test")
 
-	getter := testdata.MockGetter{}
+	getter := test.MockGetter{}
 	getter.On("Get", mock.Anything, testURI).
 		Return(testData, nil).Once()
 
-	provider := sources.JSON[testdata.Metadata](testURI)
+	provider := sources.JSON[test.Metadata](testURI)
 
 	got, err := provider.Fetch(t.Context(), &getter)
 	require.ErrorIs(t, err, usecases.ErrStatusFailedPrecondition)

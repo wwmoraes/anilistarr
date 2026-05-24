@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
 	"path"
 	"testing"
 
@@ -13,7 +14,6 @@ import (
 	bolterrors "go.etcd.io/bbolt/errors"
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/bolt"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -73,7 +73,7 @@ func TestNew(t *testing.T) {
 			tt.assertError(t, err)
 
 			if got != nil {
-				testdata.Close(t, got)
+				closeValue(t, got)
 			}
 
 			tt.assertValue(t, got)
@@ -129,7 +129,7 @@ func TestBolt_GetString(t *testing.T) {
 			cache, err := bolt.New(cachePath, tt.args.options)
 
 			require.NoError(t, err)
-			defer testdata.Close(t, cache)
+			defer closeValue(t, cache)
 
 			err = cache.SetString(tt.args.ctx, "foo", "bar")
 			require.NoError(t, err)
@@ -214,7 +214,7 @@ func TestBolt_SetString(t *testing.T) {
 			cache, err = bolt.New(cachePath, tt.args.options)
 			require.NoError(t, err)
 
-			defer testdata.Close(t, cache)
+			defer closeValue(t, cache)
 
 			err = cache.SetString(
 				tt.args.ctx,
@@ -224,4 +224,11 @@ func TestBolt_SetString(t *testing.T) {
 			require.ErrorIs(t, err, tt.wantError)
 		})
 	}
+}
+
+func closeValue(tb testing.TB, closer io.Closer) {
+	tb.Helper()
+
+	err := closer.Close()
+	require.NoError(tb, err)
 }

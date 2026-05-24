@@ -1,6 +1,7 @@
 package anilist_test
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -12,8 +13,7 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/trackers/anilist"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
-	"github.com/wwmoraes/anilistarr/internal/usecases"
+	"github.com/wwmoraes/anilistarr/internal/test"
 )
 
 func TestRatedClient_Do(t *testing.T) {
@@ -22,7 +22,6 @@ func TestRatedClient_Do(t *testing.T) {
 	t.Skip()
 
 	type fields struct {
-		Doer    usecases.Doer
 		Limiter *rate.Limiter
 	}
 
@@ -40,7 +39,6 @@ func TestRatedClient_Do(t *testing.T) {
 		{
 			name: "200",
 			fields: fields{
-				Doer:    http.DefaultClient,
 				Limiter: rate.NewLimiter(rate.Limit(time.Nanosecond), 1),
 			},
 			args: args{
@@ -52,7 +50,6 @@ func TestRatedClient_Do(t *testing.T) {
 		{
 			name: "429",
 			fields: fields{
-				Doer:    http.DefaultClient,
 				Limiter: rate.NewLimiter(rate.Every(0), 0),
 			},
 			args: args{
@@ -61,19 +58,81 @@ func TestRatedClient_Do(t *testing.T) {
 			assertion: assert.Error,
 			want:      &http.Response{},
 		},
+		{
+			name: "429 with empty remaining header",
+			fields: fields{
+				Limiter: rate.NewLimiter(rate.Limit(time.Nanosecond), 1),
+			},
+			assertion: assert.NoError,
+			want: &http.Response{
+				Status:     http.StatusText(http.StatusTooManyRequests),
+				StatusCode: http.StatusTooManyRequests,
+				Header: http.Header{
+					anilist.HTTPHeaderRateLimitRemaining: []string{""},
+				},
+			},
+		},
+		{
+			name: "429 with invalid remaining header",
+			fields: fields{
+				Limiter: rate.NewLimiter(rate.Limit(time.Nanosecond), 1),
+			},
+			assertion: assert.NoError,
+			want: &http.Response{
+				StatusCode: http.StatusTooManyRequests,
+				Header: http.Header{
+					anilist.HTTPHeaderRateLimitRemaining: []string{"foo"},
+				},
+			},
+		},
+		{
+			name: "429 with empty limit header",
+			fields: fields{
+				Limiter: rate.NewLimiter(rate.Limit(time.Nanosecond), 1),
+			},
+			assertion: assert.NoError,
+			want: &http.Response{
+				Status:     http.StatusText(http.StatusTooManyRequests),
+				StatusCode: http.StatusTooManyRequests,
+				Header: http.Header{
+					anilist.HTTPHeaderRateLimitBurst: []string{""},
+				},
+			},
+		},
+		{
+			name: "429 with invalid limit header",
+			fields: fields{
+				Limiter: rate.NewLimiter(rate.Limit(time.Nanosecond), 1),
+			},
+			assertion: assert.NoError,
+			want: &http.Response{
+				Status:     http.StatusText(http.StatusTooManyRequests),
+				StatusCode: http.StatusTooManyRequests,
+				Header: http.Header{
+					anilist.HTTPHeaderRateLimitBurst: []string{"foo"},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			doer := test.NewMockDoer(t)
+
+			doer.EXPECT().Do(tt.args.req).Return(tt.want, nil).Once()
+
 			client := anilist.RatedClient{
-				Doer:    tt.fields.Doer,
+				Doer:    doer,
 				Limiter: tt.fields.Limiter,
 			}
 
 			got, err := client.Do(tt.args.req)
 			tt.assertion(t, err)
+
+			_, err = io.ReadAll(got.Body)
+			require.NoError(t, err)
 
 			err = got.Body.Close()
 			require.NoError(t, err)
@@ -101,23 +160,29 @@ func TestRatedClient_200(t *testing.T) {
 	require.NoError(t, err)
 
 	res := recorder.Result()
+
 	res.Request = req
 	defer res.Body.Close()
 
-	doer := testdata.MockDoer{}
+	doer := test.NewMockDoer(t)
 
-	doer.On("Do", req).Return(res, nil).Once()
+	doer.EXPECT().Do(req).Return(res, nil).Once()
 
 	limiter := rate.NewLimiter(rate.Every(time.Nanosecond), 1)
 
 	client := anilist.RatedClient{
-		Doer:    &doer,
+		Doer:    doer,
 		Limiter: limiter,
 	}
 
 	got, err := client.Do(req)
 	require.NoError(t, err)
-	defer got.Body.Close()
+
+	_, err = io.ReadAll(got.Body)
+	require.NoError(t, err)
+
+	err = got.Body.Close()
+	require.NoError(t, err)
 
 	assert.Equal(t, res, got)
 
@@ -134,12 +199,12 @@ func TestRatedClient_local_429(t *testing.T) {
 		http.NoBody,
 	)
 
-	doer := testdata.MockDoer{}
+	doer := test.NewMockDoer(t)
 
 	limiter := rate.NewLimiter(rate.Every(time.Hour), 1)
 
 	client := anilist.RatedClient{
-		Doer:    &doer,
+		Doer:    doer,
 		Limiter: limiter,
 	}
 
@@ -149,6 +214,7 @@ func TestRatedClient_local_429(t *testing.T) {
 
 	got, err := client.Do(req)
 	require.NoError(t, err)
+
 	defer got.Body.Close()
 
 	assert.Equal(t, http.StatusTooManyRequests, got.StatusCode)
@@ -177,22 +243,24 @@ func TestRatedClient_remote_429(t *testing.T) {
 	recorder.WriteHeader(http.StatusTooManyRequests)
 
 	res := recorder.Result()
+
 	res.Request = req
 	defer res.Body.Close()
 
-	doer := testdata.MockDoer{}
+	doer := test.NewMockDoer(t)
 
-	doer.On("Do", req).Return(res, nil).Once()
+	doer.EXPECT().Do(req).Return(res, nil).Once()
 
 	limiter := rate.NewLimiter(rate.Every(time.Hour), 1)
 
 	client := anilist.RatedClient{
-		Doer:    &doer,
+		Doer:    doer,
 		Limiter: limiter,
 	}
 
 	got, err := client.Do(req)
 	require.NoError(t, err)
+
 	defer got.Body.Close()
 
 	assert.Equal(t, res, got)

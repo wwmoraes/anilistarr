@@ -1,9 +1,8 @@
-// Package redis implements a Redis-backed driver to fit use-cases needs.
 package redis_test
 
 import (
 	"context"
-	"net"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -11,58 +10,41 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/wwmoraes/anilistarr/internal/drivers/redis"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
-func TestRedis(t *testing.T) {
+func runValkey(tb testing.TB) string {
+	tb.Helper()
+
+	socketPath := filepath.Join(tb.TempDir(), "valkey.sock")
+	//nolint:forbidigo,gosec // fine for test purposes
+	cmd := exec.CommandContext(
+		tb.Context(),
+		"valkey-server",
+		"--maxmemory", "64mb",
+		"--port", "0",
+		"--unixsocket", socketPath,
+	)
+
+	//nolint:forbidigo // fine for test purposes
+	err := cmd.Start()
+	if err != nil {
+		tb.Fatal("failed to start valkey", err)
+	}
+
+	return socketPath
+}
+
+func TestRedis_works(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	options := redis.Options{
+		Addr:             runValkey(t),
 		DisableIndentity: true,
-	}
-
-	if testing.Short() {
-		var lc net.ListenConfig
-
-		listener, err := lc.Listen(t.Context(), "unix", filepath.Join(t.TempDir(), "socket"))
-		require.NoError(t, err)
-
-		defer listener.Close()
-
-		server := testdata.NewCommandServer(
-			listener,
-			testdata.Command{
-				Request:  testdata.RESP("*2", "$5", "hello", "$1", "3"),
-				Response: testdata.RESP("%1", "+server", "+test"),
-			},
-			testdata.Command{
-				Request:  testdata.RESP("*1", "$4", "ping"),
-				Response: testdata.RESP("+PONG"),
-			},
-			testdata.Command{
-				Request:  testdata.RESP("*2", "$3", "get", "$3", "foo"),
-				Response: testdata.RESP("_"),
-			},
-			testdata.Command{
-				Request:  testdata.RESP("*3", "$3", "set", "$3", "foo", "$3", "bar"),
-				Response: testdata.RESP("+OK"),
-			},
-			testdata.Command{
-				Request:  testdata.RESP("*2", "$3", "get", "$3", "foo"),
-				Response: testdata.RESP("+bar"),
-			},
-		)
-
-		server.Start(ctx)
-
-		options.Addr = listener.Addr().String()
-		options.Network = listener.Addr().Network()
-	} else {
-		t.Skip("TODO implement external Redis server test")
+		Network:          "unix",
 	}
 
 	key, value := "foo", "bar"
@@ -87,30 +69,16 @@ func TestRedis(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestNew(t *testing.T) {
+func TestNew_createInstanceSuccessfully(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	options := redis.Options{
+		Addr:             runValkey(t),
 		DisableIndentity: true,
-	}
-
-	if testing.Short() {
-		var lc net.ListenConfig
-
-		listener, err := lc.Listen(t.Context(), "unix", filepath.Join(t.TempDir(), "socket"))
-		require.NoError(t, err)
-		defer listener.Close()
-
-		server := testdata.NewCommandServer(listener)
-		server.Start(ctx)
-
-		options.Addr = listener.Addr().String()
-		options.Network = listener.Addr().Network()
-	} else {
-		t.Skip("TODO implement external Redis server test")
+		Network:          "unix",
 	}
 
 	cache, err := redis.New(ctx, &options)
