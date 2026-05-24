@@ -50,6 +50,7 @@ func main() {
 
 	cachePath, err := os.MkdirTemp("", "anilistarr-integration-badger-cache-*")
 	process.AssertWith(err, "failed to create temporary directory")
+
 	defer os.RemoveAll(cachePath)
 
 	cache, err := badger.New(
@@ -61,6 +62,7 @@ func main() {
 
 	storePath, err := os.MkdirTemp("", "anilistarr-integration-badger-store-*")
 	process.AssertWith(err, "failed to create temporary directory")
+
 	defer os.RemoveAll(storePath)
 
 	store, err := badger.New(

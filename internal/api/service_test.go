@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -26,7 +25,7 @@ func TestService_GetUserID(t *testing.T) {
 	username := "foo"
 	userID := "bar"
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	mediaLister := testdata.MockMediaLister{}
 
 	mediaLister.
@@ -38,7 +37,8 @@ func TestService_GetUserID(t *testing.T) {
 		MediaLister: &mediaLister,
 	}
 
-	r := httptest.NewRequest(
+	r := httptest.NewRequestWithContext(
+		t.Context(),
 		http.MethodGet,
 		"http://example.com/",
 		http.NoBody,
@@ -97,7 +97,7 @@ func TestService_GetUserID_error(t *testing.T) {
 			t.Parallel()
 
 			username := "foo"
-			ctx := context.TODO()
+			ctx := t.Context()
 
 			mediaLister := testdata.MockMediaLister{}
 
@@ -109,7 +109,8 @@ func TestService_GetUserID_error(t *testing.T) {
 				MediaLister: &mediaLister,
 			}
 
-			r := httptest.NewRequest(
+			r := httptest.NewRequestWithContext(
+				t.Context(),
 				http.MethodGet,
 				"http://example.com/",
 				http.NoBody,
@@ -137,7 +138,7 @@ func TestService_GetUserID_error(t *testing.T) {
 func TestService_GetUserMedia(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	username := "foo"
 	medias := entities.CustomList{
 		entities.CustomEntry{
@@ -152,7 +153,8 @@ func TestService_GetUserMedia(t *testing.T) {
 		Return(medias, nil).
 		Once()
 
-	r := httptest.NewRequest(
+	r := httptest.NewRequestWithContext(
+		t.Context(),
 		http.MethodGet,
 		"http://example.com/",
 		http.NoBody,
@@ -188,7 +190,7 @@ func TestService_GetUserMedia_error(t *testing.T) {
 	t.Parallel()
 
 	username := "foo"
-	ctx := context.TODO()
+	ctx := t.Context()
 	wantErr := errors.New("bar")
 
 	mediaLister := testdata.MockMediaLister{}
@@ -200,7 +202,8 @@ func TestService_GetUserMedia_error(t *testing.T) {
 			wantErr,
 		).Once()
 
-	r := httptest.NewRequest(
+	r := httptest.NewRequestWithContext(
+		t.Context(),
 		http.MethodGet,
 		"http://example.com/",
 		http.NoBody,

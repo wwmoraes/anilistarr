@@ -18,7 +18,7 @@ import (
 func TestRedis(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	options := redis.Options{
@@ -26,7 +26,9 @@ func TestRedis(t *testing.T) {
 	}
 
 	if testing.Short() {
-		listener, err := net.Listen("unix", filepath.Join(t.TempDir(), "socket"))
+		var lc net.ListenConfig
+
+		listener, err := lc.Listen(t.Context(), "unix", filepath.Join(t.TempDir(), "socket"))
 		require.NoError(t, err)
 
 		defer listener.Close()
@@ -88,7 +90,7 @@ func TestRedis(t *testing.T) {
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	options := redis.Options{
@@ -96,7 +98,9 @@ func TestNew(t *testing.T) {
 	}
 
 	if testing.Short() {
-		listener, err := net.Listen("unix", filepath.Join(t.TempDir(), "socket"))
+		var lc net.ListenConfig
+
+		listener, err := lc.Listen(t.Context(), "unix", filepath.Join(t.TempDir(), "socket"))
 		require.NoError(t, err)
 		defer listener.Close()
 

@@ -99,7 +99,7 @@ func TestBolt_GetString(t *testing.T) {
 		{
 			name: "hit",
 			args: args{
-				ctx:     context.TODO(),
+				ctx:     t.Context(),
 				key:     "foo",
 				options: bbolt.DefaultOptions,
 			},
@@ -109,7 +109,7 @@ func TestBolt_GetString(t *testing.T) {
 		{
 			name: "miss",
 			args: args{
-				ctx:     context.TODO(),
+				ctx:     t.Context(),
 				key:     "bar",
 				options: bbolt.DefaultOptions,
 			},
@@ -127,6 +127,7 @@ func TestBolt_GetString(t *testing.T) {
 			cachePath := path.Join(t.TempDir(), dirname)
 
 			cache, err := bolt.New(cachePath, tt.args.options)
+
 			require.NoError(t, err)
 			defer testdata.Close(t, cache)
 
@@ -159,7 +160,7 @@ func TestBolt_SetString(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				ctx:     context.TODO(),
+				ctx:     t.Context(),
 				key:     "foo",
 				value:   "bar",
 				options: nil,
@@ -169,7 +170,7 @@ func TestBolt_SetString(t *testing.T) {
 		{
 			name: "empty key",
 			args: args{
-				ctx:     context.TODO(),
+				ctx:     t.Context(),
 				key:     "",
 				value:   "bar",
 				options: nil,
@@ -179,7 +180,7 @@ func TestBolt_SetString(t *testing.T) {
 		{
 			name: "readonly",
 			args: args{
-				ctx:   context.TODO(),
+				ctx:   t.Context(),
 				key:   "foo",
 				value: "bar",
 				options: &bbolt.Options{

@@ -138,91 +138,76 @@ func ErrorJoinIf(status, target error) error {
 // handle such cases directly, e.g. whether to follow a 3xx redirection or error
 // is implementation-dependant.
 //
-//nolint:funlen,gocyclo,cyclop,maintidx // better than a global map
+//nolint:gocyclo,cyclop // better than a global map
 func ErrorFromHTTPStatus(code int) error {
 	if code < http.StatusBadRequest {
 		return nil
 	}
 
 	switch code {
-	case http.StatusBadRequest: // 400 // RFC 9110, 15.5.1
+	case
+		http.StatusBadRequest,                  // 400 // RFC 9110, 15.5.1
+		http.StatusMethodNotAllowed,            // 405 // RFC 9110, 15.5.6
+		http.StatusNotAcceptable,               // 406 // RFC 9110, 15.5.7
+		http.StatusLengthRequired,              // 411 // RFC 9110, 15.5.12
+		http.StatusRequestURITooLong,           // 414 // RFC 9110, 15.5.15
+		http.StatusUnsupportedMediaType,        // 415 // RFC 9110, 15.5.16
+		http.StatusRequestHeaderFieldsTooLarge, // 431 // RFC 6585, 5
+		http.StatusNotExtended:                 // 510 // RFC 2774, 7
 		return ErrStatusInvalidArgument
-	case http.StatusUnauthorized: // 401 // RFC 9110, 15.5.2
+	case
+		http.StatusUnauthorized,                  // 401 // RFC 9110, 15.5.2
+		http.StatusNetworkAuthenticationRequired: // 511 // RFC 6585, 6
 		return ErrStatusUnauthenticated
-	case http.StatusPaymentRequired: // 402 // RFC 9110, 15.5.3
+	case
+		http.StatusPaymentRequired,         // 402 // RFC 9110, 15.5.3
+		http.StatusProxyAuthRequired,       // 407 // RFC 9110, 15.5.8
+		http.StatusPreconditionFailed,      // 412 // RFC 9110, 15.5.13
+		http.StatusExpectationFailed,       // 417 // RFC 9110, 15.5.18
+		http.StatusUnprocessableEntity,     // 422 // RFC 9110, 15.5.21
+		http.StatusUpgradeRequired,         // 426 // RFC 9110, 15.5.22
+		http.StatusBadGateway,              // 502 // RFC 9110, 15.6.3
+		http.StatusHTTPVersionNotSupported: // 505 // RFC 9110, 15.6.6
 		return ErrStatusFailedPrecondition
-	case http.StatusForbidden: // 403 // RFC 9110, 15.5.4
+	case
+		http.StatusForbidden: // 403 // RFC 9110, 15.5.4
 		return ErrStatusPermissionDenied
-	case http.StatusNotFound: // 404 // RFC 9110, 15.5.5
+	case
+		http.StatusNotFound, // 404 // RFC 9110, 15.5.5
+		http.StatusGone:     // 410 // RFC 9110, 15.5.11
 		return ErrStatusNotFound
-	case http.StatusMethodNotAllowed: // 405 // RFC 9110, 15.5.6
-		return ErrStatusInvalidArgument
-	case http.StatusNotAcceptable: // 406 // RFC 9110, 15.5.7
-		return ErrStatusInvalidArgument
-	case http.StatusProxyAuthRequired: // 407 // RFC 9110, 15.5.8
-		return ErrStatusFailedPrecondition
-	case http.StatusRequestTimeout: // 408 // RFC 9110, 15.5.9
+	case
+		http.StatusRequestTimeout, // 408 // RFC 9110, 15.5.9
+		http.StatusGatewayTimeout: // 504 // RFC 9110, 15.6.5
 		return ErrStatusDeadlineExceeded
-	case http.StatusConflict: // 409 // RFC 9110, 15.5.10
+	case
+		http.StatusConflict,              // 409 // RFC 9110, 15.5.10
+		http.StatusMisdirectedRequest,    // 421 // RFC 9110, 15.5.20
+		http.StatusTooEarly,              // 425 // RFC 8470, 5.2.
+		http.StatusPreconditionRequired,  // 428 // RFC 6585, 3
+		http.StatusVariantAlsoNegotiates, // 506
+		http.StatusLoopDetected:          // 508 // RFC 5842, 7.2
 		return ErrStatusAborted
-	case http.StatusGone: // 410 // RFC 9110, 15.5.11
-		return ErrStatusNotFound
-	case http.StatusLengthRequired: // 411 // RFC 9110, 15.5.12
-		return ErrStatusInvalidArgument
-	case http.StatusPreconditionFailed: // 412 // RFC 9110, 15.5.13
-		return ErrStatusFailedPrecondition
-	case http.StatusRequestEntityTooLarge: // 413 // RFC 9110, 15.5.14
+	case
+		http.StatusRequestEntityTooLarge,        // 413 // RFC 9110, 15.5.14
+		http.StatusRequestedRangeNotSatisfiable: // 416 // RFC 9110, 15.5.17
 		return ErrStatusOutOfRange
-	case http.StatusRequestURITooLong: // 414 // RFC 9110, 15.5.15
-		return ErrStatusInvalidArgument
-	case http.StatusUnsupportedMediaType: // 415 // RFC 9110, 15.5.16
-		return ErrStatusInvalidArgument
-	case http.StatusRequestedRangeNotSatisfiable: // 416 // RFC 9110, 15.5.17
-		return ErrStatusOutOfRange
-	case http.StatusExpectationFailed: // 417 // RFC 9110, 15.5.18
-		return ErrStatusFailedPrecondition
-	case http.StatusMisdirectedRequest: // 421 // RFC 9110, 15.5.20
-		return ErrStatusAborted
-	case http.StatusUnprocessableEntity: // 422 // RFC 9110, 15.5.21
-		return ErrStatusFailedPrecondition
-	case http.StatusLocked: // 423 // RFC 4918, 11.3
+	case
+		http.StatusLocked,                     // 423 // RFC 4918, 11.3
+		http.StatusFailedDependency,           // 424 // RFC 4918, 11.4
+		http.StatusTooManyRequests,            // 429 // RFC 6585, 4
+		http.StatusUnavailableForLegalReasons, // 451 // RFC 7725, 3
+		http.StatusServiceUnavailable:         // 503 // RFC 9110, 15.6.4
 		return ErrStatusUnavailable
-	case http.StatusFailedDependency: // 424 // RFC 4918, 11.4
-		return ErrStatusUnavailable
-	case http.StatusTooEarly: // 425 // RFC 8470, 5.2.
-		return ErrStatusAborted
-	case http.StatusUpgradeRequired: // 426 // RFC 9110, 15.5.22
-		return ErrStatusFailedPrecondition
-	case http.StatusPreconditionRequired: // 428 // RFC 6585, 3
-		return ErrStatusAborted
-	case http.StatusTooManyRequests: // 429 // RFC 6585, 4
-		return ErrStatusUnavailable
-	case http.StatusRequestHeaderFieldsTooLarge: // 431 // RFC 6585, 5
-		return ErrStatusInvalidArgument
-	case http.StatusUnavailableForLegalReasons: // 451 // RFC 7725, 3
-		return ErrStatusUnavailable
-	case http.StatusInternalServerError: // 500 // RFC 9110, 15.6.1
+	case
+		http.StatusInternalServerError: // 500 // RFC 9110, 15.6.1
 		return ErrStatusInternal
-	case http.StatusNotImplemented: // 501 // RFC 9110, 15.6.2
+	case
+		http.StatusNotImplemented: // 501 // RFC 9110, 15.6.2
 		return ErrStatusUnimplemented
-	case http.StatusBadGateway: // 502 // RFC 9110, 15.6.3
-		return ErrStatusFailedPrecondition
-	case http.StatusServiceUnavailable: // 503 // RFC 9110, 15.6.4
-		return ErrStatusUnavailable
-	case http.StatusGatewayTimeout: // 504 // RFC 9110, 15.6.5
-		return ErrStatusDeadlineExceeded
-	case http.StatusHTTPVersionNotSupported: // 505 // RFC 9110, 15.6.6
-		return ErrStatusFailedPrecondition
-	case http.StatusVariantAlsoNegotiates: // 506
-		return ErrStatusAborted
-	case http.StatusInsufficientStorage: // 507 // RFC 4918, 11.5
+	case
+		http.StatusInsufficientStorage: // 507 // RFC 4918, 11.5
 		return ErrStatusResourceExhausted
-	case http.StatusLoopDetected: // 508 // RFC 5842, 7.2
-		return ErrStatusAborted
-	case http.StatusNotExtended: // 510 // RFC 2774, 7
-		return ErrStatusInvalidArgument
-	case http.StatusNetworkAuthenticationRequired: // 511 // RFC 6585, 6
-		return ErrStatusUnauthenticated
 	default:
 		return ErrStatusUnknown
 	}

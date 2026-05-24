@@ -86,7 +86,8 @@ func TestRatedClient_Do(t *testing.T) {
 func TestRatedClient_200(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(
+	req := httptest.NewRequestWithContext(
+		t.Context(),
 		http.MethodGet,
 		"http://example.com/foo",
 		http.NoBody,
@@ -126,7 +127,8 @@ func TestRatedClient_200(t *testing.T) {
 func TestRatedClient_local_429(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(
+	req := httptest.NewRequestWithContext(
+		t.Context(),
 		http.MethodGet,
 		"http://example.com/foo",
 		http.NoBody,
@@ -158,7 +160,8 @@ func TestRatedClient_local_429(t *testing.T) {
 func TestRatedClient_remote_429(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(
+	req := httptest.NewRequestWithContext(
+		t.Context(),
 		http.MethodGet,
 		"http://example.com/foo",
 		http.NoBody,

@@ -12,10 +12,7 @@
 
 ## Breaking
 
-- [ ] `feat!` - adds functionality for the user, but changes existing functionality
+- [ ] `feat!` - adds functionality for the user, but changes existing
+  functionality
 - [ ] `fix!` - fixes an issue for the user, but changes existing functionality
 - [ ] `chore!` - updating yarn/lerna scripts, etc
-
-## Changelog
-
-{{changelog}}

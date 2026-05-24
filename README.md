@@ -7,7 +7,7 @@
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/pulls)
 ![Codecov](https://img.shields.io/codecov/c/github/wwmoraes/anilistarr)
 
-![GitHub branch status](https://img.shields.io/github/checks-status/wwmoraes/anilistarr/master)
+![GitHub branch status](https://img.shields.io/github/checks-runs/wwmoraes/anilistarr/master)
 [![Integration](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml)
 [![Release](https://github.com/wwmoraes/anilistarr/actions/workflows/release.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/release.yml)
 [![Security](https://github.com/wwmoraes/anilistarr/actions/workflows/security.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/security.yml)
@@ -22,7 +22,7 @@
 
 [![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 
----
+______________________________________________________________________
 
 ## 📝 Table of Contents
 
@@ -38,7 +38,8 @@
 
 ## 🧐 About
 
-Converts an Anilist user watching list to a custom list format which *arr apps support.
+Converts an Anilist user watching list to a custom list format which \*arr apps
+support.
 
 It works by fetching the user info directly from Anilist thanks to its API, and
 converts the IDs using community-provided mappings.
@@ -84,7 +85,8 @@ file. The Docker image provided contains the handler alone, for instance.
 
 - [Golang](https://go.dev) - Base language
 - [Chi](https://go-chi.io) - net/HTTP-compatible router that doesn't suck
-- [genqlient](https://github.com/Khan/genqlient) - type-safe GraphQL client generator
+- [genqlient](https://github.com/Khan/genqlient) - type-safe GraphQL client
+  generator
 - [Open Telemetry](https://opentelemetry.io) - Observability
 
 ## 🧑‍💻 Authors
@@ -93,7 +95,10 @@ file. The Docker image provided contains the handler alone, for instance.
 
 ## 🎉 Acknowledgements
 
-- Anilist for their great service and API <https://anilist.gitbook.io/anilist-apiv2-docs/>
+- Anilist for their great service and API
+  <https://anilist.gitbook.io/anilist-apiv2-docs/>
 - The community for their efforts to map IDs between services
   - <https://github.com/Fribb/anime-lists>
   - <https://github.com/Anime-Lists/anime-lists/>
+
+[swagger-ui]: https://editor-next.swagger.io/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fwwmoraes%2Fanilistarr%2Fmaster%2Fswagger.yaml

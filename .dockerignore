@@ -34,7 +34,6 @@ tmp
 .editorconfig
 .envrc
 .gitignore
-.markdownlintignore
 CODEOWNERS
 Dockerfile
 LICENSE

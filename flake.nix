@@ -12,7 +12,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:tweag/gomod2nix";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.05-darwin";
+    nixpkgs.url = "github:NixOS/nixpkgs/25.11";
     nur = {
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
@@ -27,19 +27,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix";
     };
-    unstable.url = "github:NixOS/nixpkgs?rev=e38c80c027d6bbdfa2a305fc08e732b9fac4928a";
+    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
   nixConfig = {
     substituters = [
-      "https://wwmoraes.cachix.org/"
-      "https://nix-community.cachix.org/"
       "https://cache.nixos.org/"
+      "https://nix-community.cachix.org/"
+      "https://wwmoraes.cachix.org/"
     ];
     trusted-public-keys = [
-      "wwmoraes.cachix.org-1:N38Kgu19R66Jr62aX5rS466waVzT5p/Paq1g6uFFVyM="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "wwmoraes.cachix.org-1:N38Kgu19R66Jr62aX5rS466waVzT5p/Paq1g6uFFVyM="
     ];
   };
 

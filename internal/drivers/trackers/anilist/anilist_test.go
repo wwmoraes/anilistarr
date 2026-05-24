@@ -91,7 +91,7 @@ func TestTracker_Close(t *testing.T) {
 func TestTracker(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	username := "foo"
 	userID := 1
 	mediaList := []string{"11"}
@@ -179,7 +179,7 @@ func TestTracker(t *testing.T) {
 func TestTracker_GetUserID_not_found(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	username := "foo"
 
 	transport := testdata.MockHTTPRoundTripper{}
@@ -239,7 +239,7 @@ func TestTracker_GetUserID_not_found(t *testing.T) {
 func TestTracker_GetUserID_unavailable(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	username := "foo"
 
 	transport := testdata.MockHTTPRoundTripper{}

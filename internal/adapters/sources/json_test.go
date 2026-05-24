@@ -1,7 +1,6 @@
 package sources_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/goccy/go-json"
@@ -45,7 +44,7 @@ func TestJSONProvider(t *testing.T) {
 	gotURL := provider.String()
 	assert.Equal(t, testURI, gotURL)
 
-	gotMetadata, err := provider.Fetch(context.TODO(), &getter)
+	gotMetadata, err := provider.Fetch(t.Context(), &getter)
 	require.NoError(t, err)
 
 	assert.Equal(t, testMetadata, gotMetadata)
@@ -57,7 +56,7 @@ func TestJSONProvider_nilGetter(t *testing.T) {
 
 	provider := sources.JSON[testdata.Metadata]("")
 
-	got, err := provider.Fetch(context.Background(), nil)
+	got, err := provider.Fetch(t.Context(), nil)
 	require.ErrorIs(t, err, usecases.ErrStatusInternal)
 
 	assert.Nil(t, got)
@@ -77,7 +76,7 @@ func TestJSONProvider_notFound(t *testing.T) {
 
 	provider := sources.JSON[testdata.Metadata](testURI)
 
-	got, err := provider.Fetch(context.Background(), &getter)
+	got, err := provider.Fetch(t.Context(), &getter)
 	require.ErrorIs(t, err, usecases.ErrStatusNotFound)
 
 	assert.Nil(t, got)
@@ -96,7 +95,7 @@ func TestJSONProvider_invalid(t *testing.T) {
 
 	provider := sources.JSON[testdata.Metadata](testURI)
 
-	got, err := provider.Fetch(context.TODO(), &getter)
+	got, err := provider.Fetch(t.Context(), &getter)
 	require.ErrorIs(t, err, usecases.ErrStatusFailedPrecondition)
 
 	assert.Nil(t, got)

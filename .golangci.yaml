@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/golangci/golangci-lint/refs/tags/v2.1.6/jsonschema/golangci.jsonschema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/golangci/golangci-lint/refs/tags/v2.11.0/jsonschema/golangci.jsonschema.json
 version: "2"
 run:
   modules-download-mode: readonly
@@ -26,6 +26,8 @@ linters:
   - cyclop ## triggers package-level warning at the last file, skips nolint elsewhere
   - godot ## Check if comments end in a period. [changes comments indiscriminately]
   - goheader ## Checks is file header matches to pattern. [breaks packages]
+  ## deprecated
+  - wsl
   settings:
     copyloopvar:
       check-alias: true
@@ -91,8 +93,10 @@ linters:
       - ^github\.com/redis/go-redis/v9\.Options$
       - ^github\.com/wwmoraes/anilistarr/internal/adapters\.CacheParams$
       - ^github\.com/wwmoraes/anilistarr/internal/api\.Service$
+      - ^net/http\.Client$
       - ^net/http\.Response$
       - ^net/http\.Server$
+      - ^net/http\.Transport$
     forbidigo:
       forbid:
       - pattern: ^panic$
@@ -301,6 +305,8 @@ linters:
         disabled: true
       - name: max-public-structs # DDD+ISP = granular interfaces
         disabled: true
+      - name: package-comments # doesn't work with generated files
+        disabled: true
     sloglint:
       no-global: all
       context: all
@@ -403,16 +409,17 @@ linters:
       - goconst
       path: (.+)_test\.go
     paths:
+    - .*\.gen\.go$
     - .*\.sql\.go$
     - .*\.xo\.go$
-    - .*_gen\.go$
+    - .*\_mocks\.go$
+    - builtin$
+    - examples$
     - internal/drivers/sqlite/model/db.go
     - internal/drivers/sqlite/model/models.go
     - internal/drivers/trackers/anilist/generated.go
-    - tmp
     - third_party$
-    - builtin$
-    - examples$
+    - tmp
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
@@ -464,13 +471,14 @@ formatters:
       - github.com/wwmoraes/anilistarr
   exclusions:
     paths:
+    - .*\.gen\.go$
     - .*\.sql\.go$
     - .*\.xo\.go$
-    - .*_gen\.go$
+    - .*\_mocks\.go$
+    - builtin$
+    - examples$
     - internal/drivers/sqlite/model/db.go
     - internal/drivers/sqlite/model/models.go
     - internal/drivers/trackers/anilist/generated.go
-    - tmp
     - third_party$
-    - builtin$
-    - examples$
+    - tmp

@@ -1,7 +1,6 @@
 package usecases_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -20,7 +19,7 @@ func TestMediaList_invalid(t *testing.T) {
 
 	var err error
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	username := "foo"
 	sourceIDs := []entities.SourceID{"1"}
 
@@ -89,7 +88,7 @@ func TestMediaList_Generate(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	got, err := mediaLister.Generate(context.TODO(), username)
+	got, err := mediaLister.Generate(t.Context(), username)
 	require.NoError(t, err)
 
 	assert.Equal(t, customList, got)
@@ -116,7 +115,7 @@ func TestMediaList_Generate_GetUserID_error(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	got, err := mediaLister.Generate(context.TODO(), username)
+	got, err := mediaLister.Generate(t.Context(), username)
 	require.ErrorIs(t, err, usecases.ErrStatusNotFound)
 
 	assert.Nil(t, got)
@@ -148,7 +147,7 @@ func TestMediaList_Generate_GetMediaListIDs_error(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	got, err := mediaLister.Generate(context.TODO(), username)
+	got, err := mediaLister.Generate(t.Context(), username)
 	require.ErrorIs(t, err, usecases.ErrStatusNotFound)
 
 	assert.Nil(t, got)
@@ -183,7 +182,7 @@ func TestMediaList_Generate_Store_error(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	got, err := mediaLister.Generate(context.TODO(), username)
+	got, err := mediaLister.Generate(t.Context(), username)
 	require.ErrorIs(t, err, usecases.ErrStatusUnknown)
 
 	assert.Nil(t, got)
@@ -224,7 +223,7 @@ func TestMediaList_Generate_parse_error(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	got, err := mediaLister.Generate(context.TODO(), username)
+	got, err := mediaLister.Generate(t.Context(), username)
 	require.Error(t, err)
 
 	assert.Nil(t, got)
@@ -252,7 +251,7 @@ func TestMediaList_GetUserID(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	got, err := mediaLister.GetUserID(context.TODO(), username)
+	got, err := mediaLister.GetUserID(t.Context(), username)
 	require.NoError(t, err)
 
 	assert.Equal(t, userID, got)
@@ -301,7 +300,7 @@ func TestMediaList_Refresh(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	err := mediaLister.Refresh(context.TODO(), getter)
+	err := mediaLister.Refresh(t.Context(), getter)
 	require.NoError(t, err)
 
 	source.AssertExpectations(t)
@@ -329,7 +328,7 @@ func TestMediaList_Refresh_Source_error(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	err := mediaLister.Refresh(context.TODO(), getter)
+	err := mediaLister.Refresh(t.Context(), getter)
 	require.Error(t, err)
 
 	source.AssertExpectations(t)
@@ -377,7 +376,7 @@ func TestMediaList_Refresh_Store_error(t *testing.T) {
 		Tracker: &tracker,
 	}
 
-	err := mediaLister.Refresh(context.TODO(), getter)
+	err := mediaLister.Refresh(t.Context(), getter)
 	require.Error(t, err)
 
 	source.AssertExpectations(t)
@@ -388,7 +387,7 @@ func TestMediaList_Refresh_Store_error(t *testing.T) {
 func TestMediaList_MapIDs(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	sourceIDs := []entities.SourceID{"1", "2", "3", "5", "8", "13", "999", ""}
 	targetIDs := []entities.TargetID{"91", "92", "93", "95", "98", "913"}
 	medias := []*entities.Media{
@@ -425,7 +424,7 @@ func TestMediaList_MapIDs(t *testing.T) {
 func TestMediaList_MapIDs_Store_error(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	sourceIDs := []entities.SourceID{"1", "2", "3", "5", "8", "13", "999", ""}
 
 	source := testdata.MockSource{}

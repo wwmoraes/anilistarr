@@ -19,7 +19,7 @@ import (
 func TestBadger(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	mediaA := entities.Media{
 		SourceID: "foo",
 		TargetID: "bar",
@@ -125,7 +125,7 @@ func TestNew_error(t *testing.T) {
 func TestBadger_GetString_error(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	invalidKey := ""
 	deletedKey := "foo"
 	value := "bar"
@@ -158,7 +158,7 @@ func TestBadger_GetString_error(t *testing.T) {
 func TestBadger_PutMedia_error(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.TODO()
+	ctx := t.Context()
 	media := entities.Media{
 		SourceID: "1",
 		TargetID: "",
@@ -190,7 +190,7 @@ func TestBadger_PutMediaBulk_error(t *testing.T) {
 		{
 			name: "invalid argument",
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				medias: []*entities.Media{
 					{
 						SourceID: "1",
@@ -203,7 +203,7 @@ func TestBadger_PutMediaBulk_error(t *testing.T) {
 		{
 			name: "invalid key",
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				medias: []*entities.Media{
 					{
 						SourceID: "!badger!1",
@@ -247,7 +247,7 @@ func TestBadger_GetMedia(t *testing.T) {
 		{
 			name: "empty ID",
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				id:  "",
 			},
 			wantError: usecases.ErrStatusInvalidArgument,

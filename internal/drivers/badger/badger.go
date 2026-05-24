@@ -85,8 +85,8 @@ func (client *Badger) GetString(ctx context.Context, key string) (string, error)
 
 	err := client.db.View(func(txn *badger.Txn) error {
 		data, err := txn.Get([]byte(key))
-		if err := convertError(err); err != nil {
-			return err
+		if err != nil {
+			return convertError(err)
 		}
 
 		value = itemValueAsString(data)
@@ -127,8 +127,8 @@ func (client *Badger) GetMedia(ctx context.Context, id string) (*entities.Media,
 	var media entities.Media
 
 	err := client.db.View(mediaGetter(id, &media))
-	if err = convertError(err); err != nil {
-		return nil, span.Assert(err)
+	if err != nil {
+		return nil, span.Assert(convertError(err))
 	}
 
 	return &media, span.Assert(nil)
@@ -195,8 +195,8 @@ func (client *Badger) PutMediaBulk(ctx context.Context, medias []*entities.Media
 			}
 
 			err = txn.Set([]byte(media.SourceID), []byte(media.TargetID))
-			if err := convertError(err); err != nil {
-				return err
+			if err != nil {
+				return convertError(err)
 			}
 		}
 
@@ -207,8 +207,8 @@ func (client *Badger) PutMediaBulk(ctx context.Context, medias []*entities.Media
 func mediaGetter(id string, media *entities.Media) func(txn *badger.Txn) error {
 	return func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(id))
-		if err := convertError(err); err != nil {
-			return err
+		if err != nil {
+			return convertError(err)
 		}
 
 		media.SourceID = id
