@@ -22,6 +22,7 @@ import (
 	"github.com/wwmoraes/gotell/logging"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
+	"golang.org/x/net/http2"
 	"golang.org/x/time/rate"
 	_ "modernc.org/sqlite"
 
@@ -38,11 +39,16 @@ const (
 	serviceNamespace = "github.com/wwmoraes/anilistarr"
 	serviceName      = "anilistarr"
 
-	apiInboundRateBurst      = 1000
-	apiInboundRateInterval   = time.Minute
-	refreshInterval          = time.Hour * 24 * 7
-	gracefulShutdownTimeout  = 5 * time.Second
-	requestReadHeaderTimeout = 5 * time.Second
+	apiInboundRateBurst                = 1000
+	apiInboundRateInterval             = time.Minute
+	gracefulShutdownTimeout            = 5 * time.Second
+	httpClientTimeout                  = 30 * time.Second
+	httpServerReadHeaderTimeout        = 5 * time.Second
+	httpTransportIdleConnTimeout       = 30 * time.Second
+	httpTransportMaxIdleConns          = 1000
+	httpTransportResponseHeaderTimeout = 5 * time.Second
+	httpTransportTLSHandshakeTimeout   = 5 * time.Second
+	mappingRefreshInterval             = time.Hour * 24 * 7
 )
 
 var version = "0.0.0-unknown"
@@ -116,11 +122,29 @@ func main() {
 
 	defer process.AssertClose(fileCache, "failed to close cache")
 
+	transport, err := http2.ConfigureTransports(&http.Transport{
+		ExpectContinueTimeout: time.Second,
+		ForceAttemptHTTP2:     true,
+		IdleConnTimeout:       httpTransportIdleConnTimeout,
+		MaxIdleConns:          httpTransportMaxIdleConns,
+		Proxy:                 http.ProxyFromEnvironment,
+		ResponseHeaderTimeout: httpTransportResponseHeaderTimeout,
+		TLSHandshakeTimeout:   httpTransportTLSHandshakeTimeout,
+	})
+	if err != nil {
+		log.Error(err, "configuring transport to use HTTP/2")
+		process.Exit(1)
+	}
+
 	tracker := cachedtracker.CachedTracker{
 		Cache: fileCache,
 		Tracker: anilist.New(
 			os.Getenv("ANILIST_GRAPHQL_ENDPOINT"),
 			anilist.WithPageSize(anilistPageSize),
+			anilist.WithClient(&http.Client{
+				Transport: transport,
+				Timeout:   httpClientTimeout,
+			}),
 		),
 		TTL: cachedtracker.TTLs{
 			UserID:       cacheUserTTL,
@@ -160,11 +184,11 @@ func main() {
 	server := http.Server{
 		Addr:              fmt.Sprintf("%s:%s", host, port),
 		Handler:           router,
-		ReadHeaderTimeout: requestReadHeaderTimeout,
+		ReadHeaderTimeout: httpServerReadHeaderTimeout,
 	}
 
 	// update mapping every week
-	go scheduledRefresh(ctx, &mediaLister, refreshInterval)
+	go scheduledRefresh(ctx, &mediaLister, mappingRefreshInterval)
 	//nolint:errcheck // ignore listen errors
 	go server.ListenAndServe()
 
