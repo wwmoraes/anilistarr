@@ -9,6 +9,8 @@ import (
 
 // Tracker provides access to user metadata such as ID and media list from an
 // upstream media tracking service
+//
+//mockery:generate: true
 type Tracker interface {
 	io.Closer
 

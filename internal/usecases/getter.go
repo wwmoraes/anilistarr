@@ -10,12 +10,16 @@ import (
 )
 
 // Doer clients support execution of HTTP requests.
+//
+//mockery:generate: true
 type Doer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
 // Getter supports fetching data from a given URI. It is client-dependant which
 // URI components they support and for what.
+//
+//mockery:generate: true
 type Getter interface {
 	Get(ctx context.Context, uri string) ([]byte, error)
 }

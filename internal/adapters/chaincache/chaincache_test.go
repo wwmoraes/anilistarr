@@ -1,7 +1,6 @@
 package chaincache_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
@@ -11,18 +10,18 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters/chaincache"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
 func TestChainCache_Close(t *testing.T) {
 	t.Parallel()
 
-	cache := testdata.MockCache{}
-	errorCache := testdata.MockCache{}
+	cache := test.NewMockCache(t)
+	errorCache := test.NewMockCache(t)
 
-	cache.On("Close").Return(nil).Maybe()
-	errorCache.On("Close").Return(errors.New("foo")).Maybe()
+	cache.EXPECT().Close().Return(nil).Maybe()
+	errorCache.EXPECT().Close().Return(errors.New("foo")).Maybe()
 
 	tests := []struct {
 		assertError require.ErrorAssertionFunc
@@ -37,23 +36,23 @@ func TestChainCache_Close(t *testing.T) {
 		{
 			name: "single",
 			chain: chaincache.ChainCache{
-				&cache,
+				cache,
 			},
 			assertError: require.NoError,
 		},
 		{
 			name: "multi",
 			chain: chaincache.ChainCache{
-				&cache,
-				&cache,
+				cache,
+				cache,
 			},
 			assertError: require.NoError,
 		},
 		{
 			name: "error",
 			chain: chaincache.ChainCache{
-				&cache,
-				&errorCache,
+				cache,
+				errorCache,
 			},
 			assertError: require.Error,
 		},
@@ -65,9 +64,6 @@ func TestChainCache_Close(t *testing.T) {
 
 			err := tt.chain.Close()
 			tt.assertError(t, err)
-
-			cache.AssertExpectations(t)
-			errorCache.AssertExpectations(t)
 		})
 	}
 }
@@ -78,16 +74,16 @@ func TestChainCache_GetString(t *testing.T) {
 	key := "foo"
 	value := "bar"
 
-	missCache := testdata.MockCache{}
-	hitCache := testdata.MockCache{}
-	skippedCache := testdata.MockCache{}
-	errorCache := testdata.MockCache{}
+	missCache := test.NewMockCache(t)
+	hitCache := test.NewMockCache(t)
+	skippedCache := test.NewMockCache(t)
+	errorCache := test.NewMockCache(t)
 
-	missCache.On("GetString", mock.Anything, key).
+	missCache.EXPECT().GetString(mock.Anything, key).
 		Return("", usecases.ErrStatusNotFound).Maybe()
-	hitCache.On("GetString", mock.Anything, key).
+	hitCache.EXPECT().GetString(mock.Anything, key).
 		Return(value, nil).Maybe()
-	errorCache.On("GetString", mock.Anything, key).
+	errorCache.EXPECT().GetString(mock.Anything, key).
 		Return("", errors.New("qux")).Maybe()
 
 	tests := []struct {
@@ -105,7 +101,7 @@ func TestChainCache_GetString(t *testing.T) {
 		{
 			name: "single empty",
 			chain: chaincache.ChainCache{
-				&missCache,
+				missCache,
 			},
 			want:      "",
 			wantError: usecases.ErrStatusNotFound,
@@ -113,8 +109,8 @@ func TestChainCache_GetString(t *testing.T) {
 		{
 			name: "multi empty",
 			chain: chaincache.ChainCache{
-				&missCache,
-				&missCache,
+				missCache,
+				missCache,
 			},
 			want:      "",
 			wantError: usecases.ErrStatusNotFound,
@@ -122,8 +118,8 @@ func TestChainCache_GetString(t *testing.T) {
 		{
 			name: "single match",
 			chain: chaincache.ChainCache{
-				&hitCache,
-				&skippedCache,
+				hitCache,
+				skippedCache,
 			},
 			want:      "bar",
 			wantError: nil,
@@ -131,9 +127,9 @@ func TestChainCache_GetString(t *testing.T) {
 		{
 			name: "multi match second",
 			chain: chaincache.ChainCache{
-				&missCache,
-				&hitCache,
-				&skippedCache,
+				missCache,
+				hitCache,
+				skippedCache,
 			},
 			want:      "bar",
 			wantError: nil,
@@ -141,9 +137,9 @@ func TestChainCache_GetString(t *testing.T) {
 		{
 			name: "cache error",
 			chain: chaincache.ChainCache{
-				&missCache,
-				&errorCache,
-				&skippedCache,
+				missCache,
+				errorCache,
+				skippedCache,
 			},
 			want:      "",
 			wantError: usecases.ErrStatusUnknown,
@@ -154,14 +150,10 @@ func TestChainCache_GetString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := tt.chain.GetString(context.TODO(), key)
+			got, err := tt.chain.GetString(t.Context(), key)
 			require.ErrorIs(t, err, tt.wantError)
 
 			assert.Equal(t, tt.want, got)
-			missCache.AssertExpectations(t)
-			hitCache.AssertExpectations(t)
-			skippedCache.AssertExpectations(t)
-			errorCache.AssertExpectations(t)
 		})
 	}
 }
@@ -175,13 +167,13 @@ func TestChainCache_SetString(t *testing.T) {
 		usecases.WithTTL(time.Millisecond),
 	}
 
-	hitCache := testdata.MockCache{}
-	skippedCache := testdata.MockCache{}
-	errorCache := testdata.MockCache{}
+	hitCache := test.NewMockCache(t)
+	skippedCache := test.NewMockCache(t)
+	errorCache := test.NewMockCache(t)
 
-	hitCache.On("SetString", mock.Anything, key, value, options).
+	hitCache.EXPECT().SetString(mock.Anything, key, value, options).
 		Return(nil).Maybe()
-	errorCache.On("SetString", mock.Anything, key, value, options).
+	errorCache.EXPECT().SetString(mock.Anything, key, value, options).
 		Return(errors.New("qux")).Maybe()
 
 	tests := []struct {
@@ -197,23 +189,23 @@ func TestChainCache_SetString(t *testing.T) {
 		{
 			name: "single",
 			chain: chaincache.ChainCache{
-				&hitCache,
+				hitCache,
 			},
 			assertError: require.NoError,
 		},
 		{
 			name: "multi",
 			chain: chaincache.ChainCache{
-				&hitCache,
-				&skippedCache,
+				hitCache,
+				skippedCache,
 			},
 			assertError: require.NoError,
 		},
 		{
 			name: "error",
 			chain: chaincache.ChainCache{
-				&errorCache,
-				&skippedCache,
+				errorCache,
+				skippedCache,
 			},
 			assertError: require.Error,
 		},
@@ -224,16 +216,12 @@ func TestChainCache_SetString(t *testing.T) {
 			t.Parallel()
 
 			err := tt.chain.SetString(
-				context.TODO(),
+				t.Context(),
 				key,
 				value,
 				options...,
 			)
 			tt.assertError(t, err)
-
-			hitCache.AssertExpectations(t)
-			skippedCache.AssertExpectations(t)
-			errorCache.AssertExpectations(t)
 		})
 	}
 }

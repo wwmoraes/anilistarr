@@ -1,0 +1,34 @@
+all: false
+dir: internal/test
+filename: mocks.go
+force-file-write: true
+formatter: goimports
+formatter-options:
+  goimports:
+    all-errors: false
+    comments: true
+    format-only: true
+    fragment: false
+    local-prefix: ""
+    tab-indent: true
+    tab-width: 8
+generate: true
+include-auto-generated: false
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: test
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  github.com/wwmoraes/anilistarr/internal/usecases:
+    config:
+      filename: usecases_mocks.go
+  io/fs:
+    config:
+      filename: fs_mocks.go
+    interfaces:
+      FS:
+      File:
+      FileInfo:

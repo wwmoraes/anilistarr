@@ -10,6 +10,8 @@ import (
 // MediaLister converts media IDs between services and generates Sonarr custom
 // list results. It handles providers, trackers and stores to fetch the data
 // required for such conversions.
+//
+//mockery:generate: true
 type MediaLister interface {
 	io.Closer
 

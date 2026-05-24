@@ -9,7 +9,7 @@ import (
 
 	"github.com/agiledragon/gomonkey/v2"
 
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/pkg/process"
 )
 
@@ -24,6 +24,7 @@ func ExampleHandleExit_success() {
 
 func ExampleHandleExit_error() {
 	stderr := os.Stderr
+
 	defer func() {
 		//nolint:reassign // needed for example output validation
 		os.Stderr = stderr
@@ -43,6 +44,7 @@ func ExampleHandleExit_error() {
 
 func ExampleAssertClose() {
 	stderr := os.Stderr
+
 	defer func() {
 		//nolint:reassign // needed for example output validation
 		os.Stderr = stderr
@@ -53,7 +55,7 @@ func ExampleAssertClose() {
 
 	defer process.HandleExit()
 
-	process.AssertClose(testdata.CloserFn(func() error {
+	process.AssertClose(test.CloserFn(func() error {
 		return errors.New("bar")
 	}), "failed to close")
 

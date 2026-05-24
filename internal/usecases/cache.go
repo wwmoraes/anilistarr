@@ -7,6 +7,8 @@ import (
 )
 
 // Cache is a solution for fast storage and retrieval of ephemeral data
+//
+//mockery:generate: true
 type Cache interface {
 	io.Closer
 

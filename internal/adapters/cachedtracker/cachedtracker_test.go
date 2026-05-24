@@ -1,7 +1,6 @@
 package cachedtracker_test
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"testing"
@@ -11,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/wwmoraes/anilistarr/internal/adapters/cachedtracker"
-	"github.com/wwmoraes/anilistarr/internal/testdata"
+	"github.com/wwmoraes/anilistarr/internal/test"
 	"github.com/wwmoraes/anilistarr/internal/usecases"
 )
 
@@ -22,39 +21,36 @@ func TestCachedTracker_GetUserID_uncached(t *testing.T) {
 	userID := "1"
 	cacheKeyUserID := "anilist:user:foo:id"
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
 	// cache miss for user ID
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		cacheKeyUserID,
 	).Return("", usecases.ErrStatusNotFound).Once()
 	// store user ID in the cache
-	cache.On(
-		"SetString",
+	cache.EXPECT().SetString(
 		mock.Anything,
 		cacheKeyUserID,
 		userID,
 		mock.Anything,
 	).Return(nil).Once()
 
-	tracker.On("GetUserID", mock.Anything, username).
-		Return(userID, nil).Once()
+	tracker.EXPECT().GetUserID(
+		mock.Anything,
+		username,
+	).Return(userID, nil).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
-	gotUserID, err := cachedTracker.GetUserID(context.TODO(), username)
+	gotUserID, err := cachedTracker.GetUserID(t.Context(), username)
 	require.NoError(t, err)
 
 	assert.Equal(t, userID, gotUserID)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestCachedTracker_GetUserID_cached(t *testing.T) {
@@ -64,28 +60,24 @@ func TestCachedTracker_GetUserID_cached(t *testing.T) {
 	userID := "1"
 	cacheKeyUserID := "anilist:user:foo:id"
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
 	// cache miss for user ID
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		cacheKeyUserID,
 	).Return(userID, nil).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
-	gotUserID, err := cachedTracker.GetUserID(context.TODO(), username)
+	gotUserID, err := cachedTracker.GetUserID(t.Context(), username)
 	require.NoError(t, err)
 
 	assert.Equal(t, userID, gotUserID)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestCachedTracker_GetMediaListIDs_uncached(t *testing.T) {
@@ -100,39 +92,36 @@ func TestCachedTracker_GetMediaListIDs_uncached(t *testing.T) {
 	mediasStr := strings.Join(medias, "|")
 	cacheKeyUserMedia := "anilist:user:1:media"
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
 	// cache miss for user medias
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		cacheKeyUserMedia,
 	).Return("", usecases.ErrStatusNotFound).Once()
 	// store user medias in the cache
-	cache.On(
-		"SetString",
+	cache.EXPECT().SetString(
 		mock.Anything,
 		cacheKeyUserMedia,
 		mediasStr,
 		mock.Anything,
 	).Return(nil).Once()
 	// retrieve cached medias
-	tracker.On("GetMediaListIDs", mock.Anything, userID).
-		Return(medias, nil).Once()
+	tracker.EXPECT().GetMediaListIDs(
+		mock.Anything,
+		userID,
+	).Return(medias, nil).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
-	gotMediaListIDs, err := cachedTracker.GetMediaListIDs(context.TODO(), userID)
+	gotMediaListIDs, err := cachedTracker.GetMediaListIDs(t.Context(), userID)
 	require.NoError(t, err)
 
 	assert.Equal(t, medias, gotMediaListIDs)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestCachedTracker_GetMediaListIDs_cached(t *testing.T) {
@@ -147,49 +136,42 @@ func TestCachedTracker_GetMediaListIDs_cached(t *testing.T) {
 	mediasStr := strings.Join(medias, "|")
 	cacheKeyUserMedia := "anilist:user:1:media"
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
 	// retrieve cached medias
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		cacheKeyUserMedia,
 	).Return(mediasStr, nil).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
-	gotMediaListIDs, err := cachedTracker.GetMediaListIDs(context.TODO(), userID)
+	gotMediaListIDs, err := cachedTracker.GetMediaListIDs(t.Context(), userID)
 	require.NoError(t, err)
 
 	assert.Equal(t, medias, gotMediaListIDs)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestCachedTracker_Close(t *testing.T) {
 	t.Parallel()
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
-	cache.On("Close").Return(nil).Once()
-	tracker.On("Close").Return(nil).Once()
+	cache.EXPECT().Close().Return(nil).Once()
+	tracker.EXPECT().Close().Return(nil).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
 	err := cachedTracker.Close()
 	require.NoError(t, err)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestCachedTracker_Cache_error(t *testing.T) {
@@ -197,37 +179,32 @@ func TestCachedTracker_Cache_error(t *testing.T) {
 
 	cacheError := errors.New("qux")
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		"anilist:user:foo:id",
 	).Return("", cacheError).Once()
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		"anilist:user:1:media",
 	).Return("", cacheError).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
-	gotUserID, err := cachedTracker.GetUserID(context.TODO(), "foo")
+	gotUserID, err := cachedTracker.GetUserID(t.Context(), "foo")
 	require.ErrorIs(t, err, cacheError)
 
 	assert.Empty(t, gotUserID)
 
-	gotMedias, err := cachedTracker.GetMediaListIDs(context.TODO(), "1")
+	gotMedias, err := cachedTracker.GetMediaListIDs(t.Context(), "1")
 	require.ErrorIs(t, err, cacheError)
 
 	assert.Nil(t, gotMedias)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }
 
 func TestCachedTracker_Tracker_error(t *testing.T) {
@@ -237,39 +214,38 @@ func TestCachedTracker_Tracker_error(t *testing.T) {
 
 	trackerError := errors.New("qux")
 
-	cache := testdata.MockCache{}
-	tracker := testdata.MockTracker{}
+	cache := test.NewMockCache(t)
+	tracker := test.NewMockTracker(t)
 
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		"anilist:user:foo:id",
 	).Return("", usecases.ErrStatusNotFound).Once()
-	cache.On(
-		"GetString",
+	cache.EXPECT().GetString(
 		mock.Anything,
 		"anilist:user:1:media",
 	).Return("", usecases.ErrStatusNotFound).Once()
-	tracker.On("GetUserID", mock.Anything, "foo").
-		Return("", trackerError).Once()
-	tracker.On("GetMediaListIDs", mock.Anything, "1").
-		Return(medias, trackerError).Once()
+	tracker.EXPECT().GetUserID(
+		mock.Anything,
+		"foo",
+	).Return("", trackerError).Once()
+	tracker.EXPECT().GetMediaListIDs(
+		mock.Anything,
+		"1",
+	).Return(medias, trackerError).Once()
 
 	cachedTracker := cachedtracker.CachedTracker{
-		Cache:   &cache,
-		Tracker: &tracker,
+		Cache:   cache,
+		Tracker: tracker,
 	}
 
-	gotUserID, err := cachedTracker.GetUserID(context.TODO(), "foo")
+	gotUserID, err := cachedTracker.GetUserID(t.Context(), "foo")
 	require.ErrorIs(t, err, trackerError)
 
 	assert.Empty(t, gotUserID)
 
-	gotMedias, err := cachedTracker.GetMediaListIDs(context.TODO(), "1")
+	gotMedias, err := cachedTracker.GetMediaListIDs(t.Context(), "1")
 	require.ErrorIs(t, err, trackerError)
 
 	assert.Nil(t, gotMedias)
-
-	cache.AssertExpectations(t)
-	tracker.AssertExpectations(t)
 }

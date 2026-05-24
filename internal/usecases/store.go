@@ -8,6 +8,8 @@ import (
 )
 
 // Store handles the persistent storage and retrieval of media mapping data
+//
+//mockery:generate: true
 type Store interface {
 	io.Closer
 
