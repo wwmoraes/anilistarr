@@ -25,10 +25,10 @@ type Redis struct {
 
 // New creates the underlying Redis client, then configures tracing and
 // metrics on top of it. Returns an error if it fails to instrument the client.
-func New(options *Options) (*Redis, error) {
+func New(ctx context.Context, options *Options) (*Redis, error) {
 	client := redis.NewClient(options)
 
-	err := client.Ping(context.TODO()).Err()
+	err := client.Ping(ctx).Err()
 	if err != nil {
 		return nil, errors.Join(usecases.ErrStatusUnavailable, err)
 	}

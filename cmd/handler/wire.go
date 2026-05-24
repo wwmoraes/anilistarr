@@ -23,7 +23,7 @@ const (
 	cacheType         = CacheBadger
 )
 
-func newStore(dataPath string) (usecases.Store, error) {
+func newStore(ctx context.Context, dataPath string) (usecases.Store, error) {
 	var store usecases.Store
 
 	var err error
@@ -34,11 +34,11 @@ func newStore(dataPath string) (usecases.Store, error) {
 		store, err = badger.New(
 			path.Join(dataPath, "badger", "store"),
 			badger.WithLogger(&badger.Logr{
-				Logger: telemetry.Logr(context.TODO()),
+				Logger: telemetry.Logr(ctx),
 			}),
 		)
 	case StoreSQL:
-		store, err = sqlite.New(path.Join(dataPath, "sqlite-store.db"))
+		store, err = sqlite.New(ctx, path.Join(dataPath, "sqlite-store.db"))
 	default:
 		return nil, usecases.ErrStatusUnimplemented
 	}
@@ -50,7 +50,7 @@ func newStore(dataPath string) (usecases.Store, error) {
 	return store, nil
 }
 
-func newCache(dataPath string) (usecases.Cache, error) {
+func newCache(ctx context.Context, dataPath string) (usecases.Cache, error) {
 	var cache usecases.Cache
 
 	var err error
@@ -61,15 +61,15 @@ func newCache(dataPath string) (usecases.Cache, error) {
 		cache, err = badger.New(
 			path.Join(dataPath, "badger", "cache"),
 			badger.WithLogger(&badger.Logr{
-				Logger: telemetry.Logr(context.TODO()),
+				Logger: telemetry.Logr(ctx),
 			}),
 		)
 	case CacheBolt:
 		cache, err = bolt.New(path.Join(dataPath, "bolt-cache.db"), nil)
 	case CacheRedis:
-		cache, err = redis.New(nil)
+		cache, err = redis.New(ctx, nil)
 	case CacheSQL:
-		cache, err = sqlite.New(path.Join(dataPath, "sqlite-cache.db"))
+		cache, err = sqlite.New(ctx, path.Join(dataPath, "sqlite-cache.db"))
 	default:
 		return nil, usecases.ErrStatusUnimplemented
 	}

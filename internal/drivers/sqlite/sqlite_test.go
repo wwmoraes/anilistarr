@@ -5,6 +5,8 @@ package sqlite_test
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
 	"slices"
 	"strings"
 	"testing"
@@ -26,7 +28,7 @@ type functor = testdata.Functor[*sqlite.SQLite]
 func newSQLite(tb testing.TB) *sqlite.SQLite {
 	tb.Helper()
 
-	db, err := sqlite.New("file::memory:")
+	db, err := sqlite.New(tb.Context(), "file::memory:")
 	if err != nil {
 		tb.Fatal(err)
 	}
@@ -41,7 +43,7 @@ func putStrings(entries ...[2]string) functor {
 		var err error
 
 		for _, pair := range entries {
-			err = db.SetString(context.TODO(), pair[0], pair[1])
+			err = db.SetString(tb.Context(), pair[0], pair[1])
 			if err != nil {
 				tb.Fatal(err)
 			}
@@ -58,7 +60,7 @@ func putMedias(medias ...*entities.Media) functor {
 		var err error
 
 		for _, media := range medias {
-			err = db.PutMedia(context.TODO(), media)
+			err = db.PutMedia(tb.Context(), media)
 			if err != nil {
 				tb.Fatal(err)
 			}
@@ -172,7 +174,7 @@ func TestNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := sqlite.New(tt.args.dataSourceName)
+			got, err := sqlite.New(t.Context(), tt.args.dataSourceName)
 			tt.assertError(t, err)
 
 			tt.assertValue(t, got)
@@ -236,7 +238,7 @@ func TestSQLite_GetString(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				key: "foo",
 			},
 			want:        "",
@@ -248,7 +250,7 @@ func TestSQLite_GetString(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				key: "",
 			},
 			want:        "",
@@ -262,7 +264,7 @@ func TestSQLite_GetString(t *testing.T) {
 				)),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				key: "foo",
 			},
 			want:        "bar",
@@ -310,7 +312,7 @@ func TestSQLite_SetString(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx:   context.TODO(),
+				ctx:   t.Context(),
 				key:   "foo",
 				value: "bar",
 			},
@@ -322,7 +324,7 @@ func TestSQLite_SetString(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx:   context.TODO(),
+				ctx:   t.Context(),
 				key:   "",
 				value: "bar",
 			},
@@ -334,7 +336,7 @@ func TestSQLite_SetString(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx:   context.TODO(),
+				ctx:   t.Context(),
 				key:   "foo",
 				value: "",
 			},
@@ -382,7 +384,7 @@ func TestSQLite_GetMedia(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				id:  "foo",
 			},
 			want:        nil,
@@ -394,7 +396,7 @@ func TestSQLite_GetMedia(t *testing.T) {
 				db: testdata.Compose(t, newSQLite(t), closeSQLite),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				id:  "",
 			},
 			want:        nil,
@@ -411,7 +413,7 @@ func TestSQLite_GetMedia(t *testing.T) {
 				)),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				id:  "foo",
 			},
 			want: &entities.Media{
@@ -459,7 +461,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				ids: nil,
 			},
 			want:        []*entities.Media{},
@@ -471,7 +473,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				ids: []string{},
 			},
 			want:        []*entities.Media{},
@@ -483,7 +485,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 				db: testdata.Compose(t, newSQLite(t), closeSQLite),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				ids: []string{},
 			},
 			want:        nil,
@@ -495,7 +497,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				ids: []string{"foo"},
 			},
 			want:        []*entities.Media{},
@@ -512,7 +514,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 				)),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				ids: []string{"foo", "baz"},
 			},
 			want: []*entities.Media{
@@ -538,7 +540,7 @@ func TestSQLite_GetMediaBulk(t *testing.T) {
 				)),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				ids: []string{"foo", "baz"},
 			},
 			want: []*entities.Media{
@@ -594,7 +596,7 @@ func TestSQLite_PutMedia(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				media: &entities.Media{
 					SourceID: "1",
 					TargetID: "91",
@@ -608,7 +610,7 @@ func TestSQLite_PutMedia(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				media: &entities.Media{
 					SourceID: "",
 					TargetID: "91",
@@ -622,7 +624,7 @@ func TestSQLite_PutMedia(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				media: &entities.Media{
 					SourceID: "1",
 					TargetID: "",
@@ -636,7 +638,7 @@ func TestSQLite_PutMedia(t *testing.T) {
 				db: testdata.Compose(t, newSQLite(t), closeSQLite),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				media: &entities.Media{
 					SourceID: "1",
 					TargetID: "91",
@@ -659,7 +661,7 @@ func TestSQLite_PutMedia(t *testing.T) {
 func TestSQLite_PutMediaBulk(t *testing.T) {
 	t.Parallel()
 
-	cancelledCtx, cancel := context.WithCancel(context.TODO())
+	cancelledCtx, cancel := context.WithCancel(t.Context())
 	cancel()
 
 	type fields struct {
@@ -683,7 +685,7 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				medias: []*entities.Media{
 					{
 						SourceID: "1",
@@ -699,7 +701,7 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				medias: []*entities.Media{
 					{
 						SourceID: "1",
@@ -719,7 +721,7 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				medias: []*entities.Media{
 					{
 						SourceID: "",
@@ -735,7 +737,7 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx: context.TODO(),
+				ctx: t.Context(),
 				medias: []*entities.Media{
 					{
 						SourceID: "1",
@@ -751,7 +753,7 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx:    context.TODO(),
+				ctx:    t.Context(),
 				medias: []*entities.Media{},
 			},
 			wantError: nil,
@@ -762,7 +764,7 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 				db: newSQLite(t),
 			},
 			args: args{
-				ctx:    context.TODO(),
+				ctx:    t.Context(),
 				medias: nil,
 			},
 			wantError: nil,
@@ -812,7 +814,10 @@ func TestSQLite_PutMediaBulk(t *testing.T) {
 }
 
 func ExampleNew() {
-	db, err := sqlite.New("file:///dev/null?;;")
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	db, err := sqlite.New(ctx, "file:///dev/null?;;")
 	fmt.Println(db)
 	fmt.Println(err)
 	// Output:
@@ -821,7 +826,10 @@ func ExampleNew() {
 }
 
 func ExampleSQLite_GetMediaBulk() {
-	db, err := sqlite.New("file::memory:?cache=shared&_pragma=journal_mode=wal&_txlock=exclusive")
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	db, err := sqlite.New(ctx, "file::memory:?cache=shared&_pragma=journal_mode=wal&_txlock=exclusive")
 	fmt.Println("New err:", err)
 
 	if err != nil {
@@ -856,7 +864,10 @@ func ExampleSQLite_GetMediaBulk() {
 }
 
 func ExampleNew_schema_failure() {
-	db, err := sqlite.New("file::memory:?_pragma=query_only=true")
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	db, err := sqlite.New(ctx, "file::memory:?_pragma=query_only=true")
 	fmt.Println("DB:", db)
 	fmt.Println("Error:", err)
 

@@ -32,7 +32,7 @@ type SQLite struct {
 
 // New creates a SQLite database handler and tests connection to it. It does NOT
 // import a driver; the caller is responsible for importing one.
-func New(dataSourceName string) (*SQLite, error) {
+func New(ctx context.Context, dataSourceName string) (*SQLite, error) {
 	db, err := sql.Open("sqlite", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
@@ -41,12 +41,12 @@ func New(dataSourceName string) (*SQLite, error) {
 	// database handlers are lazy and only connect on request. Thus we need to
 	// force a connection here to ensure the data source is valid and prevent a
 	// misplaced error elsewhere on code
-	err = db.Ping()
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	_, err = db.Exec(schema)
+	_, err = db.ExecContext(ctx, schema)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute schema queries: %w", err)
 	}

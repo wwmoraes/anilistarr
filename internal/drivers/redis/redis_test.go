@@ -67,7 +67,7 @@ func TestRedis(t *testing.T) {
 
 	key, value := "foo", "bar"
 
-	cache, err := redis.New(&options)
+	cache, err := redis.New(ctx, &options)
 	require.NoError(t, err)
 
 	got, err := cache.GetString(ctx, key)
@@ -113,7 +113,7 @@ func TestNew(t *testing.T) {
 		t.Skip("TODO implement external Redis server test")
 	}
 
-	cache, err := redis.New(&options)
+	cache, err := redis.New(ctx, &options)
 	require.ErrorIs(t, err, usecases.ErrStatusUnavailable)
 
 	assert.Nil(t, cache)

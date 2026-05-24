@@ -108,10 +108,10 @@ func main() {
 		"port", port,
 	)
 
-	store, err := newStore(dataPath)
+	store, err := newStore(ctx, dataPath)
 	process.Assert(err)
 
-	fileCache, err := newCache(dataPath)
+	fileCache, err := newCache(ctx, dataPath)
 	process.Assert(err)
 
 	defer process.AssertClose(fileCache, "failed to close cache")
