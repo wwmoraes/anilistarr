@@ -51,3 +51,5 @@ component_management:
     name: usecases
     paths:
     - internal/usecases/**
+ignore:
+- '**/*.gen.go'
