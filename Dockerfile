@@ -1,7 +1,6 @@
 # syntax = docker/dockerfile:1
 
-ARG GOLANG_VERSION=1.23
-ARG ALPINE_VERSION=3.21
+ARG ALPINE_VERSION=3
 ARG DATA_PATH=/var/handler
 
 FROM alpine:${ALPINE_VERSION} AS certificates
