@@ -20,7 +20,6 @@ all: bin/handler gomod2nix.toml
 
 .PHONY: check
 check::
-	editorconfig-checker
 	nix flake check -L
 
 .PHONY: clean

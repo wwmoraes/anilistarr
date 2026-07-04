@@ -392,6 +392,9 @@ linters:
       - funlen
       - maintidx
       path: .+_test\.go
+    - linters:
+      - revive
+      path: internal/test/.+\.go
     ## wire functions return iface so it can switch drivers without touching return types
     - linters:
       - ireturn

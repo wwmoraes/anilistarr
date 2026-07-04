@@ -5,23 +5,16 @@
 }:
 {
   imports = [
+    pkgs.nur.repos.wwmoraes.treefmtModules.checkmake
+    pkgs.nur.repos.wwmoraes.treefmtModules.hadolint
     (mkFormatterModule {
-      name = "checkmake";
-      package = "checkmake";
+      name = "editorconfig";
+      package = "editorconfig-checker";
       args = [ ];
-      includes = [
-        "Makefile"
-      ];
-    })
-    (mkFormatterModule {
-      name = "hadolint";
-      package = "hadolint";
-      args = [ ];
-      ## TODO generate config file
-      includes = [
-        "Dockerfile"
-        "*.Dockerfile"
-        "Dockerfile.*"
+      excludes = [
+        "*.lock"
+        "CHANGELOG.md"
+        "docs/structurizr-*.puml"
       ];
     })
   ];
@@ -29,7 +22,6 @@
   projectRootFile = "flake.nix";
 
   programs.checkmake.enable = true;
-  ## TODO custom: editorconfig-checker/eclint
   ## TODO custom: golangci-lint
   programs.gofmt.enable = true;
   programs.gofumpt.enable = true;
@@ -50,8 +42,6 @@
     };
   };
   programs.nixf-diagnose.enable = true;
-  # oxipng
-  # pinact
   programs.nixfmt.enable = true;
   programs.statix.enable = true;
   # programs.taplo = {
@@ -74,7 +64,7 @@
       "go.mod"
       "go.sum"
     ];
-    configFile = builtins.toString ./.typos.toml;
+    configFile = toString ./.typos.toml;
   };
   programs.yamlfmt = {
     enable = true;
