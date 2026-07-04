@@ -39,11 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         fetch-depth: 0
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.2.0
+      uses: JRMurr/direnv-nix-action@fc1182ab8fc636cdcef08176ad91e5c1087658d9 # v4.2.0
       with:
         install-nix: true
         cache-store: true
@@ -54,16 +54,16 @@ jobs:
     needs: [warmup]
     steps:
     - name: checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
     - name: direnv nix
-      uses: JRMurr/direnv-nix-action@v4.2.0
+      uses: JRMurr/direnv-nix-action@fc1182ab8fc636cdcef08176ad91e5c1087658d9 # v4.2.0
       with:
         install-nix: true
         cache-store: true
     - name: set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
     - name: set up docker buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
     - name: build
       run: make all
     - name: lint
@@ -77,7 +77,7 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: report lint
-      uses: github/codeql-action/upload-sarif@v4
+      uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4
       continue-on-error: true
       if: always()
       with:
