@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: direnv nix
       uses: JRMurr/direnv-nix-action@v4.2.0
       with:
@@ -54,7 +54,7 @@ jobs:
       run: make sast
       timeout-minutes: 5
     - name: report
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       if: always()
       with:
         sarif_file: sast.sarif
