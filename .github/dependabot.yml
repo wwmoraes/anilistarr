@@ -7,9 +7,13 @@ updates:
     interval: weekly
   labels:
   - dependencies
+  cooldown:
+    default-days: 30
 - package-ecosystem: github-actions
   directory: /
   schedule:
     interval: weekly
   labels:
   - dependencies
+  cooldown:
+    default-days: 30
