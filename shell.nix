@@ -5,12 +5,13 @@
 rec {
   default = pkgs.mkShell {
     nativeBuildInputs = [
-      # keep-sorted start
       (pkgs.mkGoEnv { pwd = ./.; })
+      # keep-sorted start
       pkgs.docker-client
       pkgs.eclint
       pkgs.editorconfig-checker
       pkgs.git
+      pkgs.gomod2nix
       pkgs.goreleaser
       pkgs.gotestdox
       pkgs.grype
@@ -20,11 +21,13 @@ rec {
       pkgs.remake
       pkgs.ripgrep
       pkgs.semgrep
+      pkgs.unstable.cocogitto
       pkgs.unstable.container-structure-test
       pkgs.unstable.go
       pkgs.unstable.golangci-lint
-      pkgs.valkey
+      pkgs.unstable.hadolint-sarif
       pkgs.unstable.sarif-fmt
+      pkgs.valkey
       # keep-sorted end
     ];
   };
@@ -35,7 +38,6 @@ rec {
         # keep-sorted start
         pkgs.go-junit-report
         pkgs.nur.repos.wwmoraes.codecov-cli-bin
-        pkgs.unstable.hadolint-sarif
         # keep-sorted end
       ]
       ++ prev.nativeBuildInputs;
@@ -53,13 +55,11 @@ rec {
         # pkgs.anilistarr
         # keep-sorted start
         pkgs.curl
-        pkgs.gomod2nix
         # pkgs.nur.repos.wwmoraes.gopium
         # pkgs.nur.repos.wwmoraes.goutline
         pkgs.nur.repos.wwmoraes.structurizr-cli
         pkgs.nur.repos.wwmoraes.structurizr-site-generatr
         pkgs.plantuml
-        pkgs.unstable.cocogitto
         pkgs.unstable.go-cover-treemap
         pkgs.unstable.gotests
         pkgs.unstable.gotools
