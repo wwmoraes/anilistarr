@@ -3,34 +3,31 @@
   ...
 }:
 rec {
-  default =
-    let
-      goEnv = pkgs.mkGoEnv { pwd = ./.; };
-    in
-    pkgs.mkShell {
-      nativeBuildInputs = [
-        # keep-sorted start
-        goEnv
-        pkgs.docker-client
-        pkgs.eclint
-        pkgs.editorconfig-checker
-        pkgs.git
-        pkgs.goreleaser
-        pkgs.gotestdox
-        pkgs.grype
-        pkgs.hadolint
-        pkgs.jq
-        pkgs.moreutils
-        pkgs.remake
-        pkgs.ripgrep
-        pkgs.semgrep
-        pkgs.unstable.container-structure-test
-        pkgs.unstable.go
-        pkgs.unstable.golangci-lint
-        pkgs.valkey
-        # keep-sorted end
-      ];
-    };
+  default = pkgs.mkShell {
+    nativeBuildInputs = [
+      # keep-sorted start
+      (pkgs.mkGoEnv { pwd = ./.; })
+      pkgs.docker-client
+      pkgs.eclint
+      pkgs.editorconfig-checker
+      pkgs.git
+      pkgs.goreleaser
+      pkgs.gotestdox
+      pkgs.grype
+      pkgs.hadolint
+      pkgs.jq
+      pkgs.moreutils
+      pkgs.remake
+      pkgs.ripgrep
+      pkgs.semgrep
+      pkgs.unstable.container-structure-test
+      pkgs.unstable.go
+      pkgs.unstable.golangci-lint
+      pkgs.valkey
+      pkgs.unstable.sarif-fmt
+      # keep-sorted end
+    ];
+  };
 
   ci = default.overrideAttrs (
     final: prev: {
@@ -66,13 +63,12 @@ rec {
         pkgs.unstable.go-cover-treemap
         pkgs.unstable.gotests
         pkgs.unstable.gotools
-        pkgs.unstable.sarif-fmt
         # keep-sorted end
       ]
       ++ prev.nativeBuildInputs;
 
       shellHook = ''
-        cog install-hook --all --overwrite
+        ./configure
       '';
     }
   );

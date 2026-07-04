@@ -44,7 +44,7 @@ Dockerfile.hadolint.sarif: Dockerfile
 	-@hadolint -f json $< | hadolint-sarif | tee $@ | sarif-fmt
 	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
 
-Dockerfile.grype.sarif:
+Dockerfile.grype.sarif: image
 	$(info running SAST analysis (grype)...)
 	-@grype db update --quiet || grype db delete --quiet && grype db update --quiet
 	-@grype -o sarif --fail-on critical wwmoraes/anilistarr:latest | tee $@ | sarif-fmt
