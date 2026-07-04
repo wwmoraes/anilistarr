@@ -8,7 +8,8 @@ bin
 cmd
 coverage
 db
-dist
+dist/*
+!dist/handler*
 docs
 internal
 nix

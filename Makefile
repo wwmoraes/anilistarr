@@ -25,7 +25,7 @@ check::
 .PHONY: clean
 clean:
 	-rm -rf bin build coverage dist
-	-rm -f golangci-lint-report.xml *.sarif Dockerfile*.tar
+	-rm -f golangci-lint-report.xml *.sarif
 
 .PHONY: dist
 dist: dist/

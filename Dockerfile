@@ -1,7 +1,6 @@
 # syntax = docker/dockerfile:1
 
 ARG ALPINE_VERSION=3
-ARG DATA_PATH=/var/handler
 
 FROM alpine:${ALPINE_VERSION} AS certificates
 
@@ -12,8 +11,7 @@ RUN apk add --no-cache ca-certificates
 
 FROM alpine:${ALPINE_VERSION} AS tmp
 
-ARG DATA_PATH
-RUN mkdir -m 0750 ${DATA_PATH} && chown 20000:20000 ${DATA_PATH}
+RUN mkdir -m 0750 /var/handler && chown 20000:20000 /var/handler
 
 
 FROM alpine:${ALPINE_VERSION} AS machine-id
@@ -27,8 +25,7 @@ WORKDIR /
 
 COPY --from=machine-id /etc/machine-id /etc/machine-id
 
-ARG DATA_PATH
-COPY --from=tmp --chown=20000:20000 --chmod=750 ${DATA_PATH} ${DATA_PATH}
+COPY --from=tmp --chown=20000:20000 --chmod=750 /var/handler /var/handler
 
 COPY --from=certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
@@ -40,12 +37,11 @@ USER 20000:20000
 
 CMD ["/usr/bin/handler"]
 
-ENV DATA_PATH=${DATA_PATH}
+ENV DATA_PATH=/var/handler
 EXPOSE 8080
-VOLUME ${DATA_PATH}
+VOLUME /var/handler
 
 LABEL org.opencontainers.image.authors="William Artero <docker@artero.dev>"
-LABEL org.opencontainers.image.base.name="scratch"
 LABEL org.opencontainers.image.description="anilist custom list provider for sonarr/radarr"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/wwmoraes/anilistarr"

@@ -1,38 +1,40 @@
+define CONTAINER_NAMETAGS
+$(strip
+wwmoraes/anilistarr:latest
+wwmoraes/anilistarr:$(subst /,-,$(if ${BRANCH},${BRANCH},${REVISION}))
+wwmoraes/anilistarr:$(subst +,-,${VERSION})
+wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d- -f1)
+wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d. -f1-2)
+wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d. -f1)
+)
+endef
 
 define DOCKER_FLAGS
---platform=linux/arm64,linux/amd64
+$(strip
 --label=org.opencontainers.image.created=${DATE}
 --label=org.opencontainers.image.documentation=https://github.com/wwmoraes/anilistarr/blob/${BRANCH}/README.md
 --label=org.opencontainers.image.revision=${REVISION}
---label=org.opencontainers.image.source=https://github.com/wwmoraes/anilistarr
---label=org.opencontainers.image.url=https://hub.docker.com/r/wwmoraes/anilistarr
 --label=org.opencontainers.image.version=${VERSION}
---tag=wwmoraes/anilistarr:latest
---tag=wwmoraes/anilistarr:$(subst /,-,$(if ${BRANCH},${BRANCH},${REVISION}))
---tag=wwmoraes/anilistarr:$(subst +,-,${VERSION})
---tag=wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d- -f1)
---tag=wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d. -f1-2)
---tag=wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d. -f1)
+$(addprefix --tag=,${CONTAINER_NAMETAGS})
+)
 endef
 
+ifneq ($(shell uname -s),Darwin)
+DOCKER = docker buildx
+DOCKER_FLAGS += --load
+else
+DOCKER = container
+DOCKER_FLAGS += --platform=linux/arm64
+endif
+
 .PHONY: image
-image: Dockerfile.tar
-
-.PHONY: image-push
-image-push: Dockerfile.tar
-	## TODO use skopeo/regctl/oras to copy tarball instead
-	docker buildx build --push $(filter-out --platform=%,$(strip ${DOCKER_FLAGS})) --file Dockerfile .
-
-Dockerfile.tar: DOCKER_BUILDKIT=1
 ## avoids mixing application debugging with buildkit
-Dockerfile.tar: GRPC_GO_LOG_VERBOSITY_LEVEL =
-Dockerfile.tar: GRPC_GO_LOG_SEVERITY_LEVEL =
+image: GRPC_GO_LOG_VERBOSITY_LEVEL =
+image: GRPC_GO_LOG_SEVERITY_LEVEL =
 ## https://github.com/moby/moby/issues/46129
-Dockerfile.tar: OTEL_EXPORTER_OTLP_ENDPOINT =
-Dockerfile.tar: Dockerfile dist
-	docker buildx build $(strip ${DOCKER_FLAGS}) --output type=oci,dest=$@ --file $< .
-	## do it again to load a single-architecture image into docker
-	docker buildx build --load $(filter-out --platform=%,$(strip ${DOCKER_FLAGS})) --file $< .
+image: OTEL_EXPORTER_OTLP_ENDPOINT =
+image: Dockerfile dist/
+	${DOCKER} build ${DOCKER_FLAGS} --file $< .
 	container-structure-test test -c container-structure-test.yaml -i wwmoraes/anilistarr:latest
 
 Dockerfile.sarif: Dockerfile.hadolint.sarif Dockerfile.grype.sarif

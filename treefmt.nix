@@ -1,28 +1,18 @@
 {
-  mkFormatterModule,
   pkgs,
   ...
 }:
 {
   imports = [
     pkgs.nur.repos.wwmoraes.treefmtModules.checkmake
+    pkgs.nur.repos.wwmoraes.treefmtModules.editorconfig
     pkgs.nur.repos.wwmoraes.treefmtModules.hadolint
-    (mkFormatterModule {
-      name = "editorconfig";
-      package = "editorconfig-checker";
-      args = [ ];
-      excludes = [
-        "*.lock"
-        "CHANGELOG.md"
-        "docs/structurizr-*.puml"
-      ];
-    })
   ];
 
   projectRootFile = "flake.nix";
 
   programs.checkmake.enable = true;
-  ## TODO custom: golangci-lint
+  programs.editorconfig.enable = true;
   programs.gofmt.enable = true;
   programs.gofumpt.enable = true;
   programs.goimports.enable = true;

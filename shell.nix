@@ -7,9 +7,6 @@ rec {
     nativeBuildInputs = [
       (pkgs.mkGoEnv { pwd = ./.; })
       # keep-sorted start
-      pkgs.docker-client
-      pkgs.eclint
-      pkgs.editorconfig-checker
       pkgs.git
       pkgs.gomod2nix
       pkgs.goreleaser
@@ -36,8 +33,10 @@ rec {
     final: prev: {
       nativeBuildInputs = [
         # keep-sorted start
+        pkgs.docker-client
         pkgs.go-junit-report
         pkgs.nur.repos.wwmoraes.codecov-cli-bin
+        pkgs.qemu
         # keep-sorted end
       ]
       ++ prev.nativeBuildInputs;
@@ -52,11 +51,8 @@ rec {
   terminal = default.overrideAttrs (
     final: prev: {
       nativeBuildInputs = [
-        # pkgs.anilistarr
         # keep-sorted start
         pkgs.curl
-        # pkgs.nur.repos.wwmoraes.gopium
-        # pkgs.nur.repos.wwmoraes.goutline
         pkgs.nur.repos.wwmoraes.structurizr-cli
         pkgs.nur.repos.wwmoraes.structurizr-site-generatr
         pkgs.plantuml
