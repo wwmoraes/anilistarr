@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/golangci/golangci-lint/refs/tags/v2.11.0/jsonschema/golangci.jsonschema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/golangci/golangci-lint/refs/tags/v2.12.2/jsonschema/golangci.jsonschema.json
 version: "2"
 run:
   modules-download-mode: readonly
@@ -27,6 +27,7 @@ linters:
   - godot ## Check if comments end in a period. [changes comments indiscriminately]
   - goheader ## Checks is file header matches to pattern. [breaks packages]
   ## deprecated
+  - gomodguard
   - wsl
   settings:
     copyloopvar:
@@ -149,23 +150,26 @@ linters:
       - github.com/miladabc/gonfig
       - github.com/ugorji/go
       exclude-forbidden: true
-    gomodguard:
+    gomodguard_v2:
       allowed:
-        modules:
-        - dario.cat/mergo
-        - git.sr.ht/~emersion/go-jsonschema
-        - go.etcd.io/bbolt
-        - go.uber.org/automaxprocs
-        - modernc.org/sqlite
-        domains:
-        - github.com
-        - go.mongodb.org
-        - go.opentelemetry.io
-        - golang.org
-        - google.golang.org
-        - gopkg.in
-      blocked:
-        local-replace-directives: true
+      - module: dario.cat/mergo
+      - module: git.sr.ht/~emersion/go-jsonschema
+      - module: go.etcd.io/bbolt
+      - module: go.uber.org/automaxprocs
+      - module: modernc.org/sqlite
+      - module: github.com/.*
+        match-type: regex
+      - module: go.mongodb.org/.*
+        match-type: regex
+      - module: go.opentelemetry.io/.*
+        match-type: regex
+      - module: golang.org/.*
+        match-type: regex
+      - module: google.golang.org/.*
+        match-type: regex
+      - module: gopkg.in/.*
+        match-type: regex
+      local-replace-directives: true
     gosec:
       severity: low
       confidence: low

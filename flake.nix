@@ -12,7 +12,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:tweag/gomod2nix";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-25.11";
     nur = {
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";

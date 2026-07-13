@@ -33,10 +33,10 @@ rec {
     final: prev: {
       nativeBuildInputs = [
         # keep-sorted start
-        pkgs.docker-client
         pkgs.go-junit-report
         pkgs.nur.repos.wwmoraes.codecov-cli-bin
         pkgs.qemu
+        pkgs.unstable.docker-client
         # keep-sorted end
       ]
       ++ prev.nativeBuildInputs;
