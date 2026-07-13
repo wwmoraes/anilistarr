@@ -3,9 +3,11 @@ $(strip
 wwmoraes/anilistarr:latest
 wwmoraes/anilistarr:$(subst /,-,$(if ${BRANCH},${BRANCH},${REVISION}))
 wwmoraes/anilistarr:$(subst +,-,${VERSION})
+$(if $(findstring +,${VERSION}),,
 wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d- -f1)
 wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d. -f1-2)
 wwmoraes/anilistarr:$(shell echo ${VERSION} | cut -d. -f1)
+)
 )
 endef
 

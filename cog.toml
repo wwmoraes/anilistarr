@@ -1,6 +1,5 @@
 #:schema https://raw.githubusercontent.com/cocogitto/cocogitto/refs/heads/main/website/public/cog-schema.json
 
-branch_whitelist = ["master"]
 from_latest_tag = true
 post_bump_hooks = [
   "git push",

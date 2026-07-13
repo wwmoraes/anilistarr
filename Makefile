@@ -11,7 +11,7 @@ export
 BRANCH != git branch --show-current
 DATE != date --utc +"%Y-%m-%dT%H:%M:%SZ"
 REVISION != git rev-parse --verify HEAD
-VERSION != git describe --tags --always | cut -dv -f2
+VERSION != cog bump --auto --dry-run $(if $(shell git describe --tags --always | grep -),--build ${REVISION}) --skip-untracked 2>/dev/null | cut -dv -f2
 
 -include .make/*.mk
 
