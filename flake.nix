@@ -70,7 +70,6 @@
             overlays = [
               inputs.gomod2nix.overlays.default
               inputs.nur.overlays.default
-              self.overlays.default
               (final: prev: {
                 unstable = import inputs.unstable { inherit (prev.stdenv.hostPlatform) system; };
               })
