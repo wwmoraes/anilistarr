@@ -7,3 +7,4 @@ package anilistarr
 //go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -generate types,chi-server,spec -package api -o internal/api/api.gen.go swagger.yaml
 // Thank you oapi-codegen...
 //go:generate sed --in-place= "/var err error/d" internal/api/api.gen.go
+//go:generate sed --in-place= "/_ = err/d" internal/api/api.gen.go

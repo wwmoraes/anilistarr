@@ -21,7 +21,7 @@ pkgs.buildGoModule (finalAttrs: {
         ./swagger.yaml
       ]);
     };
-  vendorHash = "sha256-SEYA4jNIUF0qV/gtQ2w80R0D9iUDoIPSqIysIJ9PZRs=";
+  vendorHash = "sha256-a8TSVSKHMtbgpIL8IeC96XBq4yR7doHZMoTYo3JJ1+w=";
   modules = ./gomod2nix.toml;
   subPackages = [ "cmd/handler" ];
   ldflags = [

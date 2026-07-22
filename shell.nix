@@ -8,6 +8,8 @@ rec {
       (pkgs.mkGoEnv { pwd = ./.; })
       # keep-sorted start
       pkgs.git
+      pkgs.go
+      pkgs.golangci-lint
       pkgs.gomod2nix
       pkgs.goreleaser
       pkgs.gotestdox
@@ -20,8 +22,6 @@ rec {
       pkgs.semgrep
       pkgs.unstable.cocogitto
       pkgs.unstable.container-structure-test
-      pkgs.unstable.go
-      pkgs.unstable.golangci-lint
       pkgs.unstable.hadolint-sarif
       pkgs.unstable.sarif-fmt
       pkgs.valkey
