@@ -93,7 +93,7 @@ $(wildcard docs/structurizr-*.png) &: $(wildcard docs/structurizr-*.puml)
 	@touch docs/structurizr-*.png
 
 dist/: ${GO_SOURCES} go.sum .goreleaser.yml
-	goreleaser release --clean --snapshot --skip before
+	goreleaser release --clean --snapshot --skip before,archive
 
 semgrep.sarif: ${GO_SOURCES} Dockerfile $(wildcard .github/workflows/*)
 	$(info running SAST analysis (semgrep)...)
