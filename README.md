@@ -7,10 +7,9 @@
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/wwmoraes/anilistarr.svg)](https://github.com/wwmoraes/anilistarr/pulls)
 ![Codecov](https://img.shields.io/codecov/c/github/wwmoraes/anilistarr)
 
-![GitHub branch status](https://img.shields.io/github/checks-runs/wwmoraes/anilistarr/master)
+![GitHub branch status](https://img.shields.io/github/check-runs/wwmoraes/anilistarr/master)
 [![Integration](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/integration.yml)
 [![Release](https://github.com/wwmoraes/anilistarr/actions/workflows/release.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/release.yml)
-[![Security](https://github.com/wwmoraes/anilistarr/actions/workflows/security.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/security.yml)
 [![Documentation](https://github.com/wwmoraes/anilistarr/actions/workflows/documentation.yml/badge.svg)](https://github.com/wwmoraes/anilistarr/actions/workflows/documentation.yml)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
