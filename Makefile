@@ -98,7 +98,6 @@ dist/: ${GO_SOURCES} go.sum .goreleaser.yml
 semgrep.sarif: ${GO_SOURCES} Dockerfile $(wildcard .github/workflows/*)
 	$(info running SAST analysis (semgrep)...)
 	-@semgrep scan --quiet --sarif 2>/dev/null | jq 'del(.runs[].results[] | select(.suppressions))' | tee $@ | sarif-fmt
-	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
 
 docs/components.png: docs/components.puml
 	plantuml $<

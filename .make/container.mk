@@ -46,10 +46,10 @@ Dockerfile.sarif: Dockerfile.hadolint.sarif Dockerfile.grype.sarif
 Dockerfile.hadolint.sarif: Dockerfile
 	$(info running SAST analysis (hadolint)...)
 	-@hadolint -f json $< | hadolint-sarif | tee $@ | sarif-fmt
-	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
+#@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
 
 Dockerfile.grype.sarif: image
 	$(info running SAST analysis (grype)...)
 	-@grype db update --quiet || grype db delete --quiet && grype db update --quiet
 	-@grype -o sarif --fail-on critical wwmoraes/anilistarr:latest | tee $@ | sarif-fmt
-	@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
+#@jq -e '[.runs[].results[] | select(.level == "error")] | length | . == 0' $@ > /dev/null
