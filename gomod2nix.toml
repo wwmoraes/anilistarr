@@ -1,14 +1,345 @@
 schema = 3
+cachePackages = [
+  'github.com/Khan/genqlient',
+  'github.com/Khan/genqlient/generate',
+  'github.com/Khan/genqlient/graphql',
+  'github.com/XSAM/otelsql',
+  'github.com/agiledragon/gomonkey/v2',
+  'github.com/agiledragon/gomonkey/v2/creflect',
+  'github.com/agnivade/levenshtein',
+  'github.com/alexflint/go-arg',
+  'github.com/alexflint/go-scalar',
+  'github.com/aws/aws-sdk-go/aws',
+  'github.com/aws/aws-sdk-go/aws/arn',
+  'github.com/aws/aws-sdk-go/aws/auth/bearer',
+  'github.com/aws/aws-sdk-go/aws/awserr',
+  'github.com/aws/aws-sdk-go/aws/awsutil',
+  'github.com/aws/aws-sdk-go/aws/client',
+  'github.com/aws/aws-sdk-go/aws/client/metadata',
+  'github.com/aws/aws-sdk-go/aws/corehandlers',
+  'github.com/aws/aws-sdk-go/aws/credentials',
+  'github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds',
+  'github.com/aws/aws-sdk-go/aws/credentials/endpointcreds',
+  'github.com/aws/aws-sdk-go/aws/credentials/processcreds',
+  'github.com/aws/aws-sdk-go/aws/credentials/ssocreds',
+  'github.com/aws/aws-sdk-go/aws/credentials/stscreds',
+  'github.com/aws/aws-sdk-go/aws/csm',
+  'github.com/aws/aws-sdk-go/aws/defaults',
+  'github.com/aws/aws-sdk-go/aws/ec2metadata',
+  'github.com/aws/aws-sdk-go/aws/endpoints',
+  'github.com/aws/aws-sdk-go/aws/request',
+  'github.com/aws/aws-sdk-go/aws/session',
+  'github.com/aws/aws-sdk-go/aws/signer/v4',
+  'github.com/aws/aws-sdk-go/private/checksum',
+  'github.com/aws/aws-sdk-go/private/protocol',
+  'github.com/aws/aws-sdk-go/private/protocol/eventstream',
+  'github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi',
+  'github.com/aws/aws-sdk-go/private/protocol/json/jsonutil',
+  'github.com/aws/aws-sdk-go/private/protocol/jsonrpc',
+  'github.com/aws/aws-sdk-go/private/protocol/query',
+  'github.com/aws/aws-sdk-go/private/protocol/query/queryutil',
+  'github.com/aws/aws-sdk-go/private/protocol/rest',
+  'github.com/aws/aws-sdk-go/private/protocol/restjson',
+  'github.com/aws/aws-sdk-go/private/protocol/restxml',
+  'github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil',
+  'github.com/aws/aws-sdk-go/service/s3',
+  'github.com/aws/aws-sdk-go/service/sso',
+  'github.com/aws/aws-sdk-go/service/sso/ssoiface',
+  'github.com/aws/aws-sdk-go/service/ssooidc',
+  'github.com/aws/aws-sdk-go/service/sts',
+  'github.com/aws/aws-sdk-go/service/sts/stsiface',
+  'github.com/bmatcuk/doublestar/v4',
+  'github.com/brunoga/deep',
+  'github.com/cenkalti/backoff/v5',
+  'github.com/cespare/xxhash/v2',
+  'github.com/clipperhouse/uax29/v2/graphemes',
+  'github.com/davecgh/go-spew/spew',
+  'github.com/denisbrodbeck/machineid',
+  'github.com/dgraph-io/badger/v4',
+  'github.com/dgraph-io/badger/v4/fb',
+  'github.com/dgraph-io/badger/v4/options',
+  'github.com/dgraph-io/badger/v4/pb',
+  'github.com/dgraph-io/badger/v4/skl',
+  'github.com/dgraph-io/badger/v4/table',
+  'github.com/dgraph-io/badger/v4/trie',
+  'github.com/dgraph-io/badger/v4/y',
+  'github.com/dgraph-io/ristretto/v2',
+  'github.com/dgraph-io/ristretto/v2/z',
+  'github.com/dgraph-io/ristretto/v2/z/simd',
+  'github.com/dprotaso/go-yit',
+  'github.com/dustin/go-humanize',
+  'github.com/fatih/structs',
+  'github.com/felixge/httpsnoop',
+  'github.com/fsnotify/fsnotify',
+  'github.com/getkin/kin-openapi/openapi3',
+  'github.com/go-chi/chi/v5',
+  'github.com/go-logr/logr',
+  'github.com/go-logr/logr/funcr',
+  'github.com/go-logr/stdr',
+  'github.com/go-openapi/jsonpointer',
+  'github.com/go-openapi/swag/jsonname',
+  'github.com/go-viper/mapstructure/v2',
+  'github.com/goccy/go-json',
+  'github.com/golang/freetype/raster',
+  'github.com/golang/freetype/truetype',
+  'github.com/google/flatbuffers/go',
+  'github.com/google/go-github/v56/github',
+  'github.com/google/go-querystring/query',
+  'github.com/google/uuid',
+  'github.com/grpc-ecosystem/grpc-gateway/v2/runtime',
+  'github.com/grpc-ecosystem/grpc-gateway/v2/utilities',
+  'github.com/hashicorp/errwrap',
+  'github.com/hashicorp/go-multierror',
+  'github.com/huandu/xstrings',
+  'github.com/jedib0t/go-pretty/v6/table',
+  'github.com/jedib0t/go-pretty/v6/text',
+  'github.com/jmespath/go-jmespath',
+  'github.com/klauspost/compress',
+  'github.com/klauspost/compress/fse',
+  'github.com/klauspost/compress/huff0',
+  'github.com/klauspost/compress/s2',
+  'github.com/klauspost/compress/snappy',
+  'github.com/klauspost/compress/zstd',
+  'github.com/knadh/koanf/maps',
+  'github.com/knadh/koanf/parsers/yaml',
+  'github.com/knadh/koanf/providers/env',
+  'github.com/knadh/koanf/providers/file',
+  'github.com/knadh/koanf/providers/posflag',
+  'github.com/knadh/koanf/providers/structs',
+  'github.com/knadh/koanf/v2',
+  'github.com/mattn/go-colorable',
+  'github.com/mattn/go-isatty',
+  'github.com/mattn/go-runewidth',
+  'github.com/mitchellh/copystructure',
+  'github.com/mitchellh/reflectwalk',
+  'github.com/narqo/go-badge',
+  'github.com/narqo/go-badge/fonts',
+  'github.com/ncruces/go-strftime',
+  'github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen',
+  'github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen',
+  'github.com/oapi-codegen/oapi-codegen/v2/pkg/util',
+  'github.com/oasdiff/yaml',
+  'github.com/oasdiff/yaml3',
+  'github.com/pmezard/go-difflib/difflib',
+  'github.com/redis/go-redis/extra/rediscmd/v9',
+  'github.com/redis/go-redis/extra/redisotel/v9',
+  'github.com/redis/go-redis/v9',
+  'github.com/redis/go-redis/v9/auth',
+  'github.com/redis/go-redis/v9/maintnotifications',
+  'github.com/redis/go-redis/v9/push',
+  'github.com/remyoudompheng/bigfft',
+  'github.com/rs/zerolog',
+  'github.com/santhosh-tekuri/jsonschema/v6',
+  'github.com/santhosh-tekuri/jsonschema/v6/kind',
+  'github.com/speakeasy-api/jsonpath/pkg/jsonpath',
+  'github.com/speakeasy-api/jsonpath/pkg/jsonpath/config',
+  'github.com/speakeasy-api/jsonpath/pkg/jsonpath/token',
+  'github.com/speakeasy-api/openapi/overlay',
+  'github.com/speakeasy-api/openapi/overlay/loader',
+  'github.com/spf13/cobra',
+  'github.com/spf13/pflag',
+  'github.com/sqlc-dev/sqlc',
+  'github.com/stretchr/objx',
+  'github.com/stretchr/testify/assert',
+  'github.com/stretchr/testify/assert/yaml',
+  'github.com/stretchr/testify/mock',
+  'github.com/stretchr/testify/require',
+  'github.com/vektah/gqlparser/v2/ast',
+  'github.com/vektah/gqlparser/v2/formatter',
+  'github.com/vektah/gqlparser/v2/gqlerror',
+  'github.com/vektah/gqlparser/v2/lexer',
+  'github.com/vektah/gqlparser/v2/parser',
+  'github.com/vektah/gqlparser/v2/validator',
+  'github.com/vektah/gqlparser/v2/validator/core',
+  'github.com/vektah/gqlparser/v2/validator/rules',
+  'github.com/vektra/mockery/v3',
+  'github.com/vektra/mockery/v3/config',
+  'github.com/vektra/mockery/v3/template',
+  'github.com/vektra/mockery/v3/template_funcs',
+  'github.com/vladopajic/go-test-coverage/v2',
+  'github.com/vladopajic/go-test-coverage/v2/pkg/testcoverage',
+  'github.com/vladopajic/go-test-coverage/v2/pkg/testcoverage/badge',
+  'github.com/vladopajic/go-test-coverage/v2/pkg/testcoverage/badgestorer',
+  'github.com/vladopajic/go-test-coverage/v2/pkg/testcoverage/coverage',
+  'github.com/vladopajic/go-test-coverage/v2/pkg/testcoverage/logger',
+  'github.com/vladopajic/go-test-coverage/v2/pkg/testcoverage/path',
+  'github.com/vmware-labs/yaml-jsonpath/pkg/yamlpath',
+  'github.com/wadey/gocovmerge',
+  'github.com/wwmoraes/gotell',
+  'github.com/wwmoraes/gotell/logging',
+  'github.com/xeipuuv/gojsonpointer',
+  'github.com/xeipuuv/gojsonreference',
+  'github.com/xeipuuv/gojsonschema',
+  'go.etcd.io/bbolt',
+  'go.etcd.io/bbolt/errors',
+  'go.opentelemetry.io/auto/sdk',
+  'go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc',
+  'go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp',
+  'go.opentelemetry.io/contrib/instrumentation/runtime',
+  'go.opentelemetry.io/otel',
+  'go.opentelemetry.io/otel/attribute',
+  'go.opentelemetry.io/otel/baggage',
+  'go.opentelemetry.io/otel/codes',
+  'go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc',
+  'go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc',
+  'go.opentelemetry.io/otel/exporters/otlp/otlptrace',
+  'go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc',
+  'go.opentelemetry.io/otel/log',
+  'go.opentelemetry.io/otel/log/embedded',
+  'go.opentelemetry.io/otel/log/global',
+  'go.opentelemetry.io/otel/log/noop',
+  'go.opentelemetry.io/otel/metric',
+  'go.opentelemetry.io/otel/metric/embedded',
+  'go.opentelemetry.io/otel/metric/noop',
+  'go.opentelemetry.io/otel/propagation',
+  'go.opentelemetry.io/otel/sdk',
+  'go.opentelemetry.io/otel/sdk/instrumentation',
+  'go.opentelemetry.io/otel/sdk/log',
+  'go.opentelemetry.io/otel/sdk/metric',
+  'go.opentelemetry.io/otel/sdk/metric/exemplar',
+  'go.opentelemetry.io/otel/sdk/metric/metricdata',
+  'go.opentelemetry.io/otel/sdk/resource',
+  'go.opentelemetry.io/otel/sdk/trace',
+  'go.opentelemetry.io/otel/semconv/v1.20.0',
+  'go.opentelemetry.io/otel/semconv/v1.20.0/httpconv',
+  'go.opentelemetry.io/otel/semconv/v1.24.0',
+  'go.opentelemetry.io/otel/semconv/v1.26.0',
+  'go.opentelemetry.io/otel/semconv/v1.30.0',
+  'go.opentelemetry.io/otel/semconv/v1.37.0',
+  'go.opentelemetry.io/otel/semconv/v1.41.0',
+  'go.opentelemetry.io/otel/semconv/v1.41.0/otelconv',
+  'go.opentelemetry.io/otel/trace',
+  'go.opentelemetry.io/otel/trace/embedded',
+  'go.opentelemetry.io/otel/trace/noop',
+  'go.opentelemetry.io/proto/otlp/collector/logs/v1',
+  'go.opentelemetry.io/proto/otlp/collector/metrics/v1',
+  'go.opentelemetry.io/proto/otlp/collector/trace/v1',
+  'go.opentelemetry.io/proto/otlp/common/v1',
+  'go.opentelemetry.io/proto/otlp/logs/v1',
+  'go.opentelemetry.io/proto/otlp/metrics/v1',
+  'go.opentelemetry.io/proto/otlp/resource/v1',
+  'go.opentelemetry.io/proto/otlp/trace/v1',
+  'go.uber.org/atomic',
+  'go.yaml.in/yaml/v3',
+  'golang.org/x/exp/constraints',
+  'golang.org/x/image/font',
+  'golang.org/x/image/math/fixed',
+  'golang.org/x/mod/modfile',
+  'golang.org/x/mod/module',
+  'golang.org/x/mod/semver',
+  'golang.org/x/net/http/httpguts',
+  'golang.org/x/net/http2',
+  'golang.org/x/net/http2/hpack',
+  'golang.org/x/net/idna',
+  'golang.org/x/net/trace',
+  'golang.org/x/sync/errgroup',
+  'golang.org/x/sys/unix',
+  'golang.org/x/term',
+  'golang.org/x/text/cases',
+  'golang.org/x/text/feature/plural',
+  'golang.org/x/text/language',
+  'golang.org/x/text/message',
+  'golang.org/x/text/message/catalog',
+  'golang.org/x/text/secure/bidirule',
+  'golang.org/x/text/transform',
+  'golang.org/x/text/unicode/bidi',
+  'golang.org/x/text/unicode/norm',
+  'golang.org/x/text/width',
+  'golang.org/x/time/rate',
+  'golang.org/x/tools/cmd/stringer',
+  'golang.org/x/tools/cover',
+  'golang.org/x/tools/go/ast/astutil',
+  'golang.org/x/tools/go/ast/edge',
+  'golang.org/x/tools/go/ast/inspector',
+  'golang.org/x/tools/go/gcexportdata',
+  'golang.org/x/tools/go/packages',
+  'golang.org/x/tools/go/types/objectpath',
+  'golang.org/x/tools/go/types/typeutil',
+  'golang.org/x/tools/imports',
+  'google.golang.org/genproto/googleapis/api/httpbody',
+  'google.golang.org/genproto/googleapis/rpc/errdetails',
+  'google.golang.org/genproto/googleapis/rpc/status',
+  'google.golang.org/grpc',
+  'google.golang.org/grpc/attributes',
+  'google.golang.org/grpc/backoff',
+  'google.golang.org/grpc/balancer',
+  'google.golang.org/grpc/balancer/base',
+  'google.golang.org/grpc/balancer/endpointsharding',
+  'google.golang.org/grpc/balancer/grpclb/state',
+  'google.golang.org/grpc/balancer/pickfirst',
+  'google.golang.org/grpc/balancer/roundrobin',
+  'google.golang.org/grpc/binarylog/grpc_binarylog_v1',
+  'google.golang.org/grpc/channelz',
+  'google.golang.org/grpc/codes',
+  'google.golang.org/grpc/connectivity',
+  'google.golang.org/grpc/credentials',
+  'google.golang.org/grpc/credentials/insecure',
+  'google.golang.org/grpc/encoding',
+  'google.golang.org/grpc/encoding/gzip',
+  'google.golang.org/grpc/encoding/proto',
+  'google.golang.org/grpc/experimental/balancer/weight',
+  'google.golang.org/grpc/experimental/stats',
+  'google.golang.org/grpc/grpclog',
+  'google.golang.org/grpc/health/grpc_health_v1',
+  'google.golang.org/grpc/keepalive',
+  'google.golang.org/grpc/mem',
+  'google.golang.org/grpc/metadata',
+  'google.golang.org/grpc/peer',
+  'google.golang.org/grpc/resolver',
+  'google.golang.org/grpc/resolver/dns',
+  'google.golang.org/grpc/serviceconfig',
+  'google.golang.org/grpc/stats',
+  'google.golang.org/grpc/status',
+  'google.golang.org/grpc/tap',
+  'google.golang.org/protobuf/encoding/protojson',
+  'google.golang.org/protobuf/encoding/prototext',
+  'google.golang.org/protobuf/encoding/protowire',
+  'google.golang.org/protobuf/proto',
+  'google.golang.org/protobuf/protoadapt',
+  'google.golang.org/protobuf/reflect/protoreflect',
+  'google.golang.org/protobuf/reflect/protoregistry',
+  'google.golang.org/protobuf/runtime/protoiface',
+  'google.golang.org/protobuf/runtime/protoimpl',
+  'google.golang.org/protobuf/types/known/anypb',
+  'google.golang.org/protobuf/types/known/durationpb',
+  'google.golang.org/protobuf/types/known/fieldmaskpb',
+  'google.golang.org/protobuf/types/known/structpb',
+  'google.golang.org/protobuf/types/known/timestamppb',
+  'google.golang.org/protobuf/types/known/wrapperspb',
+  'gopkg.in/yaml.v2',
+  'gopkg.in/yaml.v3',
+  'modernc.org/libc',
+  'modernc.org/libc/errno',
+  'modernc.org/libc/fcntl',
+  'modernc.org/libc/fts',
+  'modernc.org/libc/grp',
+  'modernc.org/libc/honnef.co/go/netdb',
+  'modernc.org/libc/langinfo',
+  'modernc.org/libc/limits',
+  'modernc.org/libc/netdb',
+  'modernc.org/libc/netinet/in',
+  'modernc.org/libc/poll',
+  'modernc.org/libc/pthread',
+  'modernc.org/libc/pwd',
+  'modernc.org/libc/signal',
+  'modernc.org/libc/stdio',
+  'modernc.org/libc/stdlib',
+  'modernc.org/libc/sys/socket',
+  'modernc.org/libc/sys/stat',
+  'modernc.org/libc/sys/types',
+  'modernc.org/libc/termios',
+  'modernc.org/libc/time',
+  'modernc.org/libc/unistd',
+  'modernc.org/libc/utime',
+  'modernc.org/libc/uuid/uuid',
+  'modernc.org/libc/wctype',
+  'modernc.org/mathutil',
+  'modernc.org/memory',
+  'modernc.org/sqlite',
+  'modernc.org/sqlite/lib'
+]
 
 [mod]
-  [mod.'cel.dev/expr']
-    version = 'v0.25.1'
-    hash = 'sha256-TEdMxFUPK7IZuCXMufwCkbN+ZZIXSQclljIybFZcByo='
-
-  [mod.'filippo.io/edwards25519']
-    version = 'v1.1.0'
-    hash = 'sha256-9ACANrgWZSd5HYPfDZHY8DVbPSC9LOMgy8deq3rDOoc='
-
   [mod.'github.com/Khan/genqlient']
     version = 'v0.8.1'
     hash = 'sha256-6PYwpjpPN99oG+dRMhSgsNVLWTH8dNjqKUW2+jtYar0='
@@ -33,10 +364,6 @@ schema = 3
     version = 'v1.2.0'
     hash = 'sha256-PivG79qqrPJ1CksNiNNlwC+xPCMMTQxtda3rwk/z6LA='
 
-  [mod.'github.com/antlr4-go/antlr/v4']
-    version = 'v4.13.1'
-    hash = 'sha256-beAuxHNRUuhzcSJUh/8ztVf1zCUiaT72fg2Jvx0AuNQ='
-
   [mod.'github.com/aws/aws-sdk-go']
     version = 'v1.49.4'
     hash = 'sha256-X9lEqV3gXExokXAxtmXkgo04XfrIxU31eM2cQI0HyPQ='
@@ -60,10 +387,6 @@ schema = 3
   [mod.'github.com/clipperhouse/uax29/v2']
     version = 'v2.2.0'
     hash = 'sha256-BtyMi0Ul1CGY8miZDbsUWT9iW81UAn7CH/vAR4/S5vE='
-
-  [mod.'github.com/cubicdaiya/gonp']
-    version = 'v1.0.4'
-    hash = 'sha256-EzI6qi2dYF/aCSNXe1zhoA24gaj6AFjHPwBbD2v7L64='
 
   [mod.'github.com/davecgh/go-spew']
     version = 'v1.1.2-0.20180830191138-d8f796af33cc'
@@ -92,10 +415,6 @@ schema = 3
   [mod.'github.com/fatih/structs']
     version = 'v1.1.0'
     hash = 'sha256-OCmubTLF1anwNnkvFZDYHnF6hFlX0WDoe/9+dDlaMPM='
-
-  [mod.'github.com/fatih/structtag']
-    version = 'v1.2.0'
-    hash = 'sha256-Y2pjiEmMsxfUH8LONU2/f8k1BibOHeLKJmi4uZm/SSU='
 
   [mod.'github.com/felixge/httpsnoop']
     version = 'v1.0.4'
@@ -129,10 +448,6 @@ schema = 3
     version = 'v0.26.0'
     hash = 'sha256-vhWO27K+YiKrK/PStjAhqwrVXTF/d4xqxF3TzMtHg3Q='
 
-  [mod.'github.com/go-sql-driver/mysql']
-    version = 'v1.9.3'
-    hash = 'sha256-37CNj7G2S20w98rVAyFiScHQ5uXI/NSYY6Gsl41UwgY='
-
   [mod.'github.com/go-viper/mapstructure/v2']
     version = 'v2.5.0'
     hash = 'sha256-LbrCBANBprVI84M0CWrXc7rriJL5ac5VKbh58LBTw7U='
@@ -144,10 +459,6 @@ schema = 3
   [mod.'github.com/golang/freetype']
     version = 'v0.0.0-20170609003504-e2365dfdc4a0'
     hash = 'sha256-AHAFBd20/tqxohkWyQkui2bUef9i1HWYgk9LOIFErvA='
-
-  [mod.'github.com/google/cel-go']
-    version = 'v0.25.0'
-    hash = 'sha256-Ztdz/MKqt5SJzjXnJS/MeZ+ekEqENQtZDsZiufcUHL8='
 
   [mod.'github.com/google/flatbuffers']
     version = 'v25.12.19+incompatible'
@@ -185,29 +496,9 @@ schema = 3
     version = 'v1.1.0'
     hash = 'sha256-XWlYH0c8IcxAwQTnIi6WYqq44nOKUylSWxWO/vi+8pE='
 
-  [mod.'github.com/jackc/pgpassfile']
-    version = 'v1.0.0'
-    hash = 'sha256-H0nFbC34/3pZUFnuiQk9W7yvAMh6qJDrqvHp+akBPLM='
-
-  [mod.'github.com/jackc/pgservicefile']
-    version = 'v0.0.0-20240606120523-5a60cdf6a761'
-    hash = 'sha256-ETpGsLAA2wcm5xJBayr/mZrCE1YsWbnkbSSX3ptrFn0='
-
-  [mod.'github.com/jackc/pgx/v5']
-    version = 'v5.7.5'
-    hash = 'sha256-+bzuXlJnsvNEGjuhHIiZwmWepEmwj3Fl1ktLD50IKlU='
-
-  [mod.'github.com/jackc/puddle/v2']
-    version = 'v2.2.2'
-    hash = 'sha256-IUxdu4JYfsCh/qlz2SiUWu7EVPHhyooiVA4oaS2Z6yk='
-
   [mod.'github.com/jedib0t/go-pretty/v6']
     version = 'v6.7.8'
     hash = 'sha256-ID+hqb1OXPCpWkhx43ElEw6Uei28LstXEozeep5VHkc='
-
-  [mod.'github.com/jinzhu/inflection']
-    version = 'v1.0.0'
-    hash = 'sha256-3h3pHib5MaCXKyKLIMyQnSptDJ16kPjCOQPoEBoQsZg='
 
   [mod.'github.com/jmespath/go-jmespath']
     version = 'v0.4.0'
@@ -285,26 +576,6 @@ schema = 3
     version = 'v0.0.14'
     hash = 'sha256-5kaz809D80Dp64Qeg5PwONZ9vxiz6I9BVvo5l5lBhww='
 
-  [mod.'github.com/pganalyze/pg_query_go/v6']
-    version = 'v6.1.0'
-    hash = 'sha256-oErZSMlN7WblwPNA48tYvcXgP9iCQP9KZHAYegkTHyg='
-
-  [mod.'github.com/pingcap/errors']
-    version = 'v0.11.5-0.20240311024730-e056997136bb'
-    hash = 'sha256-ZjY2GTtFn8BPKDSIQ2RQoxgVXOXRb9KCh8aoruj/zFw='
-
-  [mod.'github.com/pingcap/failpoint']
-    version = 'v0.0.0-20240528011301-b51a646c7c86'
-    hash = 'sha256-ivsfJW5MdgAjFqvd05Prjo78h5bh59ZzhPOjqXlpGkU='
-
-  [mod.'github.com/pingcap/log']
-    version = 'v1.1.0'
-    hash = 'sha256-JT33CJMknTXha1ERt4s6vV9fyx99J+Ot8rFrNKXTsTc='
-
-  [mod.'github.com/pingcap/tidb/pkg/parser']
-    version = 'v0.0.0-20250613120101-5b778e9129f0'
-    hash = 'sha256-8KD35PqpMmSbDRd7DiGutZSL22pJjTshWiSovy+GHfA='
-
   [mod.'github.com/pmezard/go-difflib']
     version = 'v1.0.1-0.20181226105442-5d4384ee4fb2'
     hash = 'sha256-XA4Oj1gdmdV/F/+8kMI+DBxKPthZ768hbKsO3d9Gx90='
@@ -324,10 +595,6 @@ schema = 3
   [mod.'github.com/remyoudompheng/bigfft']
     version = 'v0.0.0-20230129092748-24d4a6f8daec'
     hash = 'sha256-vYmpyCE37eBYP/navhaLV4oX4/nu0Z/StAocLIFqrmM='
-
-  [mod.'github.com/riza-io/grpc-go']
-    version = 'v0.2.0'
-    hash = 'sha256-toqQdnwlcKbJHl1mv9cDBwRfyXAMBwbfun+yC9+Rwgw='
 
   [mod.'github.com/rs/zerolog']
     version = 'v1.34.0'
@@ -354,12 +621,8 @@ schema = 3
     hash = 'sha256-uDPnWjHpSrzXr17KEYEA1yAbizfcsfo5AyztY2tS6ZU='
 
   [mod.'github.com/sqlc-dev/sqlc']
-    version = 'v1.29.0'
-    hash = 'sha256-FtgueQtyQC0wizhrZXL4dFqrsFNHNK6WBNG+dF/vsow='
-
-  [mod.'github.com/stoewer/go-strcase']
-    version = 'v1.3.0'
-    hash = 'sha256-X0ilcefeqVQ44B9WT6euCMcigs7oLFypOQaGI33kGr8='
+    version = 'v1.31.1'
+    hash = 'sha256-Pfd1KR6D3KE+QirOmIiWdd8eDmEpMguOqTom8A90TJA='
 
   [mod.'github.com/stretchr/objx']
     version = 'v0.5.3'
@@ -368,10 +631,6 @@ schema = 3
   [mod.'github.com/stretchr/testify']
     version = 'v1.11.1'
     hash = 'sha256-sWfjkuKJyDllDEtnM8sb/pdLzPQmUYWYtmeWz/5suUc='
-
-  [mod.'github.com/tetratelabs/wazero']
-    version = 'v1.9.0'
-    hash = 'sha256-b8D0cDMuDgyjvJ6LFY8REdcL95BIjM27SeOEQWfB0+0='
 
   [mod.'github.com/vektah/gqlparser/v2']
     version = 'v2.5.36'
@@ -392,14 +651,6 @@ schema = 3
   [mod.'github.com/wadey/gocovmerge']
     version = 'v0.0.0-20160331181800-b5bfa59ec0ad'
     hash = 'sha256-YbA4t26v6frdkh0uiXtmi8hiDYjR/FPBTxTwWlmfpwI='
-
-  [mod.'github.com/wasilibs/go-pgquery']
-    version = 'v0.0.0-20250409022910-10ac41983c07'
-    hash = 'sha256-627pU7bo9+lKbxQ6VqKFPK8wwQ/glvHCU2SRwzXIvog='
-
-  [mod.'github.com/wasilibs/wazero-helpers']
-    version = 'v0.0.0-20250123031827-cd30c44769bb'
-    hash = 'sha256-SIpxqycUfIabJ0tsKmo0A4mDgUr35qNCenC+1Oy0GN0='
 
   [mod.'github.com/wwmoraes/gotell']
     version = 'v0.5.0'
@@ -493,29 +744,17 @@ schema = 3
     version = 'v1.6.0'
     hash = 'sha256-a/Agm+kM9x+VRo0CYyTL3ipUYv9Glrc4NeGSZJdpobA='
 
-  [mod.'go.uber.org/multierr']
-    version = 'v1.11.0'
-    hash = 'sha256-Lb6rHHfR62Ozg2j2JZy3MKOMKdsfzd1IYTR57r3Mhp0='
-
-  [mod.'go.uber.org/zap']
-    version = 'v1.27.0'
-    hash = 'sha256-8655KDrulc4Das3VRduO9MjCn8ZYD5WkULjCvruaYsU='
-
   [mod.'go.yaml.in/yaml/v3']
     version = 'v3.0.4'
     hash = 'sha256-NkGFiDPoCxbr3LFsI6OCygjjkY0rdmg5ggvVVwpyDQ4='
-
-  [mod.'golang.org/x/crypto']
-    version = 'v0.54.0'
-    hash = 'sha256-m8jsqlPuoPxGDjClzcAVbXf1aiU07L+9j7vYcqJu/0Q='
 
   [mod.'golang.org/x/exp']
     version = 'v0.0.0-20260212183809-81e46e3db34a'
     hash = 'sha256-VJpaUeroUlqI72H2ihoH/gmGBofjztKXbG4XC5HZS9o='
 
   [mod.'golang.org/x/image']
-    version = 'v0.18.0'
-    hash = 'sha256-g9N/y4asXG1lctPJ1KEf8XIjeJi/mQ43EXUa8HTj/zQ='
+    version = 'v0.44.0'
+    hash = 'sha256-gYz3mITVqscRXeFHMfr9piEbF5126BH1QIV4AbEyNJY='
 
   [mod.'golang.org/x/mod']
     version = 'v0.38.0'
@@ -564,10 +803,6 @@ schema = 3
   [mod.'google.golang.org/protobuf']
     version = 'v1.36.11'
     hash = 'sha256-7W+6jntfI/awWL3JP6yQedxqP5S9o3XvPgJ2XxxsIeE='
-
-  [mod.'gopkg.in/natefinch/lumberjack.v2']
-    version = 'v2.2.1'
-    hash = 'sha256-GaXWRDxhGy4Z4mgE+bJ8OE9SVvYUa9TnNiydnp2s1Ms='
 
   [mod.'gopkg.in/yaml.v2']
     version = 'v2.4.0'
