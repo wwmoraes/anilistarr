@@ -20,7 +20,7 @@ all: bin/handler gomod2nix.toml
 
 .PHONY: check
 check::
-	nix flake check -L
+	nix flake check -L --accept-flake-config
 
 .PHONY: clean
 clean:
