@@ -59,6 +59,7 @@
 
       perSystem =
         {
+          lib,
           pkgs,
           self',
           system,
@@ -70,11 +71,18 @@
             overlays = [
               inputs.gomod2nix.overlays.default
               inputs.nur.overlays.default
+              inputs.nur.repos.wwmoraes.overlays.gomod2nix
               (final: prev: {
                 unstable = import inputs.unstable { inherit (prev.stdenv.hostPlatform) system; };
               })
             ];
-            config = { };
+            config = {
+              allowUnfreePredicate =
+                pkg:
+                builtins.elem (lib.getName pkg) [
+                  "test-results-parser"
+                ];
+            };
           };
 
           devShells = import ./shell.nix { inherit pkgs; };

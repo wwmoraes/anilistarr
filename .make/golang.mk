@@ -64,7 +64,9 @@ check:: ${GO_GENERATE_TARGETS}
 	golangci-lint run
 
 gomod2nix.toml: go.sum
-	gomod2nix generate
+	gomod2nix generate --with-deps
+	gomod2nix import --with-deps
+	@echo update default.nix with the new vendor hash: $(shell nix-hash --sri --type sha256 $(nix build --repair --no-link --print-out-paths .#handler.goModules))
 
 go.sum: ${GO_SOURCES} go.mod
 	@go mod tidy -v -x
