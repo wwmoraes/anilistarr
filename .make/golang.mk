@@ -85,7 +85,7 @@ ${IMPURE_PROFILE} ${IMPURE_OUTPUT} &: ${GO_SOURCES} ${MOCKERY_TARGETS} go.sum | 
 	sed -i'' '/$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))/d' $@
 
 coverage/unit.part.txt: coverage/pure.unit.txt coverage/impure.unit.txt
-	go run github.com/wadey/gocovmerge $^ > $@
+	go tool gocovmerge $^ > $@
 
 coverage/integration.part.txt: ${GO_SOURCES} go.sum | coverage/ ${GOCOVERDIR}/
 	-@rm -rf "${GOCOVERDIR}/*" 2>/dev/null || true
@@ -94,7 +94,7 @@ coverage/integration.part.txt: ${GO_SOURCES} go.sum | coverage/ ${GOCOVERDIR}/
 	sed -i'' '/$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))/d' $@
 
 coverage/all.txt: coverage/unit.part.txt coverage/integration.part.txt
-	go run github.com/wadey/gocovmerge $^ \
+	go tool gocovmerge $^ \
 	| grep $(if ${GO_TEST_IGNORE_PATTERNS},-v '$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS})',.) \
 	> $@
 

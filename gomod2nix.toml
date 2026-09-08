@@ -1,5 +1,8 @@
 schema = 3
 cachePackages = [
+  'cel.dev/expr',
+  'filippo.io/edwards25519',
+  'filippo.io/edwards25519/field',
   'github.com/Khan/genqlient',
   'github.com/Khan/genqlient/generate',
   'github.com/Khan/genqlient/graphql',
@@ -9,6 +12,7 @@ cachePackages = [
   'github.com/agnivade/levenshtein',
   'github.com/alexflint/go-arg',
   'github.com/alexflint/go-scalar',
+  'github.com/antlr4-go/antlr/v4',
   'github.com/aws/aws-sdk-go/aws',
   'github.com/aws/aws-sdk-go/aws/arn',
   'github.com/aws/aws-sdk-go/aws/auth/bearer',
@@ -53,6 +57,8 @@ cachePackages = [
   'github.com/cenkalti/backoff/v5',
   'github.com/cespare/xxhash/v2',
   'github.com/clipperhouse/uax29/v2/graphemes',
+  'github.com/coreos/go-semver/semver',
+  'github.com/cubicdaiya/gonp',
   'github.com/davecgh/go-spew/spew',
   'github.com/denisbrodbeck/machineid',
   'github.com/dgraph-io/badger/v4',
@@ -69,6 +75,7 @@ cachePackages = [
   'github.com/dprotaso/go-yit',
   'github.com/dustin/go-humanize',
   'github.com/fatih/structs',
+  'github.com/fatih/structtag',
   'github.com/felixge/httpsnoop',
   'github.com/fsnotify/fsnotify',
   'github.com/getkin/kin-openapi/openapi3',
@@ -78,10 +85,33 @@ cachePackages = [
   'github.com/go-logr/stdr',
   'github.com/go-openapi/jsonpointer',
   'github.com/go-openapi/swag/jsonname',
+  'github.com/go-sql-driver/mysql',
   'github.com/go-viper/mapstructure/v2',
   'github.com/goccy/go-json',
   'github.com/golang/freetype/raster',
   'github.com/golang/freetype/truetype',
+  'github.com/google/cel-go/cel',
+  'github.com/google/cel-go/checker',
+  'github.com/google/cel-go/checker/decls',
+  'github.com/google/cel-go/common',
+  'github.com/google/cel-go/common/ast',
+  'github.com/google/cel-go/common/containers',
+  'github.com/google/cel-go/common/debug',
+  'github.com/google/cel-go/common/decls',
+  'github.com/google/cel-go/common/env',
+  'github.com/google/cel-go/common/functions',
+  'github.com/google/cel-go/common/operators',
+  'github.com/google/cel-go/common/overloads',
+  'github.com/google/cel-go/common/runes',
+  'github.com/google/cel-go/common/stdlib',
+  'github.com/google/cel-go/common/types',
+  'github.com/google/cel-go/common/types/pb',
+  'github.com/google/cel-go/common/types/ref',
+  'github.com/google/cel-go/common/types/traits',
+  'github.com/google/cel-go/ext',
+  'github.com/google/cel-go/interpreter',
+  'github.com/google/cel-go/parser',
+  'github.com/google/cel-go/parser/gen',
   'github.com/google/flatbuffers/go',
   'github.com/google/go-github/v56/github',
   'github.com/google/go-querystring/query',
@@ -91,8 +121,19 @@ cachePackages = [
   'github.com/hashicorp/errwrap',
   'github.com/hashicorp/go-multierror',
   'github.com/huandu/xstrings',
+  'github.com/jackc/pgpassfile',
+  'github.com/jackc/pgservicefile',
+  'github.com/jackc/pgx/v5',
+  'github.com/jackc/pgx/v5/pgconn',
+  'github.com/jackc/pgx/v5/pgconn/ctxwatch',
+  'github.com/jackc/pgx/v5/pgproto3',
+  'github.com/jackc/pgx/v5/pgtype',
+  'github.com/jackc/pgx/v5/pgxpool',
+  'github.com/jackc/pgx/v5/stdlib',
+  'github.com/jackc/puddle/v2',
   'github.com/jedib0t/go-pretty/v6/table',
   'github.com/jedib0t/go-pretty/v6/text',
+  'github.com/jinzhu/inflection',
   'github.com/jmespath/go-jmespath',
   'github.com/klauspost/compress',
   'github.com/klauspost/compress/fse',
@@ -114,12 +155,35 @@ cachePackages = [
   'github.com/mitchellh/reflectwalk',
   'github.com/narqo/go-badge',
   'github.com/narqo/go-badge/fonts',
+  'github.com/ncruces/go-sqlite3',
+  'github.com/ncruces/go-sqlite3/driver',
+  'github.com/ncruces/go-sqlite3/embed',
+  'github.com/ncruces/go-sqlite3/vfs',
   'github.com/ncruces/go-strftime',
+  'github.com/ncruces/julianday',
   'github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen',
   'github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen',
   'github.com/oapi-codegen/oapi-codegen/v2/pkg/util',
   'github.com/oasdiff/yaml',
   'github.com/oasdiff/yaml3',
+  'github.com/pganalyze/pg_query_go/v6',
+  'github.com/pganalyze/pg_query_go/v6/parser',
+  'github.com/pingcap/errors',
+  'github.com/pingcap/failpoint',
+  'github.com/pingcap/log',
+  'github.com/pingcap/tidb/pkg/parser',
+  'github.com/pingcap/tidb/pkg/parser/ast',
+  'github.com/pingcap/tidb/pkg/parser/auth',
+  'github.com/pingcap/tidb/pkg/parser/charset',
+  'github.com/pingcap/tidb/pkg/parser/duration',
+  'github.com/pingcap/tidb/pkg/parser/format',
+  'github.com/pingcap/tidb/pkg/parser/mysql',
+  'github.com/pingcap/tidb/pkg/parser/opcode',
+  'github.com/pingcap/tidb/pkg/parser/terror',
+  'github.com/pingcap/tidb/pkg/parser/test_driver',
+  'github.com/pingcap/tidb/pkg/parser/tidb',
+  'github.com/pingcap/tidb/pkg/parser/types',
+  'github.com/pingcap/tidb/pkg/parser/util',
   'github.com/pmezard/go-difflib/difflib',
   'github.com/redis/go-redis/extra/rediscmd/v9',
   'github.com/redis/go-redis/extra/redisotel/v9',
@@ -128,6 +192,7 @@ cachePackages = [
   'github.com/redis/go-redis/v9/maintnotifications',
   'github.com/redis/go-redis/v9/push',
   'github.com/remyoudompheng/bigfft',
+  'github.com/riza-io/grpc-go/credentials/basic',
   'github.com/rs/zerolog',
   'github.com/santhosh-tekuri/jsonschema/v6',
   'github.com/santhosh-tekuri/jsonschema/v6/kind',
@@ -138,12 +203,22 @@ cachePackages = [
   'github.com/speakeasy-api/openapi/overlay/loader',
   'github.com/spf13/cobra',
   'github.com/spf13/pflag',
-  'github.com/sqlc-dev/sqlc',
+  'github.com/sqlc-dev/doubleclick/ast',
+  'github.com/sqlc-dev/doubleclick/lexer',
+  'github.com/sqlc-dev/doubleclick/parser',
+  'github.com/sqlc-dev/doubleclick/token',
+  'github.com/sqlc-dev/sqlc/cmd/sqlc',
   'github.com/stretchr/objx',
   'github.com/stretchr/testify/assert',
   'github.com/stretchr/testify/assert/yaml',
   'github.com/stretchr/testify/mock',
   'github.com/stretchr/testify/require',
+  'github.com/tetratelabs/wazero',
+  'github.com/tetratelabs/wazero/api',
+  'github.com/tetratelabs/wazero/experimental',
+  'github.com/tetratelabs/wazero/experimental/sys',
+  'github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1',
+  'github.com/tetratelabs/wazero/sys',
   'github.com/vektah/gqlparser/v2/ast',
   'github.com/vektah/gqlparser/v2/formatter',
   'github.com/vektah/gqlparser/v2/gqlerror',
@@ -220,8 +295,14 @@ cachePackages = [
   'go.opentelemetry.io/proto/otlp/resource/v1',
   'go.opentelemetry.io/proto/otlp/trace/v1',
   'go.uber.org/atomic',
+  'go.uber.org/multierr',
+  'go.uber.org/zap',
+  'go.uber.org/zap/buffer',
+  'go.uber.org/zap/zapcore',
+  'go.uber.org/zap/zaptest',
   'go.yaml.in/yaml/v3',
   'golang.org/x/exp/constraints',
+  'golang.org/x/exp/slices',
   'golang.org/x/image/font',
   'golang.org/x/image/math/fixed',
   'golang.org/x/mod/modfile',
@@ -233,14 +314,26 @@ cachePackages = [
   'golang.org/x/net/idna',
   'golang.org/x/net/trace',
   'golang.org/x/sync/errgroup',
+  'golang.org/x/sync/semaphore',
+  'golang.org/x/sync/singleflight',
+  'golang.org/x/sys/cpu',
   'golang.org/x/sys/unix',
   'golang.org/x/term',
   'golang.org/x/text/cases',
+  'golang.org/x/text/encoding',
+  'golang.org/x/text/encoding/charmap',
+  'golang.org/x/text/encoding/japanese',
+  'golang.org/x/text/encoding/korean',
+  'golang.org/x/text/encoding/simplifiedchinese',
+  'golang.org/x/text/encoding/traditionalchinese',
+  'golang.org/x/text/encoding/unicode',
   'golang.org/x/text/feature/plural',
   'golang.org/x/text/language',
   'golang.org/x/text/message',
   'golang.org/x/text/message/catalog',
+  'golang.org/x/text/runes',
   'golang.org/x/text/secure/bidirule',
+  'golang.org/x/text/secure/precis',
   'golang.org/x/text/transform',
   'golang.org/x/text/unicode/bidi',
   'golang.org/x/text/unicode/norm',
@@ -256,6 +349,7 @@ cachePackages = [
   'golang.org/x/tools/go/types/objectpath',
   'golang.org/x/tools/go/types/typeutil',
   'golang.org/x/tools/imports',
+  'google.golang.org/genproto/googleapis/api/expr/v1alpha1',
   'google.golang.org/genproto/googleapis/api/httpbody',
   'google.golang.org/genproto/googleapis/rpc/errdetails',
   'google.golang.org/genproto/googleapis/rpc/status',
@@ -296,16 +390,22 @@ cachePackages = [
   'google.golang.org/protobuf/encoding/protowire',
   'google.golang.org/protobuf/proto',
   'google.golang.org/protobuf/protoadapt',
+  'google.golang.org/protobuf/reflect/protodesc',
   'google.golang.org/protobuf/reflect/protoreflect',
   'google.golang.org/protobuf/reflect/protoregistry',
   'google.golang.org/protobuf/runtime/protoiface',
   'google.golang.org/protobuf/runtime/protoimpl',
+  'google.golang.org/protobuf/types/descriptorpb',
+  'google.golang.org/protobuf/types/dynamicpb',
+  'google.golang.org/protobuf/types/gofeaturespb',
   'google.golang.org/protobuf/types/known/anypb',
   'google.golang.org/protobuf/types/known/durationpb',
+  'google.golang.org/protobuf/types/known/emptypb',
   'google.golang.org/protobuf/types/known/fieldmaskpb',
   'google.golang.org/protobuf/types/known/structpb',
   'google.golang.org/protobuf/types/known/timestamppb',
   'google.golang.org/protobuf/types/known/wrapperspb',
+  'gopkg.in/natefinch/lumberjack.v2',
   'gopkg.in/yaml.v2',
   'gopkg.in/yaml.v3',
   'modernc.org/libc',
@@ -340,6 +440,14 @@ cachePackages = [
 ]
 
 [mod]
+  [mod.'cel.dev/expr']
+    version = 'v0.25.1'
+    hash = 'sha256-TEdMxFUPK7IZuCXMufwCkbN+ZZIXSQclljIybFZcByo='
+
+  [mod.'filippo.io/edwards25519']
+    version = 'v1.1.1'
+    hash = 'sha256-Uv7VeL9tVGn+0lRfEaRJcTsU2WWlvNSjTpkbKzuuQhM='
+
   [mod.'github.com/Khan/genqlient']
     version = 'v0.8.1'
     hash = 'sha256-6PYwpjpPN99oG+dRMhSgsNVLWTH8dNjqKUW2+jtYar0='
@@ -364,6 +472,10 @@ cachePackages = [
     version = 'v1.2.0'
     hash = 'sha256-PivG79qqrPJ1CksNiNNlwC+xPCMMTQxtda3rwk/z6LA='
 
+  [mod.'github.com/antlr4-go/antlr/v4']
+    version = 'v4.13.1'
+    hash = 'sha256-beAuxHNRUuhzcSJUh/8ztVf1zCUiaT72fg2Jvx0AuNQ='
+
   [mod.'github.com/aws/aws-sdk-go']
     version = 'v1.49.4'
     hash = 'sha256-X9lEqV3gXExokXAxtmXkgo04XfrIxU31eM2cQI0HyPQ='
@@ -387,6 +499,14 @@ cachePackages = [
   [mod.'github.com/clipperhouse/uax29/v2']
     version = 'v2.2.0'
     hash = 'sha256-BtyMi0Ul1CGY8miZDbsUWT9iW81UAn7CH/vAR4/S5vE='
+
+  [mod.'github.com/coreos/go-semver']
+    version = 'v0.3.1'
+    hash = 'sha256-ZZPTQW8xCqYk4vERTu/nBvCB9D01xO3XfnyFPb0nQG8='
+
+  [mod.'github.com/cubicdaiya/gonp']
+    version = 'v1.0.4'
+    hash = 'sha256-EzI6qi2dYF/aCSNXe1zhoA24gaj6AFjHPwBbD2v7L64='
 
   [mod.'github.com/davecgh/go-spew']
     version = 'v1.1.2-0.20180830191138-d8f796af33cc'
@@ -415,6 +535,10 @@ cachePackages = [
   [mod.'github.com/fatih/structs']
     version = 'v1.1.0'
     hash = 'sha256-OCmubTLF1anwNnkvFZDYHnF6hFlX0WDoe/9+dDlaMPM='
+
+  [mod.'github.com/fatih/structtag']
+    version = 'v1.2.0'
+    hash = 'sha256-Y2pjiEmMsxfUH8LONU2/f8k1BibOHeLKJmi4uZm/SSU='
 
   [mod.'github.com/felixge/httpsnoop']
     version = 'v1.0.4'
@@ -448,6 +572,10 @@ cachePackages = [
     version = 'v0.26.0'
     hash = 'sha256-vhWO27K+YiKrK/PStjAhqwrVXTF/d4xqxF3TzMtHg3Q='
 
+  [mod.'github.com/go-sql-driver/mysql']
+    version = 'v1.9.3'
+    hash = 'sha256-37CNj7G2S20w98rVAyFiScHQ5uXI/NSYY6Gsl41UwgY='
+
   [mod.'github.com/go-viper/mapstructure/v2']
     version = 'v2.5.0'
     hash = 'sha256-LbrCBANBprVI84M0CWrXc7rriJL5ac5VKbh58LBTw7U='
@@ -459,6 +587,10 @@ cachePackages = [
   [mod.'github.com/golang/freetype']
     version = 'v0.0.0-20170609003504-e2365dfdc4a0'
     hash = 'sha256-AHAFBd20/tqxohkWyQkui2bUef9i1HWYgk9LOIFErvA='
+
+  [mod.'github.com/google/cel-go']
+    version = 'v0.28.0'
+    hash = 'sha256-86MSoJX3fovcAWir41Z34nM0HcaDh0yRA+lIiVA1gEM='
 
   [mod.'github.com/google/flatbuffers']
     version = 'v25.12.19+incompatible'
@@ -496,9 +628,29 @@ cachePackages = [
     version = 'v1.1.0'
     hash = 'sha256-XWlYH0c8IcxAwQTnIi6WYqq44nOKUylSWxWO/vi+8pE='
 
+  [mod.'github.com/jackc/pgpassfile']
+    version = 'v1.0.0'
+    hash = 'sha256-H0nFbC34/3pZUFnuiQk9W7yvAMh6qJDrqvHp+akBPLM='
+
+  [mod.'github.com/jackc/pgservicefile']
+    version = 'v0.0.0-20240606120523-5a60cdf6a761'
+    hash = 'sha256-ETpGsLAA2wcm5xJBayr/mZrCE1YsWbnkbSSX3ptrFn0='
+
+  [mod.'github.com/jackc/pgx/v5']
+    version = 'v5.9.2'
+    hash = 'sha256-+R23f/i6n/iUkwc33WadubkUNIslDQraeLWdFdOXGD8='
+
+  [mod.'github.com/jackc/puddle/v2']
+    version = 'v2.2.2'
+    hash = 'sha256-IUxdu4JYfsCh/qlz2SiUWu7EVPHhyooiVA4oaS2Z6yk='
+
   [mod.'github.com/jedib0t/go-pretty/v6']
     version = 'v6.7.8'
     hash = 'sha256-ID+hqb1OXPCpWkhx43ElEw6Uei28LstXEozeep5VHkc='
+
+  [mod.'github.com/jinzhu/inflection']
+    version = 'v1.0.0'
+    hash = 'sha256-3h3pHib5MaCXKyKLIMyQnSptDJ16kPjCOQPoEBoQsZg='
 
   [mod.'github.com/jmespath/go-jmespath']
     version = 'v0.4.0'
@@ -560,9 +712,17 @@ cachePackages = [
     version = 'v0.0.0-20230821190521-c9a75c019a59'
     hash = 'sha256-dhsPmDdGhrA7wVFy4AIupZTG/QG2lRNWPpaQxaI5Bfk='
 
+  [mod.'github.com/ncruces/go-sqlite3']
+    version = 'v0.32.0'
+    hash = 'sha256-cn8/vRJpr8hEYFZvkFpG3MW2uDOU34JCnSTiz07oKcU='
+
   [mod.'github.com/ncruces/go-strftime']
     version = 'v0.1.9'
     hash = 'sha256-T0iw+UEckzueWHT88PkTnZZixyKCEa+DTLzIiiohuWY='
+
+  [mod.'github.com/ncruces/julianday']
+    version = 'v1.0.0'
+    hash = 'sha256-EelxOI6DLHy0jYnAcTeda24wLWkGOYuFtoJvuDg874s='
 
   [mod.'github.com/oapi-codegen/oapi-codegen/v2']
     version = 'v2.8.0'
@@ -575,6 +735,26 @@ cachePackages = [
   [mod.'github.com/oasdiff/yaml3']
     version = 'v0.0.14'
     hash = 'sha256-5kaz809D80Dp64Qeg5PwONZ9vxiz6I9BVvo5l5lBhww='
+
+  [mod.'github.com/pganalyze/pg_query_go/v6']
+    version = 'v6.2.2'
+    hash = 'sha256-MJ9KiA4liN0JBgfG7QjHkBeciPSsj0VxS7b8nF8VQXE='
+
+  [mod.'github.com/pingcap/errors']
+    version = 'v0.11.5-0.20250523034308-74f78ae071ee'
+    hash = 'sha256-vOPr6AcOjXUe6Okxtz0WhQjW9qFeV6RQzdD1gUW0J7c='
+
+  [mod.'github.com/pingcap/failpoint']
+    version = 'v0.0.0-20240528011301-b51a646c7c86'
+    hash = 'sha256-ivsfJW5MdgAjFqvd05Prjo78h5bh59ZzhPOjqXlpGkU='
+
+  [mod.'github.com/pingcap/log']
+    version = 'v1.1.0'
+    hash = 'sha256-JT33CJMknTXha1ERt4s6vV9fyx99J+Ot8rFrNKXTsTc='
+
+  [mod.'github.com/pingcap/tidb/pkg/parser']
+    version = 'v0.0.0-20260418072757-ce92298d1124'
+    hash = 'sha256-mr2F5IaLhPDRTsbeUCvTblPt8R5C9u+vlYB4jwzM3YM='
 
   [mod.'github.com/pmezard/go-difflib']
     version = 'v1.0.1-0.20181226105442-5d4384ee4fb2'
@@ -595,6 +775,10 @@ cachePackages = [
   [mod.'github.com/remyoudompheng/bigfft']
     version = 'v0.0.0-20230129092748-24d4a6f8daec'
     hash = 'sha256-vYmpyCE37eBYP/navhaLV4oX4/nu0Z/StAocLIFqrmM='
+
+  [mod.'github.com/riza-io/grpc-go']
+    version = 'v0.2.0'
+    hash = 'sha256-toqQdnwlcKbJHl1mv9cDBwRfyXAMBwbfun+yC9+Rwgw='
 
   [mod.'github.com/rs/zerolog']
     version = 'v1.34.0'
@@ -620,6 +804,10 @@ cachePackages = [
     version = 'v1.0.10'
     hash = 'sha256-uDPnWjHpSrzXr17KEYEA1yAbizfcsfo5AyztY2tS6ZU='
 
+  [mod.'github.com/sqlc-dev/doubleclick']
+    version = 'v1.0.0'
+    hash = 'sha256-Wr/ngDjezBnQaLT3al3BrkxVZQvkTXqVHWuXl4sZz6s='
+
   [mod.'github.com/sqlc-dev/sqlc']
     version = 'v1.31.1'
     hash = 'sha256-Pfd1KR6D3KE+QirOmIiWdd8eDmEpMguOqTom8A90TJA='
@@ -631,6 +819,10 @@ cachePackages = [
   [mod.'github.com/stretchr/testify']
     version = 'v1.11.1'
     hash = 'sha256-sWfjkuKJyDllDEtnM8sb/pdLzPQmUYWYtmeWz/5suUc='
+
+  [mod.'github.com/tetratelabs/wazero']
+    version = 'v1.11.0'
+    hash = 'sha256-bXmvMmQLsfyEa3C1kjE0AAVhGzj2tIiO67MxI3otMo8='
 
   [mod.'github.com/vektah/gqlparser/v2']
     version = 'v2.5.36'
@@ -651,6 +843,14 @@ cachePackages = [
   [mod.'github.com/wadey/gocovmerge']
     version = 'v0.0.0-20160331181800-b5bfa59ec0ad'
     hash = 'sha256-YbA4t26v6frdkh0uiXtmi8hiDYjR/FPBTxTwWlmfpwI='
+
+  [mod.'github.com/wasilibs/go-pgquery']
+    version = 'v0.0.0-20250409022910-10ac41983c07'
+    hash = 'sha256-627pU7bo9+lKbxQ6VqKFPK8wwQ/glvHCU2SRwzXIvog='
+
+  [mod.'github.com/wasilibs/wazero-helpers']
+    version = 'v0.0.0-20240620070341-3dff1577cd52'
+    hash = 'sha256-loW4TnvFCiR2VXlGIoA6waZmXk2jxZyhq5wImdvm3Ig='
 
   [mod.'github.com/wwmoraes/gotell']
     version = 'v0.5.0'
@@ -744,6 +944,14 @@ cachePackages = [
     version = 'v1.6.0'
     hash = 'sha256-a/Agm+kM9x+VRo0CYyTL3ipUYv9Glrc4NeGSZJdpobA='
 
+  [mod.'go.uber.org/multierr']
+    version = 'v1.11.0'
+    hash = 'sha256-Lb6rHHfR62Ozg2j2JZy3MKOMKdsfzd1IYTR57r3Mhp0='
+
+  [mod.'go.uber.org/zap']
+    version = 'v1.27.0'
+    hash = 'sha256-8655KDrulc4Das3VRduO9MjCn8ZYD5WkULjCvruaYsU='
+
   [mod.'go.yaml.in/yaml/v3']
     version = 'v3.0.4'
     hash = 'sha256-NkGFiDPoCxbr3LFsI6OCygjjkY0rdmg5ggvVVwpyDQ4='
@@ -803,6 +1011,10 @@ cachePackages = [
   [mod.'google.golang.org/protobuf']
     version = 'v1.36.11'
     hash = 'sha256-7W+6jntfI/awWL3JP6yQedxqP5S9o3XvPgJ2XxxsIeE='
+
+  [mod.'gopkg.in/natefinch/lumberjack.v2']
+    version = 'v2.2.1'
+    hash = 'sha256-GaXWRDxhGy4Z4mgE+bJ8OE9SVvYUa9TnNiydnp2s1Ms='
 
   [mod.'gopkg.in/yaml.v2']
     version = 'v2.4.0'
