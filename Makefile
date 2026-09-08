@@ -39,7 +39,7 @@ coverage: coverage/all.txt coverage/all.html
 
 .PHONY: release
 release:
-	cog bump
+	cog bump --auto
 
 .PHONY: generate
 generate: ${GO_GENERATE_TARGETS}
