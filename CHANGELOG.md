@@ -2,6 +2,61 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.4.0](https://github.com/wwmoraes/anilistarr/compare/31d96f729698fa104218b52856611dda29985b3d..v0.4.0) - 2026-09-08
+#### Features
+- http2 support - ([41a9af2](https://github.com/wwmoraes/anilistarr/commit/41a9af27a1bcc910b9821bc6ad132e51cfad7698)) - [@wwmoraes](https://github.com/wwmoraes)
+#### Documentation
+- update readme - ([c678215](https://github.com/wwmoraes/anilistarr/commit/c678215e51489281182eaae4493bb438b2b0ddab)) - [@wwmoraes](https://github.com/wwmoraes)
+#### Tests
+- fix redis tests - ([861b203](https://github.com/wwmoraes/anilistarr/commit/861b20358280d099cfb18a0cdaa0cc4745c89063)) - [@wwmoraes](https://github.com/wwmoraes)
+- ignore generated files on coverage - ([a045d48](https://github.com/wwmoraes/anilistarr/commit/a045d488b9abb4b418fcbd819627f8639c4182c4)) - [@wwmoraes](https://github.com/wwmoraes)
+- update to go 1.25 and refactor helpers - ([1be20fd](https://github.com/wwmoraes/anilistarr/commit/1be20fdd9327037ec7a786afe7a74bf6af82072c)) - [@wwmoraes](https://github.com/wwmoraes)
+- use mockery - ([699ed9b](https://github.com/wwmoraes/anilistarr/commit/699ed9bee0c7317d78625aaa90d750d9a7c74f23)) - [@wwmoraes](https://github.com/wwmoraes)
+#### Build system
+- accept flake config on check - ([dbe35de](https://github.com/wwmoraes/anilistarr/commit/dbe35de574f298954a1282fd4fefea99da0d9131)) - [@wwmoraes](https://github.com/wwmoraes)
+- fix gomod2nix import - ([77b4e8a](https://github.com/wwmoraes/anilistarr/commit/77b4e8acafc930473c87bad986a394cec0d2b6f9)) - [@wwmoraes](https://github.com/wwmoraes)
+- remove sarif error break check - ([68e6f8a](https://github.com/wwmoraes/anilistarr/commit/68e6f8a44fa1a5b057fd162e4152b55bb81803b7)) - [@wwmoraes](https://github.com/wwmoraes)
+- container version handling - ([2249104](https://github.com/wwmoraes/anilistarr/commit/2249104a6279d6a81f09bb96d9ea2fb52f3db7d5)) - [@wwmoraes](https://github.com/wwmoraes)
+- update nix package pattern - ([9dc4bdf](https://github.com/wwmoraes/anilistarr/commit/9dc4bdfd9821b4c7fc5512af09a2e468ec6b2016)) - [@wwmoraes](https://github.com/wwmoraes)
+- use container CLI on Darwin - ([df132c9](https://github.com/wwmoraes/anilistarr/commit/df132c94c012de6ea8b46253512119459fb2367b)) - [@wwmoraes](https://github.com/wwmoraes)
+- update make and git hooks - ([b30c511](https://github.com/wwmoraes/anilistarr/commit/b30c511c34187d40c8bc0e586aa12a20a3fa441c)) - [@wwmoraes](https://github.com/wwmoraes)
+- improve SAST report handling - ([15727bc](https://github.com/wwmoraes/anilistarr/commit/15727bc731b72ffb41f40fed68a2fc74ff4770f4)) - [@wwmoraes](https://github.com/wwmoraes)
+- add semgrep ignore support - ([45c5af5](https://github.com/wwmoraes/anilistarr/commit/45c5af5fdcca8cdcb355092ba818dcb92058bf65)) - [@wwmoraes](https://github.com/wwmoraes)
+#### Continuous Integration
+- update CodeQL's upload sarif action - ([ccf781d](https://github.com/wwmoraes/anilistarr/commit/ccf781defcd3f42df0762c0470270d0531fb25ae)) - [@wwmoraes](https://github.com/wwmoraes)
+- run integration on trunk - ([32f0f0e](https://github.com/wwmoraes/anilistarr/commit/32f0f0e5686140d0c42baa7481c9be25f752bab1)) - [@wwmoraes](https://github.com/wwmoraes)
+- remove security pipeline - ([0f6153f](https://github.com/wwmoraes/anilistarr/commit/0f6153fd0b3fd0f39f510311c4f4a73afa0558f2)) - [@wwmoraes](https://github.com/wwmoraes)
+- update actions - ([8d8e5ca](https://github.com/wwmoraes/anilistarr/commit/8d8e5caf53a27f77a1d04d4d5e03d011a9283567)) - [@wwmoraes](https://github.com/wwmoraes)
+- fix sast target - ([7c3d9c6](https://github.com/wwmoraes/anilistarr/commit/7c3d9c6e7d880754a9308d017e1e5fa9af2c4dd1)) - [@wwmoraes](https://github.com/wwmoraes)
+- split nix cache warm-up - ([b31383b](https://github.com/wwmoraes/anilistarr/commit/b31383ba8470aabef3aa05bfe897b008e849058e)) - [@wwmoraes](https://github.com/wwmoraes)
+#### Refactoring
+- pass context on store and cache creation - ([2c90829](https://github.com/wwmoraes/anilistarr/commit/2c9082977d2d605fb68afb93799c0d037c7e3ecd)) - [@wwmoraes](https://github.com/wwmoraes)
+#### Miscellaneous Chores
+- add default anilist graphQL endpoint env - ([df1d9a7](https://github.com/wwmoraes/anilistarr/commit/df1d9a78fc837526ac3ff7ea95a1014d87822763)) - [@wwmoraes](https://github.com/wwmoraes)
+- use go tool subcommand - ([276a2cb](https://github.com/wwmoraes/anilistarr/commit/276a2cbb6dc927f4e153c158245eb40d7547bc94)) - [@wwmoraes](https://github.com/wwmoraes)
+- update dependencies - ([ca0c198](https://github.com/wwmoraes/anilistarr/commit/ca0c19879585fca695483bbd9ad9829cb9b30e4b)) - [@wwmoraes](https://github.com/wwmoraes)
+- update dependencies - ([4b715e6](https://github.com/wwmoraes/anilistarr/commit/4b715e6cfd32d6f76d1b3deb9feb7fc2a2683a75)) - [@wwmoraes](https://github.com/wwmoraes)
+- drop self overlay import - ([1c7093b](https://github.com/wwmoraes/anilistarr/commit/1c7093b89c615af86519151f6f056d912eb93fa4)) - [@wwmoraes](https://github.com/wwmoraes)
+- update nixpkgs channel - ([212fb81](https://github.com/wwmoraes/anilistarr/commit/212fb81c7771de61587d7fd8fdc484e2e4eecbe8)) - [@wwmoraes](https://github.com/wwmoraes)
+- organize shell dependencies - ([e29b52a](https://github.com/wwmoraes/anilistarr/commit/e29b52afb7a8d6625996aa400df181d1e29230a1)) - [@wwmoraes](https://github.com/wwmoraes)
+- solve SAST-reported warnings - ([81eda96](https://github.com/wwmoraes/anilistarr/commit/81eda9657a9eca15c56b00d2d64811a8d8e666b1)) - [@wwmoraes](https://github.com/wwmoraes)
+- update dependencies - ([6a98dee](https://github.com/wwmoraes/anilistarr/commit/6a98dee0bbd8c81528c8495b219445f0236d3abe)) - [@wwmoraes](https://github.com/wwmoraes)
+- update linting rules - ([e03417d](https://github.com/wwmoraes/anilistarr/commit/e03417d3b9f359f3b88b94f6d15b6c05adcc1a6b)) - [@wwmoraes](https://github.com/wwmoraes)
+- update docker image - ([70c8685](https://github.com/wwmoraes/anilistarr/commit/70c868506cd6ea03b4ce1f0261270c38e4e4af56)) - [@wwmoraes](https://github.com/wwmoraes)
+- drop omnix - ([522544a](https://github.com/wwmoraes/anilistarr/commit/522544a6f588ed53b5b4fa0e24893a12a296aff3)) - [@wwmoraes](https://github.com/wwmoraes)
+- add git merge drivers - ([c591d10](https://github.com/wwmoraes/anilistarr/commit/c591d10199338c08d88523a7b6199578cb965c2a)) - [@wwmoraes](https://github.com/wwmoraes)
+- drop fly.io - ([905e1c3](https://github.com/wwmoraes/anilistarr/commit/905e1c377958e6787e9bceb2d49f6fa15224042d)) - [@wwmoraes](https://github.com/wwmoraes)
+- cleanup nix files - ([5a14419](https://github.com/wwmoraes/anilistarr/commit/5a14419e57716fdb37eeb8dbf7324ac0e07923da)) - [@wwmoraes](https://github.com/wwmoraes)
+- update flake inputs - ([cbbd840](https://github.com/wwmoraes/anilistarr/commit/cbbd840f320c3771f2b0667d26a9394f49037e4c)) - [@wwmoraes](https://github.com/wwmoraes)
+- update go dependencies - ([ef77fb1](https://github.com/wwmoraes/anilistarr/commit/ef77fb1f918039b806288313180d90d5a58e7741)) - [@wwmoraes](https://github.com/wwmoraes)
+- add multi-devshells support - ([d5aac28](https://github.com/wwmoraes/anilistarr/commit/d5aac280fa9891ea909c52d18b183b1fb54757b0)) - [@wwmoraes](https://github.com/wwmoraes)
+- use cog bump to trigger release - ([5a666ef](https://github.com/wwmoraes/anilistarr/commit/5a666ef81a1ae46dec8ce1da90c7b59195f19384)) - [@wwmoraes](https://github.com/wwmoraes)
+- ignore generated files in treefmt - ([e4b9dc0](https://github.com/wwmoraes/anilistarr/commit/e4b9dc0310fc336f50a4f8b4a18a489119a0dd3a)) - [@wwmoraes](https://github.com/wwmoraes)
+- fix fly.io settings - ([8ea4eff](https://github.com/wwmoraes/anilistarr/commit/8ea4eff7f362e94d7066549d293bec47f57f7bf6)) - [@wwmoraes](https://github.com/wwmoraes)
+- drop fly.io version arg - ([31d96f7](https://github.com/wwmoraes/anilistarr/commit/31d96f729698fa104218b52856611dda29985b3d)) - [@wwmoraes](https://github.com/wwmoraes)
+
+- - -
+
 ## [v0.3.0](https://github.com/wwmoraes/anilistarr/compare/31bc74203a32f02f8bf8d905d975507abcf4408a..v0.3.0) - 2025-07-27
 #### Bug Fixes
 - **(anilist)** handle 404 error - ([dcf900a](https://github.com/wwmoraes/anilistarr/commit/dcf900aed54b31d5dda4c72ec04893ab4e523dc8)) - [@wwmoraes](https://github.com/wwmoraes)
