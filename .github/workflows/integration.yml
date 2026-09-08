@@ -3,7 +3,7 @@ on:
   push:
     branches:
     - master
-    - user/*/trunk
+    - trunk
     tags-ignore:
     - "*"
     paths-ignore:
