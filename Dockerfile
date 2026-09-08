@@ -38,6 +38,8 @@ USER 20000:20000
 CMD ["/usr/bin/handler"]
 
 ENV DATA_PATH=/var/handler
+ENV ANILIST_GRAPHQL_ENDPOINT=https://graphql.anilist.co
+
 EXPOSE 8080
 VOLUME /var/handler
 
