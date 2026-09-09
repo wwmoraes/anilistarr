@@ -8,12 +8,22 @@ MAKEFLAGS += --no-builtin-variables
 export
 
 .DEFAULT_GOAL := all
+
 BRANCH != git branch --show-current
 DATE != date --utc +"%Y-%m-%dT%H:%M:%SZ"
 REVISION != git rev-parse --verify HEAD
-VERSION != cog bump --auto --dry-run $(if $(shell git describe --tags --always | grep -),--build ${REVISION}) --skip-untracked 2>/dev/null | cut -dv -f2
+
+# cog may grunt about nothing to bump when only "non-bumpable" commit types
+# are present since the last tag (e.g. ci, docs); it does so even with --quiet.
+# There's no way to make it error when no new version is due. Hence we check if
+# the output is a semantic version, fallbacking to the current version. This
+# allows fixing CI and build scripts and still release a version with the right
+# version without unnecessary bumps.
+VERSION != cog --quiet bump --auto --dry-run $(if $(shell git describe --tags --always | grep -),--build ${REVISION}) --skip-untracked 2>/dev/null | grep -E '[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+' | ifne cut -dv -f2- | ifne -n echo $(shell cog --quiet get-version --fallback 0.0.0)
 
 -include .make/*.mk
+
+$(info version: ${VERSION})
 
 .PHONY: all
 all: bin/handler gomod2nix.toml
