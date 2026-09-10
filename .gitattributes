@@ -1,2 +1,3 @@
-*.gen.go merge=go-generate
+*.gen.go generated merge=go-generate
+*.sql.go generated
 go.sum merge=go-tidy

@@ -22,11 +22,7 @@ endef
 
 define GO_TEST_IGNORE_PATTERNS
 $(strip
-.gen.go:
-.pb.go:
-.pb.gw.go:
-.sql.go:
-.xo.go:
+$(addsuffix :,$(shell git ls-files -- ':(attr:generated)'))
 )
 endef
 
@@ -80,11 +76,11 @@ ${GO_GENERATE_TARGETS} &: ${GO_GENERATE_SOURCES}
 
 ${PURE_PROFILE} ${PURE_OUTPUT} &: ${GO_SOURCES} ${MOCKERY_TARGETS} go.sum | coverage/
 	go test -covermode=atomic -race -shuffle=on -mod=readonly -json -coverprofile=${PURE_PROFILE} -tags=pure $(addprefix ./,$(addsuffix /...,${TEST_PACKAGES})) | tee ${PURE_OUTPUT} | gotestdox
-	sed -i'' '/$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))/d' $@
+	sed -i'' '\%$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))%d' $@
 
 ${IMPURE_PROFILE} ${IMPURE_OUTPUT} &: ${GO_SOURCES} ${MOCKERY_TARGETS} go.sum | coverage/
 	go test -covermode=atomic -race -shuffle=on -mod=readonly -json -coverprofile=${IMPURE_PROFILE} $(addprefix ./,$(addsuffix /...,${TEST_PACKAGES})) | tee ${IMPURE_OUTPUT} | gotestdox
-	sed -i'' '/$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))/d' $@
+	sed -i'' '\%$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))%d' $@
 
 coverage/unit.part.txt: coverage/pure.unit.txt coverage/impure.unit.txt
 	go tool gocovmerge $^ > $@
@@ -93,7 +89,7 @@ coverage/integration.part.txt: ${GO_SOURCES} go.sum | coverage/ ${GOCOVERDIR}/
 	-@rm -rf "${GOCOVERDIR}/*" 2>/dev/null || true
 	env GOCOVERDIR=${GOCOVERDIR} go run -cover -covermode=atomic -race -mod=readonly ./cmd/internal/integration/...
 	go tool covdata textfmt -i=${GOCOVERDIR} -o=$@ -pkg="$(addprefix ${GOMODULE}/,${TEST_PACKAGES})"
-	sed -i'' '/$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))/d' $@
+	sed -i'' '\%$(subst .,\.,$(subst $(space),\|,${GO_TEST_IGNORE_PATTERNS}))%d' $@
 
 coverage/all.txt: coverage/unit.part.txt coverage/integration.part.txt
 	go tool gocovmerge $^ \
