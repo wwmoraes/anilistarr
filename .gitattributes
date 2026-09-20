@@ -1,3 +1,17 @@
-*.gen.go generated merge=go-generate
-*.sql.go generated
+*.gen.go merge=go-generate generated
+*.sql generates sqlc
+*.sql.go generated sqlc
+*_test.go test
+.mockery.yml generates mockery
+/*.go skip-coverage
+cmd/**/*.go skip-coverage
 go.sum merge=go-tidy
+internal/api/api.gen.go generated openapi
+internal/drivers/sqlite/model/db.go generated sqlc
+internal/drivers/sqlite/model/models.go generated sqlc
+internal/test/**/*.go skip-coverage
+internal/test/*_mocks.go generated mockery
+internal/usecases/*.go generates mockery
+internal/usecases/*_test.go -generates -mockery
+sqlc.yaml generates sqlc
+swagger.yaml generates openapi

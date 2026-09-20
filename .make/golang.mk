@@ -2,61 +2,28 @@ GOCOVERDIR ?= coverage/integration
 
 GOMODULE != go list -m
 
-define GO_GENERATE_SOURCES
-$(strip
-db/queries.sql
-internal/drivers/sqlite/schema.sql
-sqlc.yaml
-swagger.yaml
-)
-endef
-
-define GO_GENERATE_TARGETS
-$(strip
-internal/api/api.gen.go
-internal/drivers/sqlite/model/db.go
-internal/drivers/sqlite/model/models.go
-internal/drivers/sqlite/model/queries.sql.go
-)
+define GENERATE_TARGETS
+$(strip $(shell git ls-files -- ':(attr:generated)'))
 endef
 
 define GO_TEST_IGNORE_PATTERNS
-$(strip
-$(addsuffix :,$(shell git ls-files -- ':(attr:generated)'))
-)
+$(strip $(addsuffix :,$(shell git ls-files -- ':(attr:generated)')))
 endef
 
 define TEST_PACKAGES
-$(strip
-internal/adapters
-internal/api
-internal/drivers
-internal/entities
-internal/usecases
-pkg
-)
+$(strip $(shell git ls-files -- ':(attr:!skip-coverage)**.go' | xargs dirname | sort -u))
 endef
 
-define MOCKERY_SOURCES
-$(strip
-$(shell git ls-files ':(exclude)**_test.go' 'internal/usecases/*.go')
-)
+define GO_SOURCES
+$(strip $(shell git ls-files ':(attr:!generated !test)*.go'))
 endef
-
-define MOCKERY_TARGETS
-$(strip
-$(wildcard internal/test/*_mocks.go)
-)
-endef
-
-GO_SOURCES = $(filter-out ${MOCKERY_TARGETS},$(shell git ls-files '*.go') $(strip ${GO_GENERATE_TARGETS}))
 
 IMPURE_OUTPUT = coverage/impure.unit.json
 IMPURE_PROFILE = coverage/impure.unit.txt
 PURE_OUTPUT = coverage/pure.unit.json
 PURE_PROFILE = coverage/pure.unit.txt
 
-check:: ${GO_GENERATE_TARGETS}
+check:: ${GENERATE_TARGETS}
 	golangci-lint run
 
 gomod2nix.toml: go.sum
@@ -70,9 +37,6 @@ go.sum: ${GO_SOURCES} go.mod
 
 bin/handler: ${GO_SOURCES} go.sum
 	go build -race -mod=readonly -trimpath -ldflags="-s -w -X 'main.version=${VERSION}-${REVISION}'" -o ./$@ ./cmd/handler/...
-
-${GO_GENERATE_TARGETS} &: ${GO_GENERATE_SOURCES}
-	go generate ./...
 
 ${PURE_PROFILE} ${PURE_OUTPUT} &: ${GO_SOURCES} ${MOCKERY_TARGETS} go.sum | coverage/
 	go test -covermode=atomic -race -shuffle=on -mod=readonly -json -coverprofile=${PURE_PROFILE} -tags=pure $(addprefix ./,$(addsuffix /...,${TEST_PACKAGES})) | tee ${PURE_OUTPUT} | gotestdox
@@ -104,7 +68,3 @@ coverage/%.svg: coverage/%.txt
 
 coverage/%.html: coverage/%.txt
 	go tool cover -html=$< -o $@
-
-${MOCKERY_TARGETS} &: .mockery.yml ${MOCKERY_SOURCES}
-	$(info updating mocks...)
-	@go tool mockery

@@ -52,7 +52,7 @@ release:
 	cog bump --auto
 
 .PHONY: generate
-generate: ${GO_GENERATE_TARGETS}
+generate: ${GENERATE_TARGETS}
 
 .PHONY: coverage-upload
 coverage-upload: coverage-unit-upload coverage-integration-upload
